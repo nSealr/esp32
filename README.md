@@ -19,8 +19,15 @@ board into a separate repository.
 - `boards/`: board profiles, pinouts, displays, buttons, and hardware configs.
 - `docs/`: build, flash, provisioning, and security notes.
 
-## License Plan
+## Quality Baseline
 
-Firmware should use GPL-3.0 or another strong copyleft license compatible with
-the chosen ESP-IDF dependencies and bundled crypto libraries.
+Run the repository verification loop with:
 
+```sh
+make ci
+```
+
+## License
+
+Firmware and tooling are released under the MIT License unless a file says
+otherwise. Third-party SDK and component licenses must be preserved.
