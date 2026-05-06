@@ -13,6 +13,15 @@ board into a separate repository.
 - ESP32-S3 plus TROPIC01 embedded variant.
 - Custom ESP32-S3 product PCB firmware.
 
+## Current Capabilities
+
+- Host-buildable C++ firmware core foundation.
+- `nseal1f:` serial frame encode/decode compatible with the companion serial
+  framing draft.
+- Portable SHA-256 checksum helper for frame corruption detection.
+- Approval gate state machine requiring request-id-matched approval before a
+  request can be signed.
+
 ## Initial Layout
 
 - `firmware/`: ESP-IDF firmware projects and shared modules.

@@ -1,5 +1,14 @@
 # Roadmap
 
+## Foundation: Host-Buildable Firmware Core
+
+- C++ serial frame encode/decode.
+- Portable SHA-256 checksum helper.
+- Approval gate state machine.
+- Host test binary with strict warnings.
+
+Status: implemented as the first firmware-core foundation.
+
 ## M7: Firmware Foundation
 
 - ESP-IDF skeleton.
@@ -22,4 +31,3 @@
 - Flash encryption.
 - Firmware update policy.
 - Debug lock policy.
-

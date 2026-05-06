@@ -20,3 +20,16 @@
 
 ESP-IDF is the default firmware framework for serious ESP32-S3 work.
 
+## Implemented Host Core
+
+The first firmware foundation is host-buildable C++ under
+`firmware/host_core`.
+
+- `serial_frame`: encodes and decodes newline-terminated `nseal1f:` frames with
+  type, base64url JSON payload, and checksum.
+- `sha256`: portable SHA-256 helper used for the frame checksum.
+- `approval_gate`: request-id-bound approval state machine.
+
+This code is intentionally independent of ESP-IDF so protocol and approval
+logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
+button, secure storage, and signing components.
