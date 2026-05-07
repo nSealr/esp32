@@ -344,6 +344,64 @@ std::uint64_t parse_unsigned_decimal(std::string_view token, const char* field_n
     return value;
 }
 
+std::vector<std::vector<std::string>> parse_tags_array(const std::string& tags_json) {
+    std::size_t offset = 0;
+    skip_ws(tags_json, offset);
+    if (offset >= tags_json.size() || tags_json[offset] != '[') {
+        throw QrEnvelopeError("QR signing request event_template tags array is required");
+    }
+    ++offset;
+    std::vector<std::vector<std::string>> tags;
+    skip_ws(tags_json, offset);
+    if (offset < tags_json.size() && tags_json[offset] == ']') {
+        ++offset;
+    } else {
+        while (offset < tags_json.size()) {
+            skip_ws(tags_json, offset);
+            if (offset >= tags_json.size() || tags_json[offset] != '[') {
+                throw QrEnvelopeError("QR signing request event_template tags must be string arrays");
+            }
+            ++offset;
+            std::vector<std::string> tag;
+            skip_ws(tags_json, offset);
+            if (offset < tags_json.size() && tags_json[offset] == ']') {
+                ++offset;
+            } else {
+                while (offset < tags_json.size()) {
+                    skip_ws(tags_json, offset);
+                    tag.push_back(parse_simple_json_string(tags_json, offset));
+                    skip_ws(tags_json, offset);
+                    if (offset < tags_json.size() && tags_json[offset] == ',') {
+                        ++offset;
+                        continue;
+                    }
+                    if (offset < tags_json.size() && tags_json[offset] == ']') {
+                        ++offset;
+                        break;
+                    }
+                    throw QrEnvelopeError("QR signing request event_template tags must be string arrays");
+                }
+            }
+            tags.push_back(tag);
+            skip_ws(tags_json, offset);
+            if (offset < tags_json.size() && tags_json[offset] == ',') {
+                ++offset;
+                continue;
+            }
+            if (offset < tags_json.size() && tags_json[offset] == ']') {
+                ++offset;
+                break;
+            }
+            throw QrEnvelopeError("QR signing request event_template tags array separator is invalid");
+        }
+    }
+    skip_ws(tags_json, offset);
+    if (offset != tags_json.size()) {
+        throw QrEnvelopeError("QR signing request event_template tags array has trailing data");
+    }
+    return tags;
+}
+
 QrEventTemplate parse_event_template_fields(const std::string& event_template_json) {
     const auto event_template = parse_top_level_object(event_template_json);
     for (const char* field : {"id", "pubkey", "sig"}) {
@@ -378,6 +436,7 @@ QrEventTemplate parse_event_template_fields(const std::string& event_template_js
         parse_unsigned_decimal(created_at->second.value, "created_at"),
         static_cast<int>(kind_value),
         tags->second.value,
+        parse_tags_array(tags->second.value),
         content->second.value,
     };
 }

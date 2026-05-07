@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace nostrseal {
 
@@ -15,6 +16,7 @@ struct QrEventTemplate {
     std::uint64_t created_at;
     int kind;
     std::string tags_json;
+    std::vector<std::vector<std::string>> tags;
     std::string content;
 };
 

@@ -35,6 +35,10 @@ board into a separate repository.
 - Minimal QR event-template field parsing for `created_at`, `kind`, `tags`, and
   `content`. This prepares trusted review generation without enabling tag
   semantics, key storage, or signing.
+- QR trusted-review page generation from parsed event templates, checked
+  against shared `NostrSeal/specs` review-screen vectors. QR-derived
+  `approval_digest`, camera input, display/GPIO drivers, key storage, and
+  signing remain disabled.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

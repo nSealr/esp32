@@ -7,6 +7,7 @@
 #include "nostrseal/approval_gate.hpp"
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/qr_envelope.hpp"
+#include "nostrseal/qr_review.hpp"
 #include "nostrseal/review_controls.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
@@ -23,6 +24,17 @@ void expect_throw(const std::string& expected, const auto& fn) {
         return;
     }
     assert(false && "expected exception");
+}
+
+void assert_trusted_review_pages(
+    const std::vector<nostrseal::TrustedReviewPage>& actual,
+    const std::vector<nostrseal::TrustedReviewPage>& expected) {
+    assert(actual.size() == expected.size());
+    for (std::size_t index = 0; index < actual.size(); ++index) {
+        assert(actual[index].title == expected[index].title);
+        assert(actual[index].lines == expected[index].lines);
+        assert(actual[index].action == expected[index].action);
+    }
 }
 
 void test_serial_frame_round_trip() {
@@ -177,6 +189,26 @@ void test_qr_signing_request_rejections() {
             "ignored",
             R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[]}}})"});
     });
+}
+
+void test_qr_review_pages_match_shared_basic_vector() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(envelope);
+
+    assert_trusted_review_pages(
+        nostrseal::build_qr_review_pages(request),
+        nostrseal::test_vectors::basic_trusted_review_request().pages);
+}
+
+void test_qr_review_pages_match_shared_tagged_vector() {
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+        "ignored",
+        R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})"});
+
+    assert_trusted_review_pages(
+        nostrseal::build_qr_review_pages(request),
+        nostrseal::test_vectors::tagged_trusted_review_request().pages);
 }
 
 void test_approval_gate_requires_matching_approval() {
@@ -406,6 +438,8 @@ int main() {
     test_qr_signing_request_tolerates_escaped_event_content();
     test_qr_envelope_rejections();
     test_qr_signing_request_rejections();
+    test_qr_review_pages_match_shared_basic_vector();
+    test_qr_review_pages_match_shared_tagged_vector();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

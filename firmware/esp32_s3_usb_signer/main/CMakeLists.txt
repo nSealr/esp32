@@ -4,6 +4,7 @@ idf_component_register(
         "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/qr_envelope.cpp"
+        "../../host_core/src/qr_review.cpp"
         "../../host_core/src/review_controls.cpp"
         "../../host_core/src/review_display.cpp"
         "../../host_core/src/serial_frame.cpp"

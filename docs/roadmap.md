@@ -25,6 +25,7 @@
   `sig` fields before any future review or signing path.
 - Minimal QR event-template field parser for `created_at`, `kind`, `tags`, and
   `content`.
+- QR trusted-review page builder checked against shared review-screen vectors.
 - Shared-spec review-screen approval digest binding in the host approval gate.
 - Host-buildable review button state machine for page traversal before
   approval and terminal approve/reject decisions.
@@ -38,12 +39,12 @@ Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
 hardware smoke-test foundation. The QR envelope decoder, QR request metadata
 parser, event-template object boundary extraction, review button state machine,
-host-supplied signed-field rejection, review button state machine, and display
-frame renderer are implemented in host-core only. The QR path also validates
-the minimal unsigned event-template fields needed by future review generation.
-The trusted review session now ties review controls and display frames to
-approval-digest binding for future adapters; real camera, display, and GPIO
-drivers remain pending.
+host-supplied signed-field rejection, review page generation, and display frame
+renderer are implemented in host-core only. The QR path also validates the
+minimal unsigned event-template fields needed by future review generation. The
+trusted review session now ties review controls and display frames to
+approval-digest binding for future adapters; QR-derived `approval_digest`, real
+camera, display, and GPIO drivers remain pending.
 
 ## M7: Firmware Foundation
 
@@ -74,8 +75,10 @@ drivers remain pending.
   metadata parsing, and raw `params.event_template` object boundary extraction
   are implemented. It also rejects host-supplied `id`, `pubkey`, or `sig`
   fields and parses the minimal unsigned event fields `created_at`, `kind`,
-  `tags`, and `content`; camera capture, animated-frame reconstruction, tag
-  semantics, review generation, and signing-vector consumption remain pending.
+  `tags`, and `content`. QR review pages now match shared basic/tagged
+  review-screen vectors; camera capture, animated-frame reconstruction,
+  QR-derived `approval_digest`, hardware display output, and signing-vector
+  consumption remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.

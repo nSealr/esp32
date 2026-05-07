@@ -46,6 +46,7 @@ def validate_firmware_project(project: Path) -> None:
     for required_source in (
         "approval_gate.cpp",
         "qr_envelope.cpp",
+        "qr_review.cpp",
         "review_controls.cpp",
         "review_display.cpp",
         "trusted_review.cpp",
