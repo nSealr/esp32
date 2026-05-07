@@ -27,6 +27,9 @@ tests with strict C++ warnings.
   ESP32-S3 board.
 - Optional hardware capability smoke test with `make idf-smoke-capabilities`
   after exporting ESP-IDF and flashing the current firmware.
+- Regression tests require the ESP-IDF console defaults to use native USB
+  Serial/JTAG as the primary console; secondary USB logging is not enough for
+  input-driven protocol smoke tests.
 
 ## Required Tests
 

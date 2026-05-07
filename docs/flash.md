@@ -62,11 +62,20 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x779a0 bytes after adding the
+nostrseal_esp32_s3_usb_signer.bin size: 0x74660 bytes after adding the
 host-core capability protocol path
 smallest app partition: 0x100000 bytes
-free app partition space: 0x88660 bytes, about 53%
+free app partition space: 0x8b9a0 bytes, about 55%
 ```
+
+The firmware defaults set native USB Serial/JTAG as the primary ESP-IDF console:
+
+```text
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+```
+
+Using USB Serial/JTAG only as a secondary console mirrors logs but does not
+provide input for `getchar()`, so `make idf-smoke-capabilities` would time out.
 
 ## Verified Flash Command
 
@@ -135,6 +144,8 @@ make IDF_PORT=/dev/cu.<device> idf-smoke-capabilities
 ```
 
 The smoke command sends the shared `get_capabilities` request frame and expects
-the shared ESP32-S3 scaffold capability response. Signing is intentionally
-disabled until storage, review UI, approval controls, and response verification
-tests are implemented.
+the shared ESP32-S3 scaffold capability response. On the attached board this
+smoke test passed on `/dev/cu.usbmodem1101` after configuring native USB
+Serial/JTAG as the primary console. Signing is intentionally disabled until
+storage, review UI, approval controls, and response verification tests are
+implemented.

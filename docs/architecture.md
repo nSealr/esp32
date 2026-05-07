@@ -43,7 +43,8 @@ companion.
 ## ESP-IDF Scaffold
 
 `firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the
-ESP32-S3 USB signer. It currently boots, reads newline-terminated `nseal1f:`
-frames from the USB serial console, answers the shared `get_capabilities`
-request, and logs that signing is disabled. It does not yet include storage,
-key provisioning, display review, button approval, or signing components.
+ESP32-S3 USB signer. It currently boots, uses native USB Serial/JTAG as the
+primary ESP-IDF console, reads newline-terminated `nseal1f:` frames from that
+console, answers the shared `get_capabilities` request, and logs that signing
+is disabled. It does not yet include storage, key provisioning, display review,
+button approval, or signing components.

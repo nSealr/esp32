@@ -23,6 +23,8 @@ board into a separate repository.
   framing draft.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
+- Primary ESP-IDF console configured on native USB Serial/JTAG so the scaffold
+  can receive hardware smoke-test requests over the attached USB-C cable.
 - Portable SHA-256 checksum helper for frame corruption detection.
 - Approval gate state machine requiring request-id-matched approval before a
   request can be signed.

@@ -44,8 +44,10 @@ def load_capability_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
 
 def extract_first_protocol_frame(text: str) -> str | None:
     for line in text.splitlines(keepends=True):
+        if not line.endswith("\n"):
+            continue
         if line.startswith(PREFIX):
-            return line if line.endswith("\n") else f"{line}\n"
+            return line.removesuffix("\r\n") + "\n" if line.endswith("\r\n") else line
     return None
 
 

@@ -22,6 +22,14 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y", sdkconfig_defaults)
         self.assertNotIn("CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y", sdkconfig_defaults)
 
+    def test_esp32_s3_usb_signer_console_uses_native_usb_serial_jtag(self) -> None:
+        sdkconfig_defaults = (ROOT / "firmware/esp32_s3_usb_signer/sdkconfig.defaults").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y", sdkconfig_defaults)
+        self.assertNotIn("CONFIG_ESP_CONSOLE_UART_DEFAULT=y", sdkconfig_defaults)
+
     def test_makefile_exposes_repeatable_idf_hardware_targets(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 
@@ -112,6 +120,15 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertEqual(
             smoke_capabilities.extract_first_protocol_frame(f"I boot: log line\n{frame}ignored"),
             frame,
+        )
+
+    def test_smoke_script_waits_for_newline_terminated_protocol_frame(self) -> None:
+        self.assertIsNone(smoke_capabilities.extract_first_protocol_frame("nseal1f:response:partial"))
+
+    def test_smoke_script_normalizes_serial_crlf_frames(self) -> None:
+        self.assertEqual(
+            smoke_capabilities.extract_first_protocol_frame("nseal1f:response:payload:checksum\r\n"),
+            "nseal1f:response:payload:checksum\n",
         )
 
 
