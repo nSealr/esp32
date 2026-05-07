@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -13,4 +14,3 @@ jobs:
         with:
           python-version: "3.12"
       - run: make ci
-
