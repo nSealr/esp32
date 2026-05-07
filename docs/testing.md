@@ -20,6 +20,9 @@ tests with strict C++ warnings.
   is still guarded by `NostrSeal/lab` integration checks.
 - Approval gate tests requiring request-id and shared review-screen
   approval-digest matched approval before signing is permitted.
+- Review button state-machine tests requiring traversal to the final review page
+  before approval, allowing early rejection, and rejecting additional input after
+  a terminal decision.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

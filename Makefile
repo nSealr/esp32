@@ -16,6 +16,7 @@ host-core-test: generate-host-vectors
 		-Ibuild/host_core \
 		firmware/host_core/src/approval_gate.cpp \
 		firmware/host_core/src/device_protocol.cpp \
+		firmware/host_core/src/review_controls.cpp \
 		firmware/host_core/src/serial_frame.cpp \
 		firmware/host_core/src/sha256.cpp \
 		firmware/host_core/tests/test_host_core.cpp \

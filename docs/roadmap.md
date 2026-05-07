@@ -16,10 +16,13 @@
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
 - Shared-spec review-screen approval digest binding in the host approval gate.
+- Host-buildable review button state machine for page traversal before
+  approval and terminal approve/reject decisions.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
-hardware smoke-test foundation.
+hardware smoke-test foundation. The review button state machine is implemented
+in host-core only; real display and GPIO drivers remain pending.
 
 ## M7: Firmware Foundation
 

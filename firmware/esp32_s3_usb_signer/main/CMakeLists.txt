@@ -3,6 +3,7 @@ idf_component_register(
         "main.cpp"
         "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
+        "../../host_core/src/review_controls.cpp"
         "../../host_core/src/serial_frame.cpp"
         "../../host_core/src/sha256.cpp"
     INCLUDE_DIRS

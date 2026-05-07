@@ -12,12 +12,17 @@ installed outside this repository at:
 /Users/vincenzo/esp/esp-idf-v5.5.4
 ```
 
-The install used Homebrew Python `3.12.12` and created the ESP-IDF Python
-environment:
+The current verified export uses the system Python `3.9.6` and created the
+ESP-IDF Python environment:
 
 ```text
-/Users/vincenzo/.espressif/python_env/idf5.5_py3.12_env
+/Users/vincenzo/.espressif/python_env/idf5.5_py3.9_env
 ```
+
+A previous local export used a Python 3.12 ESP-IDF environment. If an existing
+`firmware/esp32_s3_usb_signer/build` directory was configured with a different
+ESP-IDF Python environment, run `idf.py fullclean` inside the ESP-IDF project
+before rebuilding.
 
 The attached ESP32-S3 board is visible:
 
@@ -27,20 +32,17 @@ The attached ESP32-S3 board is visible:
 - USB serial number: `EC:DA:3B:95:32:98`
 - native USB JTAG/serial: detected
 
-The current shell must use Python 3.12 when exporting ESP-IDF. On this machine,
-the default `/usr/bin/python3` is Python 3.9, so put Homebrew Python 3.12 first
-for ESP-IDF commands:
+Export ESP-IDF before build, flash, monitor, or hardware smoke commands:
 
 ```sh
-export PATH=/opt/homebrew/opt/python@3.12/libexec/bin:/opt/homebrew/bin:$PATH
 . /Users/vincenzo/esp/esp-idf-v5.5.4/export.sh
 ```
 
-If the shell still resolves `python3` to Python 3.9, point ESP-IDF directly at
-the existing Python 3.12 environment:
+If a specific ESP-IDF Python environment must be reused, point ESP-IDF at that
+environment before exporting:
 
 ```sh
-export IDF_PYTHON_ENV_PATH=/Users/vincenzo/.espressif/python_env/idf5.5_py3.12_env
+export IDF_PYTHON_ENV_PATH=/Users/vincenzo/.espressif/python_env/idf5.5_py3.9_env
 . /Users/vincenzo/esp/esp-idf-v5.5.4/export.sh
 ```
 
@@ -55,7 +57,7 @@ make detect-board
 This command is intentionally separate from `make ci` because CI and most
 developer machines will not have a physical board attached.
 
-After exporting ESP-IDF with Python 3.12, detection reported
+After exporting ESP-IDF with Python 3.9, detection reported
 `ready_for_idf_build: true` and `ready_for_flash: true`.
 
 ## Verified Build Command
@@ -71,7 +73,7 @@ Build result:
 ```text
 ESP-IDF v5.5.4
 nostrseal_esp32_s3_usb_signer.bin size: 0x74ab0 bytes after adding the
-host-core approval gate to the ESP-IDF component
+host-core approval gate and review controls to the ESP-IDF component
 smallest app partition: 0x100000 bytes
 free app partition space: 0x8b550 bytes, about 54%
 ```
