@@ -17,8 +17,8 @@ tests with strict C++ warnings.
 - QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
   unpadded base64url rejection, and non-JSON payload rejection.
 - QR `sign_event` request metadata tests covering version, `request_id`,
-  method, and `params` presence without parsing event templates or enabling
-  signing.
+  method, `params` presence, and the raw `params.event_template` object
+  boundary without parsing event-template fields or enabling signing.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

@@ -15,6 +15,8 @@ struct QrSigningRequest {
     std::string request_id;
     std::string method;
     bool has_params;
+    bool has_event_template;
+    std::string event_template_json;
 };
 
 class QrEnvelopeError final : public std::runtime_error {

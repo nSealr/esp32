@@ -71,6 +71,17 @@ void test_qr_envelope_parses_sign_event_request_metadata() {
     assert(request.has_params);
 }
 
+void test_qr_envelope_extracts_event_template_boundary() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(envelope);
+
+    assert(request.has_event_template);
+    assert(request.event_template_json.find("\"kind\":1") != std::string::npos);
+    assert(request.event_template_json.find("\"content\":\"NostrSeal fixture: basic kind 1 event.\"") !=
+           std::string::npos);
+}
+
 void test_qr_envelope_rejections() {
     expect_throw("QR envelope must start with nseal1:", [] {
         (void)nostrseal::decode_qr_envelope("nostr:abc");
@@ -101,6 +112,14 @@ void test_qr_signing_request_rejections() {
     });
     expect_throw("QR signing request params object is required", [] {
         (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event"})"});
+    });
+    expect_throw("QR signing request event_template object is required", [] {
+        (void)nostrseal::parse_qr_signing_request(
+            nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{}})"});
+    });
+    expect_throw("QR signing request event_template object is required", [] {
+        (void)nostrseal::parse_qr_signing_request(
+            nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":[]}})"});
     });
 }
 
@@ -326,6 +345,7 @@ int main() {
     test_serial_frame_rejections();
     test_qr_envelope_decodes_shared_vector();
     test_qr_envelope_parses_sign_event_request_metadata();
+    test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_rejections();
     test_qr_signing_request_rejections();
     test_approval_gate_requires_matching_approval();

@@ -300,7 +300,12 @@ QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
     if (params == values.end() || params->second.kind != JsonValueKind::Object) {
         throw QrEnvelopeError("QR signing request params object is required");
     }
-    return QrSigningRequest{1, request_id->second.value, method->second.value, true};
+    const auto params_values = parse_top_level_object(params->second.value);
+    const auto event_template = params_values.find("event_template");
+    if (event_template == params_values.end() || event_template->second.kind != JsonValueKind::Object) {
+        throw QrEnvelopeError("QR signing request event_template object is required");
+    }
+    return QrSigningRequest{1, request_id->second.value, method->second.value, true, true, event_template->second.value};
 }
 
 }  // namespace nostrseal
