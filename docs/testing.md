@@ -29,6 +29,8 @@ tests with strict C++ warnings.
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review
   without a signing backend and unsafe QR requests are rejected before display.
+- QR review transcript tests covering full approval traversal and early
+  rejection as deterministic frame/button/decision records.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

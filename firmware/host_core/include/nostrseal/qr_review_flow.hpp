@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "nostrseal/qr_review.hpp"
 #include "nostrseal/review_controls.hpp"
@@ -26,5 +27,17 @@ private:
     TrustedReviewRequest review_request_;
     TrustedReviewSession session_;
 };
+
+struct QrReviewTranscriptStep {
+    ReviewDisplayFrame frame;
+    ReviewButton button;
+    std::optional<bool> decision;
+    bool approved_for_signing;
+};
+
+std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
+    const std::string& qr_envelope,
+    const std::vector<ReviewButton>& buttons,
+    ReviewDisplayLimits limits = {});
 
 }  // namespace nostrseal

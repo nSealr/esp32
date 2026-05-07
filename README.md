@@ -45,6 +45,9 @@ board into a separate repository.
 - `QrReviewFlow` host-core boundary from raw scanned `nseal1:` QR envelope to
   trusted review frames and physical approval state. It rejects unsafe QR
   requests before a future camera/display adapter can display them.
+- Deterministic QR review transcripts for display/button adapter tests. A
+  transcript records each displayed frame, input button, decision, and approval
+  state without exposing any signing output.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

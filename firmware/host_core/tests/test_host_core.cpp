@@ -304,6 +304,40 @@ void test_qr_review_flow_rejects_unsafe_scanned_qr() {
     });
 }
 
+void test_qr_review_flow_transcript_records_display_and_approval_steps() {
+    const std::vector<nostrseal::QrReviewTranscriptStep> transcript = nostrseal::run_qr_review_transcript(
+        nostrseal::test_vectors::kQrEnvelopeKind1Basic,
+        {
+            nostrseal::ReviewButton::Next,
+            nostrseal::ReviewButton::Next,
+            nostrseal::ReviewButton::Next,
+            nostrseal::ReviewButton::Approve,
+        });
+
+    assert(transcript.size() == 4U);
+    assert(transcript[0].frame.title == "Event");
+    assert(!transcript[0].decision.has_value());
+    assert(!transcript[0].approved_for_signing);
+    assert(transcript[3].frame.title == "Decision");
+    assert(transcript[3].decision.has_value());
+    assert(transcript[3].decision.value());
+    assert(transcript[3].approved_for_signing);
+}
+
+void test_qr_review_flow_transcript_records_early_rejection() {
+    const std::vector<nostrseal::QrReviewTranscriptStep> transcript = nostrseal::run_qr_review_transcript(
+        nostrseal::test_vectors::kQrEnvelopeKind1Basic,
+        {
+            nostrseal::ReviewButton::Reject,
+        });
+
+    assert(transcript.size() == 1U);
+    assert(transcript[0].frame.title == "Event");
+    assert(transcript[0].decision.has_value());
+    assert(!transcript[0].decision.value());
+    assert(!transcript[0].approved_for_signing);
+}
+
 void test_approval_gate_requires_matching_approval() {
     nostrseal::ApprovalGate gate;
     gate.begin_review("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
@@ -538,6 +572,8 @@ int main() {
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
     test_qr_review_flow_rejects_unsafe_scanned_qr();
+    test_qr_review_flow_transcript_records_display_and_approval_steps();
+    test_qr_review_flow_transcript_records_early_rejection();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

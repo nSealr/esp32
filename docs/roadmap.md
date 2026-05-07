@@ -38,6 +38,8 @@
 - QR-derived trusted-review session creation from parsed request data.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
   review frames and approval state, without signing.
+- Deterministic QR review transcript helper for future display/button adapter
+  acceptance tests.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -49,7 +51,8 @@ minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
 that same session boundary through a raw-QR review flow. Real camera, display,
-and GPIO drivers remain pending.
+and GPIO drivers remain pending. QR review transcripts provide a deterministic
+host-side oracle for those adapters.
 
 ## M7: Firmware Foundation
 

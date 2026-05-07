@@ -116,6 +116,11 @@ rendering, and button handling. Rejected QR requests fail before any review
 frame is shown. Approval only reaches the host-core approval state; there is no
 signature-producing function in this flow.
 
+The QR review transcript helper records the frame shown before each physical
+button input, the optional terminal decision, and whether the approval gate has
+been satisfied. This gives display/GPIO adapters a deterministic host-side
+oracle for review-loop tests without introducing a signing backend.
+
 The trusted-review session intentionally stops before hardware drivers, key
 storage, or Schnorr signing. It proves the local review loop can only reach
 `can_sign` after the user has traversed the displayed pages and approved the

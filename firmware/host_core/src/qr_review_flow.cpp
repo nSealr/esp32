@@ -42,4 +42,24 @@ std::optional<bool> QrReviewFlow::handle_button(ReviewButton button) {
     return session_.handle_button(button);
 }
 
+std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
+    const std::string& qr_envelope,
+    const std::vector<ReviewButton>& buttons,
+    ReviewDisplayLimits limits) {
+    QrReviewFlow flow{qr_envelope, limits};
+    std::vector<QrReviewTranscriptStep> transcript;
+    transcript.reserve(buttons.size());
+    for (const ReviewButton button : buttons) {
+        ReviewDisplayFrame frame = flow.current_frame();
+        std::optional<bool> decision = flow.handle_button(button);
+        transcript.push_back(QrReviewTranscriptStep{
+            std::move(frame),
+            button,
+            decision,
+            flow.approved_for_signing(),
+        });
+    }
+    return transcript;
+}
+
 }  // namespace nostrseal
