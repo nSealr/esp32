@@ -54,6 +54,9 @@ def validate_firmware_project(project: Path) -> None:
 
 def validate_board_profile(path: Path) -> None:
     profile = json.loads(path.read_text(encoding="utf-8"))
+    for field in ("name", "status"):
+        if not profile.get(field):
+            raise ValueError(f"{path}: missing {field}")
     if profile.get("target") != "esp32s3":
         raise ValueError(f"{path}: target must be esp32s3")
     if profile.get("native_usb") is not True:
@@ -61,13 +64,49 @@ def validate_board_profile(path: Path) -> None:
     for field in ("display", "approval_inputs", "debug_policy"):
         if field not in profile:
             raise ValueError(f"{path}: missing {field}")
-    if len(profile["approval_inputs"]) < 2:
+    display = profile["display"]
+    if not isinstance(display, dict):
+        raise ValueError(f"{path}: display must be an object")
+    if display.get("required_for_signing") is not True:
+        raise ValueError(f"{path}: display.required_for_signing must be true")
+    touch = display.get("touch")
+    if isinstance(touch, dict) and touch.get("approval_allowed") is not False:
+        raise ValueError(f"{path}: touch approval must be explicitly disallowed")
+
+    approval_inputs = profile["approval_inputs"]
+    if not isinstance(approval_inputs, list):
+        raise ValueError(f"{path}: approval_inputs must be a list")
+    approval_names = {entry.get("name") for entry in approval_inputs if isinstance(entry, dict)}
+    if {"approve", "reject"} - approval_names:
         raise ValueError(f"{path}: approval_inputs must include separate approve and reject controls")
+
+    camera = profile.get("camera")
+    if camera is not None:
+        if not isinstance(camera, dict):
+            raise ValueError(f"{path}: camera must be an object")
+        for field in ("module", "connection"):
+            if not camera.get(field):
+                raise ValueError(f"{path}: camera missing {field}")
+        if camera.get("required_for_qr") is not True:
+            raise ValueError(f"{path}: camera.required_for_qr must be true for camera profiles")
+        if "Wireless must be disabled" not in profile.get("wireless_policy", ""):
+            raise ValueError(f"{path}: camera QR profiles must document disabled wireless policy")
+
+    if not isinstance(profile["debug_policy"], str) or not profile["debug_policy"].strip():
+        raise ValueError(f"{path}: debug_policy must be a non-empty string")
+
+
+def validate_board_profiles(board_dir: Path) -> None:
+    profiles = sorted(board_dir.glob("*.json"))
+    if not profiles:
+        raise ValueError(f"{board_dir}: missing board profiles")
+    for profile in profiles:
+        validate_board_profile(profile)
 
 
 def main() -> int:
     validate_firmware_project(ROOT / "firmware/esp32_s3_usb_signer")
-    validate_board_profile(ROOT / "boards/esp32_s3_devkitc_1.json")
+    validate_board_profiles(ROOT / "boards")
     print("NostrSeal ESP32 firmware validation passed")
     return 0
 

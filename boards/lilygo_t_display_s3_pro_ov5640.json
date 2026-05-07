@@ -1,0 +1,55 @@
+{
+  "name": "LILYGO T-Display S3 Pro With OV5640 Camera",
+  "target": "esp32s3",
+  "native_usb": true,
+  "status": "primary_qr_vault_candidate",
+  "variant": "with_ov5640_camera",
+  "source": "https://lilygo.cc/products/t-display-s3-pro",
+  "firmware_targets": [
+    "esp32_s3_qr_vault"
+  ],
+  "display": {
+    "required_for_signing": true,
+    "driver": "ST7796U",
+    "connection": "SPI",
+    "resolution": {
+      "short_edge": 222,
+      "long_edge": 480
+    },
+    "touch": {
+      "driver": "CST226SE",
+      "connection": "I2C",
+      "approval_allowed": false,
+      "notes": "Touch may be used for navigation experiments, not final approve/reject signing consent."
+    },
+    "notes": "The larger integrated display is the reason this board is preferred over smaller camera-first boards for local Nostr event review."
+  },
+  "camera": {
+    "module": "OV5640",
+    "required_for_qr": true,
+    "connection": "POGO camera expansion",
+    "pinout_status": "confirm against exact board revision before driver work"
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to an onboard or external physical control after board revision validation; do not accept touch-only approval."
+    },
+    {
+      "name": "reject",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a different onboard or external physical control after board revision validation."
+    }
+  ],
+  "expansion": {
+    "i2c": [
+      "QWIIC"
+    ],
+    "battery_power": true,
+    "case": "integrated ABS case"
+  },
+  "wireless_policy": "Wireless must be disabled or excluded in high-assurance QR vault builds; no Wi-Fi or BLE path may participate in signing approval.",
+  "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
+  "production_signing": "disabled until camera, display, physical controls, storage, provisioning, and signing tests pass"
+}

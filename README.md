@@ -34,6 +34,10 @@ board into a separate repository.
   that model the future display/button approval loop without enabling signing.
 - Generated host test fixtures from shared serial and review-screen vectors in
   `NostrSeal/specs`.
+- Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
+  primary ESP32-S3 QR vault candidate. The profile documents display, camera,
+  touch, physical-approval, wireless-disabled, and debug-lock constraints; it
+  does not add real camera/display/GPIO drivers.
 
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for

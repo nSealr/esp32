@@ -1,9 +1,11 @@
+import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from scripts import detect_esp32_s3
 from scripts import smoke_capabilities
+from scripts import validate_firmware
 from scripts.validate_firmware import validate_firmware_project
 
 
@@ -51,6 +53,52 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("sha256.cpp", cmake)
         self.assertIn("handle_serial_frame", main)
         self.assertIn("Signing is disabled", main)
+
+    def test_lilygo_t_display_s3_pro_ov5640_board_profile_documents_qr_constraints(self) -> None:
+        profile_path = ROOT / "boards/lilygo_t_display_s3_pro_ov5640.json"
+
+        self.assertTrue(profile_path.exists(), "missing T-Display S3 Pro OV5640 board profile")
+        validate_firmware.validate_board_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        self.assertEqual(profile["target"], "esp32s3")
+        self.assertEqual(profile["status"], "primary_qr_vault_candidate")
+        self.assertEqual(profile["camera"]["module"], "OV5640")
+        self.assertTrue(profile["camera"]["required_for_qr"])
+        self.assertEqual(profile["display"]["driver"], "ST7796U")
+        self.assertFalse(profile["display"]["touch"]["approval_allowed"])
+        self.assertIn("Wireless must be disabled", profile["wireless_policy"])
+        self.assertEqual(
+            {approval_input["name"] for approval_input in profile["approval_inputs"]},
+            {"approve", "reject"},
+        )
+
+    def test_board_profile_validator_discovers_every_profile(self) -> None:
+        validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
+
+        self.assertTrue(callable(validate_board_profiles), "validate_board_profiles must exist")
+        with TemporaryDirectory() as tmp:
+            board_dir = Path(tmp)
+            (board_dir / "valid.json").write_text(
+                (ROOT / "boards/esp32_s3_devkitc_1.json").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            (board_dir / "bad.json").write_text(
+                json.dumps(
+                    {
+                        "name": "Bad board",
+                        "target": "esp32s3",
+                        "native_usb": True,
+                        "display": {"required_for_signing": True},
+                        "approval_inputs": [{"name": "approve"}, {"name": "reject"}],
+                        "debug_policy": "debug only",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "bad.json"):
+                validate_board_profiles(board_dir)
 
 
 class Esp32S3DetectionTests(unittest.TestCase):

@@ -8,6 +8,8 @@
 - Host test binary with strict warnings.
 - ESP-IDF project scaffold.
 - ESP32-S3 DevKitC-1 board profile.
+- LILYGO T-Display S3 Pro OV5640 board profile for the future ESP32-S3 QR
+  vault target.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, and boot-log smoke test.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
@@ -52,7 +54,9 @@ and GPIO drivers remain pending.
 
 ## M8.5: ESP32-S3 QR Vault Target
 
-- Camera/display board selection.
+- Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
+  camera is the primary board-profile candidate; T-Camera Plus S3 remains
+  secondary evaluation hardware in `NostrSeal/lab`.
 - QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
