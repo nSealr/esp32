@@ -32,6 +32,7 @@
   approval and terminal approve/reject decisions.
 - Host-buildable trusted display frame renderer with bounded title, body-line,
   page-indicator, and action-hint fields.
+- Host-buildable body-line wrapping/truncation for trusted display frames.
 - Host-buildable trusted review session combining display frames, button
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
@@ -51,8 +52,9 @@ renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
-that same session boundary through a raw-QR review flow. Real camera, display,
-and GPIO drivers remain pending. QR review transcripts provide a deterministic
+that same session boundary through a raw-QR review flow. Display frames now
+wrap and truncate body text to configured limits. Real camera, display, and
+GPIO drivers remain pending. QR review transcripts provide a deterministic
 host-side oracle for those adapters and are now checked against shared
 `NostrSeal/specs` vectors.
 

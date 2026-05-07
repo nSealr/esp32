@@ -43,7 +43,8 @@ tests with strict C++ warnings.
   before approval, allowing early rejection, and rejecting additional input after
   a terminal decision.
 - Review display-frame tests requiring deterministic title, page indicator,
-  body lines, action hints, and rejection of unsafe display bounds.
+  body lines, action hints, body-line wrapping/truncation, and rejection of
+  unsafe display bounds.
 - Trusted review-session tests requiring display navigation, final-page
   approval, request/digest-bound `can_sign`, and rejection as a terminal
   non-signing decision. These tests consume generated trusted review requests

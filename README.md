@@ -61,6 +61,9 @@ board into a separate repository.
   approval before a request can be signed.
 - Host-buildable review controls, display frames, and trusted review session
   that model the future display/button approval loop without enabling signing.
+- Trusted display frames wrap and truncate long body text to configured display
+  limits, giving small ESP32 screens a deterministic pre-driver rendering
+  oracle.
 - Generated host test fixtures from shared serial and review-screen vectors in
   `NostrSeal/specs`.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the

@@ -58,8 +58,8 @@ The first firmware foundation is host-buildable C++ under
   rejection as terminal.
 - `review_display`: renderer-neutral trusted display frame builder for future
   ESP32-S3 display drivers. It turns a review page into bounded title, page
-  indicator, body lines, and action hint fields, and rejects pages that exceed
-  configured display limits.
+  indicator, body lines, and action hint fields. Body lines are wrapped and
+  truncated to configured limits before any graphical display driver exists.
 - `trusted_review`: host-buildable review session boundary that combines owned
   review pages, `review_display` frames, `review_controls` button navigation,
   and `approval_gate` request/digest binding. It is the first firmware-core
@@ -88,9 +88,11 @@ The review-control state machine is intentionally separate from
 real signing backend can be connected.
 
 The review-display renderer is also intentionally hardware-neutral. It does not
-drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded frame
-that a later ESP-IDF display adapter can paint without changing review,
-approval, or signing semantics.
+drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded
+frame, wraps/truncates body text to the configured limits, and keeps unsafe
+title or limit settings out of the driver boundary. A later ESP-IDF display
+adapter can paint that frame without changing review, approval, or signing
+semantics.
 
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does
