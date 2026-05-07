@@ -36,6 +36,8 @@ def validate_firmware_project(project: Path) -> None:
     sdkconfig = (project / "sdkconfig.defaults").read_text(encoding="utf-8")
     if "CONFIG_IDF_TARGET=\"esp32s3\"" not in sdkconfig:
         raise ValueError(f"{project}: sdkconfig.defaults must target esp32s3")
+    if "CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y" not in sdkconfig:
+        raise ValueError(f"{project}: sdkconfig.defaults must match the observed 16MB ESP32-S3 flash")
 
     main = (project / "main/main.cpp").read_text(encoding="utf-8")
     if "app_main" not in main:

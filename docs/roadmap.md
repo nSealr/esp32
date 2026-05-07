@@ -9,16 +9,18 @@
 - ESP-IDF project scaffold.
 - ESP32-S3 DevKitC-1 board profile.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
+- Local ESP-IDF `v5.5.4` build, flash, and boot-log smoke test.
 
-Status: implemented as the first firmware-core, ESP-IDF scaffold, and hardware
-detection foundation.
+Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
+detection, and local hardware smoke-test foundation.
 
 ## M7: Firmware Foundation
 
 - Board profiles.
 - Protocol parser.
 - Display/button abstraction.
-- Build smoke test.
+- Repeatable ESP-IDF build and flash command wrappers.
+- Add display/button acceptance tests before enabling any real signing path.
 
 ## M8: ESP32-S3 USB Signer MVP
 

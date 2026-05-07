@@ -13,6 +13,22 @@ class FirmwareProjectValidationTests(unittest.TestCase):
     def test_esp32_s3_usb_signer_project_is_valid(self) -> None:
         validate_firmware_project(ROOT / "firmware/esp32_s3_usb_signer")
 
+    def test_esp32_s3_usb_signer_defaults_match_observed_flash_size(self) -> None:
+        sdkconfig_defaults = (ROOT / "firmware/esp32_s3_usb_signer/sdkconfig.defaults").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y", sdkconfig_defaults)
+        self.assertNotIn("CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y", sdkconfig_defaults)
+
+    def test_makefile_exposes_repeatable_idf_hardware_targets(self) -> None:
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+
+        self.assertIn("idf-build:", makefile)
+        self.assertIn("idf-flash:", makefile)
+        self.assertIn("idf-monitor:", makefile)
+        self.assertIn("idf-env-check:", makefile)
+
 
 class Esp32S3DetectionTests(unittest.TestCase):
     def test_serial_port_detection_prefers_cu_usbmodem_devices(self) -> None:

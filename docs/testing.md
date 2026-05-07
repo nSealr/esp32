@@ -21,11 +21,13 @@ tests with strict C++ warnings.
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
   report parsing, and missing-toolchain reporting.
+- Manual ESP-IDF `v5.5.4` build, flash, and boot-log smoke test on the attached
+  ESP32-S3 board.
 
 ## Required Tests
 
-- ESP-IDF build smoke tests.
-- Flash smoke tests with recorded device port and board identity.
+- Automated ESP-IDF build smoke tests in CI or a hardware-capable runner.
+- Repeatable flash smoke tests with recorded device port and board identity.
 - Transport frame rejection tests.
 - Companion integration tests for signed responses.
 - Hardware validation reports for every physical board.

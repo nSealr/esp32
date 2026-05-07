@@ -1,7 +1,10 @@
-.PHONY: setup test lint audit docs ci host-core-test detect-board
+IDF_PROJECT := firmware/esp32_s3_usb_signer
+IDF_PORT ?= /dev/cu.usbmodem1101
+
+.PHONY: setup test lint audit docs ci host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor
 
 setup:
-	@echo "No setup required until the ESP-IDF project is introduced."
+	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
 
 host-core-test:
 	mkdir -p build/host_core
@@ -18,6 +21,18 @@ host-core-test:
 
 detect-board:
 	python3 scripts/detect_esp32_s3.py --json
+
+idf-env-check:
+	@command -v idf.py >/dev/null || (echo "ERROR: idf.py not found. Export ESP-IDF before running this target." && exit 1)
+
+idf-build: idf-env-check
+	cd $(IDF_PROJECT) && idf.py build
+
+idf-flash: idf-env-check
+	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) flash
+
+idf-monitor: idf-env-check
+	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) monitor
 
 test:
 	python3 scripts/verify_repo.py
