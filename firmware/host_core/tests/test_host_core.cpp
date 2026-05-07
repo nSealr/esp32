@@ -9,6 +9,7 @@
 #include "nostrseal/review_controls.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "nostrseal/trusted_review.hpp"
 #include "transport_vector.hpp"
 
 namespace {
@@ -182,6 +183,85 @@ void test_review_display_rejects_unsafe_frame_bounds() {
     });
 }
 
+void test_trusted_review_session_binds_display_navigation_and_approval() {
+    nostrseal::TrustedReviewSession session{
+        nostrseal::TrustedReviewRequest{
+            "req-kind-1-basic",
+            nostrseal::test_vectors::kBasicReviewScreenApprovalDigest,
+            {
+                nostrseal::TrustedReviewPage{
+                    "Event",
+                    {"Kind 1", "Short Text Note", "Created 1710000000"},
+                    nostrseal::ReviewPageAction::Next,
+                },
+                nostrseal::TrustedReviewPage{
+                    "Content",
+                    {"NostrSeal fixture: basic kind 1 event."},
+                    nostrseal::ReviewPageAction::Next,
+                },
+                nostrseal::TrustedReviewPage{
+                    "Tags",
+                    {"No tags"},
+                    nostrseal::ReviewPageAction::Next,
+                },
+                nostrseal::TrustedReviewPage{
+                    "Decision",
+                    {"Approve signing only if all pages match."},
+                    nostrseal::ReviewPageAction::ApproveOrReject,
+                },
+            },
+        },
+    };
+
+    const nostrseal::ReviewDisplayFrame first_frame = session.current_frame();
+    assert(first_frame.title == "Event");
+    assert(first_frame.page_indicator == "Page 1/4");
+    assert(first_frame.action_hint == "Next");
+    assert(!session.can_sign());
+
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)session.handle_button(nostrseal::ReviewButton::Approve);
+    });
+
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+
+    const nostrseal::ReviewDisplayFrame decision_frame = session.current_frame();
+    assert(decision_frame.title == "Decision");
+    assert(decision_frame.page_indicator == "Page 4/4");
+    assert(decision_frame.action_hint == "Approve / Reject");
+    assert(!session.can_sign());
+
+    const auto approval = session.handle_button(nostrseal::ReviewButton::Approve);
+    assert(approval.has_value());
+    assert(approval.value());
+    assert(session.can_sign());
+}
+
+void test_trusted_review_session_keeps_rejection_terminal() {
+    nostrseal::TrustedReviewSession session{
+        nostrseal::TrustedReviewRequest{
+            "req-kind-1-tags",
+            nostrseal::test_vectors::kTaggedReviewScreenApprovalDigest,
+            {
+                nostrseal::TrustedReviewPage{
+                    "Warnings",
+                    {"Event includes pubkey mentions."},
+                    nostrseal::ReviewPageAction::ApproveOrReject,
+                },
+            },
+        },
+    };
+
+    const auto rejection = session.handle_button(nostrseal::ReviewButton::Reject);
+
+    assert(rejection.has_value());
+    assert(!rejection.value());
+    assert(!session.can_sign());
+    assert(session.decision() == nostrseal::ApprovalDecision::Rejected);
+}
+
 void test_device_protocol_reports_scaffold_capabilities() {
     const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kCapabilityRequestFrame);
 
@@ -221,6 +301,8 @@ int main() {
     test_review_display_renders_navigation_frame();
     test_review_display_renders_decision_frame();
     test_review_display_rejects_unsafe_frame_bounds();
+    test_trusted_review_session_binds_display_navigation_and_approval();
+    test_trusted_review_session_keeps_rejection_terminal();
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
     test_device_protocol_reports_development_public_key();

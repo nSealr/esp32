@@ -44,6 +44,11 @@ The first firmware foundation is host-buildable C++ under
   ESP32-S3 display drivers. It turns a review page into bounded title, page
   indicator, body lines, and action hint fields, and rejects pages that exceed
   configured display limits.
+- `trusted_review`: host-buildable review session boundary that combines owned
+  review pages, `review_display` frames, `review_controls` button navigation,
+  and `approval_gate` request/digest binding. It is the first firmware-core
+  object a future display/button adapter can drive without touching signing
+  code.
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
   development public-key, and disabled-signing responses. It does not sign
   events.
@@ -69,6 +74,11 @@ The review-display renderer is also intentionally hardware-neutral. It does not
 drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded frame
 that a later ESP-IDF display adapter can paint without changing review,
 approval, or signing semantics.
+
+The trusted-review session intentionally stops before JSON parsing, hardware
+drivers, key storage, or Schnorr signing. It proves the local review loop can
+only reach `can_sign` after the user has traversed the displayed pages and
+approved the request bound to the displayed `approval_digest`.
 
 ## ESP-IDF Scaffold
 

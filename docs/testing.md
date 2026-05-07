@@ -25,6 +25,9 @@ tests with strict C++ warnings.
   a terminal decision.
 - Review display-frame tests requiring deterministic title, page indicator,
   body lines, action hints, and rejection of unsafe display bounds.
+- Trusted review-session tests requiring display navigation, final-page
+  approval, request/digest-bound `can_sign`, and rejection as a terminal
+  non-signing decision.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

@@ -30,6 +30,8 @@ board into a separate repository.
 - Portable SHA-256 checksum helper for frame corruption detection.
 - Approval gate state machine requiring request-id and approval-digest matched
   approval before a request can be signed.
+- Host-buildable review controls, display frames, and trusted review session
+  that model the future display/button approval loop without enabling signing.
 
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for

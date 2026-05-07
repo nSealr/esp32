@@ -20,12 +20,16 @@
   approval and terminal approve/reject decisions.
 - Host-buildable trusted display frame renderer with bounded title, body-line,
   page-indicator, and action-hint fields.
+- Host-buildable trusted review session combining display frames, button
+  navigation, terminal approve/reject decisions, and request/digest-bound
+  approval.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
 hardware smoke-test foundation. The review button state machine and display
-frame renderer are implemented in host-core only; real display and GPIO drivers
-remain pending.
+frame renderer are implemented in host-core only. The trusted review session now
+ties those pieces to approval-digest binding for future adapters; real display
+and GPIO drivers remain pending.
 
 ## M7: Firmware Foundation
 
