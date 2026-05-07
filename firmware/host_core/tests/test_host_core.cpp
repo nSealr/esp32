@@ -60,6 +60,17 @@ void test_qr_envelope_decodes_shared_vector() {
     assert(envelope.payload_json.find("\"method\":\"sign_event\"") != std::string::npos);
 }
 
+void test_qr_envelope_parses_sign_event_request_metadata() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(envelope);
+
+    assert(request.version == 1);
+    assert(request.request_id == "req-kind-1-basic");
+    assert(request.method == "sign_event");
+    assert(request.has_params);
+}
+
 void test_qr_envelope_rejections() {
     expect_throw("QR envelope must start with nseal1:", [] {
         (void)nostrseal::decode_qr_envelope("nostr:abc");
@@ -75,6 +86,21 @@ void test_qr_envelope_rejections() {
     });
     expect_throw("QR envelope payload is not valid JSON", [] {
         (void)nostrseal::decode_qr_envelope("nseal1:bm90LWpzb24");
+    });
+}
+
+void test_qr_signing_request_rejections() {
+    expect_throw("QR signing request version must be 1", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":2,"request_id":"req-kind-1-basic","method":"sign_event","params":{}})"});
+    });
+    expect_throw("QR signing request request_id is invalid", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"bad id","method":"sign_event","params":{}})"});
+    });
+    expect_throw("QR signing request method must be sign_event", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"req-kind-1-basic","method":"get_public_key"})"});
+    });
+    expect_throw("QR signing request params object is required", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event"})"});
     });
 }
 
@@ -299,7 +325,9 @@ int main() {
     test_serial_frame_round_trip();
     test_serial_frame_rejections();
     test_qr_envelope_decodes_shared_vector();
+    test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_rejections();
+    test_qr_signing_request_rejections();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

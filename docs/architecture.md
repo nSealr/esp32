@@ -35,7 +35,8 @@ The first firmware foundation is host-buildable C++ under
   type, base64url JSON payload, and checksum.
 - `qr_envelope`: decodes `nseal1:` QR envelopes, validates unpadded base64url
   payloads, and requires a decoded JSON container for the future ESP32-S3 QR
-  vault target.
+  vault target. It also classifies decoded `sign_event` requests by top-level
+  metadata only.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -81,9 +82,11 @@ approval, or signing semantics.
 
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does
-not perform camera capture, animated QR reconstruction, request JSON parsing,
-review generation, or signing. Those layers must be added behind separate tests
-and must continue to consume shared vectors from `NostrSeal/specs`.
+not perform camera capture, animated QR reconstruction, full event-template
+parsing, review generation, or signing. Its request parser only extracts
+version, `request_id`, method, and `params` presence before later review code
+does real request handling. Those layers must be added behind separate tests and
+must continue to consume shared vectors from `NostrSeal/specs`.
 
 The trusted-review session intentionally stops before JSON parsing, hardware
 drivers, key storage, or Schnorr signing. It proves the local review loop can

@@ -23,7 +23,11 @@ board into a separate repository.
   framing draft.
 - `nseal1:` QR envelope decode boundary compatible with the shared QR
   transport vector. It validates envelope framing only; camera capture,
-  animated QR reconstruction, request parsing, and signing remain future work.
+  animated QR reconstruction, full event parsing, and signing remain future
+  work.
+- QR `sign_event` request metadata parsing for decoded envelopes. It extracts
+  version, `request_id`, method, and `params` presence only; it does not parse
+  event templates or enable signing.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic
