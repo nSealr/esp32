@@ -5,7 +5,7 @@
 ## Targets
 
 - ESP32-S3 USB signer.
-- ESP32-S3 QR signer.
+- ESP32-S3 QR vault target.
 - Classic ESP32/TTGO compatibility signer.
 - Optional ESP32-S3 plus TROPIC01 variant.
 
@@ -19,6 +19,12 @@
 - Document secure boot, flash encryption, provisioning, and recovery.
 
 ESP-IDF is the default firmware framework for serious ESP32-S3 work.
+
+The ESP32-S3 QR vault target is part of this repository, not the Raspberry
+repository. It should reuse shared `NostrSeal/specs` contracts for the QR
+envelope, trusted-review model, review-screen vectors, `approval_digest`, and
+signing vectors while implementing camera/display/button handling with ESP32
+firmware components.
 
 ## Implemented Host Core
 

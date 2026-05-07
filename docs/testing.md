@@ -38,6 +38,8 @@ tests with strict C++ warnings.
 
 ## Required Tests
 
+- ESP32-S3 QR vault camera/display tests must consume the shared QR envelope,
+  review-screen, `approval_digest`, and signing vectors from `NostrSeal/specs`.
 - Automated ESP-IDF build smoke tests in CI or a hardware-capable runner.
 - Repeatable flash smoke tests with recorded device port and board identity.
 - Transport frame rejection tests.

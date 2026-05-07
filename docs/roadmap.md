@@ -39,6 +39,17 @@ hardware smoke-test foundation.
 - Approval loop.
 - Companion integration.
 
+## M8.5: ESP32-S3 QR Vault Target
+
+- Camera/display board selection.
+- QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
+- Trusted review pages using shared review-screen vectors and `approval_digest`.
+- Physical approve/reject loop.
+- Signed-event QR output verified by the companion.
+
+Status: future target in this repository. It must not be moved into
+`NostrSeal/raspberry`.
+
 ## M9: Security Hardening
 
 - Secure boot.

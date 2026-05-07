@@ -8,7 +8,7 @@ board into a separate repository.
 ## Planned Targets
 
 - ESP32-S3 USB/NIP-46 signer with display and buttons.
-- ESP32-S3 QR signer with camera/display research boards.
+- ESP32-S3 QR vault with camera/display research boards.
 - Classic ESP32/TTGO compatibility signer.
 - ESP32-S3 plus TROPIC01 embedded variant.
 - Custom ESP32-S3 product PCB firmware.
@@ -36,6 +36,11 @@ The current firmware is still a scaffold. It logs startup, answers
 `get_public_key`, returns an explicit `signing_disabled` protocol response for
 the shared `sign_event` fixture, and keeps real signing disabled until storage,
 trusted review, approval controls, and signing tests are implemented.
+
+The future ESP32-S3 QR vault target belongs in this repository as ESP32
+firmware. It must reuse the shared QR envelope, review model, review-screen
+vectors, `approval_digest`, and signing vectors from `NostrSeal/specs`; it
+should not depend on Raspberry implementation code.
 
 ## Initial Layout
 

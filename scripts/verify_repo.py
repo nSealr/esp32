@@ -25,7 +25,7 @@ COMMON_FILES = [
 REQUIRED_DIRS = {
     "specs": ["protocols", "schemas", "vectors", "examples", "docs", "scripts"],
     "companion": ["apps", "packages", "docs", "scripts"],
-    "vault": ["app", "os", "docs", "scripts"],
+    "raspberry": ["app", "os", "docs", "scripts"],
     "esp32": ["firmware", "boards", "docs", "scripts"],
     "smartcard": ["applet", "tools", "docs", "scripts"],
     "hardware": ["pcb", "bom", "enclosures", "docs", "scripts"],
