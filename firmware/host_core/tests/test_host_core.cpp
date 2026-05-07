@@ -465,6 +465,27 @@ void test_review_display_wraps_and_truncates_long_body_lines() {
     assert(frame.action_hint == "Next");
 }
 
+void test_review_display_matches_shared_long_content_frame_vector() {
+    const std::string long_preview = std::string(120, 'x') + "...";
+    const nostrseal::ReviewPage page{
+        "Content",
+        {long_preview},
+        nostrseal::ReviewPageAction::Next,
+    };
+
+    const nostrseal::ReviewDisplayFrame frame = nostrseal::render_review_page(
+        page,
+        1,
+        4,
+        nostrseal::test_vectors::long_content_display_limits_20x3());
+    const nostrseal::ReviewDisplayFrame expected = nostrseal::test_vectors::long_content_display_frame_20x3();
+
+    assert(frame.title == expected.title);
+    assert(frame.page_indicator == expected.page_indicator);
+    assert(frame.body_lines == expected.body_lines);
+    assert(frame.action_hint == expected.action_hint);
+}
+
 void test_review_display_rejects_unsafe_frame_bounds() {
     const nostrseal::ReviewPage page{
         "Event",
@@ -604,6 +625,7 @@ int main() {
     test_review_display_renders_navigation_frame();
     test_review_display_renders_decision_frame();
     test_review_display_wraps_and_truncates_long_body_lines();
+    test_review_display_matches_shared_long_content_frame_vector();
     test_review_display_rejects_unsafe_frame_bounds();
     test_trusted_review_session_binds_display_navigation_and_approval();
     test_trusted_review_session_keeps_rejection_terminal();

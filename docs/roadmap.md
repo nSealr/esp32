@@ -42,6 +42,8 @@
 - Deterministic QR review transcript helper for future display/button adapter
   acceptance tests, checked against shared `NostrSeal/specs` transcript
   vectors.
+- Shared review-display-frame vector consumption for bounded long-content
+  display rendering.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local

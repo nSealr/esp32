@@ -130,6 +130,32 @@ def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]
     return lines
 
 
+def review_display_limits_factory(name: str, limits: dict) -> list[str]:
+    return [
+        f"inline nostrseal::ReviewDisplayLimits {name}() {{",
+        "    return nostrseal::ReviewDisplayLimits{",
+        f"        .max_title_chars = {limits['max_title_chars']},",
+        f"        .max_body_lines = {limits['max_body_lines']},",
+        f"        .max_line_chars = {limits['max_line_chars']},",
+        "    };",
+        "}",
+    ]
+
+
+def review_display_frame_factory(name: str, frame: dict) -> list[str]:
+    body_lines = ", ".join(cpp_string(line) for line in frame["body_lines"])
+    return [
+        f"inline nostrseal::ReviewDisplayFrame {name}() {{",
+        "    return nostrseal::ReviewDisplayFrame{",
+        f"        {cpp_string(frame['title'])},",
+        f"        {cpp_string(frame['page_indicator'])},",
+        f"        {{{body_lines}}},",
+        f"        {cpp_string(frame['action_hint'])},",
+        "    };",
+        "}",
+    ]
+
+
 def main() -> int:
     specs = default_specs_dir()
     vector = json.loads(
@@ -156,6 +182,11 @@ def main() -> int:
     )
     basic_review_reject_transcript = json.loads(
         (specs / "vectors/review-transcripts/kind-1-basic-reject.json").read_text(encoding="utf-8")
+    )
+    long_content_display_frame = json.loads(
+        (specs / "vectors/review-display-frames/kind-1-long-content-page-1-20x3.json").read_text(
+            encoding="utf-8"
+        )
     )
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
@@ -195,6 +226,16 @@ def main() -> int:
                 f"constexpr const char* kPublicKeyResponseFrame = {cpp_string(serial_frame('response', public_key_response_payload))};",
                 f"constexpr const char* kBasicReviewScreenApprovalDigest = {cpp_string(basic_review_screen['screen_review']['approval_digest'])};",
                 f"constexpr const char* kTaggedReviewScreenApprovalDigest = {cpp_string(tagged_review_screen['screen_review']['approval_digest'])};",
+                "",
+                *review_display_limits_factory(
+                    "long_content_display_limits_20x3",
+                    long_content_display_frame["limits"],
+                ),
+                "",
+                *review_display_frame_factory(
+                    "long_content_display_frame_20x3",
+                    long_content_display_frame["frame"],
+                ),
                 "",
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",

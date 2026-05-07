@@ -1,0 +1,21 @@
+{
+  "name": "kind-1-long-content-page-1-20x3",
+  "format": "review-display-frame-v0",
+  "source_review_vector": "kind-1-long-events-many-tags",
+  "page_index": 1,
+  "limits": {
+    "max_title_chars": 12,
+    "max_body_lines": 3,
+    "max_line_chars": 20
+  },
+  "frame": {
+    "title": "Content",
+    "page_indicator": "Page 2/4",
+    "body_lines": [
+      "xxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxxxxx",
+      "xxxxxxxxxxxxxxxxx..."
+    ],
+    "action_hint": "Next"
+  }
+}

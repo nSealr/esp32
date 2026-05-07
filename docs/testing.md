@@ -33,7 +33,7 @@ tests with strict C++ warnings.
   rejection as deterministic frame/button/decision records from shared
   `NostrSeal/specs` review-transcript vectors.
 - Host test header generation from the shared `NostrSeal/specs` serial,
-  review-screen, and review-transcript vectors.
+  review-screen, review-display-frame, and review-transcript vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
   is still guarded by `NostrSeal/lab` integration checks.
