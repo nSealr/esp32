@@ -17,10 +17,13 @@ tests with strict C++ warnings.
 - Host test header generation from the shared `NostrSeal/specs` serial vector.
 - Approval gate tests requiring request-id-matched approval before signing is
   permitted.
+- ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
+  profile, and unsupported-claim rejection.
 
 ## Required Tests
 
 - ESP-IDF build smoke tests.
+- Flash smoke tests with recorded device port and board identity.
 - Transport frame rejection tests.
 - Companion integration tests for signed responses.
 - Hardware validation reports for every physical board.

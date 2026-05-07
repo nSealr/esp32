@@ -16,11 +16,16 @@ board into a separate repository.
 ## Current Capabilities
 
 - Host-buildable C++ firmware core foundation.
+- ESP-IDF scaffold for the ESP32-S3 USB signer target.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
 - Portable SHA-256 checksum helper for frame corruption detection.
 - Approval gate state machine requiring request-id-matched approval before a
   request can be signed.
+
+No firmware build or flash has been performed yet because local `idf.py`,
+`esptool`, and a usable ESP32-S3 serial port were not available during this
+implementation pass.
 
 ## Initial Layout
 
@@ -35,6 +40,8 @@ Run the repository verification loop with:
 ```sh
 make ci
 ```
+
+Build/flash prerequisites and commands are documented in `docs/flash.md`.
 
 ## License
 

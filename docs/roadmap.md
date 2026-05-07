@@ -6,12 +6,13 @@
 - Portable SHA-256 checksum helper.
 - Approval gate state machine.
 - Host test binary with strict warnings.
+- ESP-IDF project scaffold.
+- ESP32-S3 DevKitC-1 board profile.
 
-Status: implemented as the first firmware-core foundation.
+Status: implemented as the first firmware-core and ESP-IDF scaffold foundation.
 
 ## M7: Firmware Foundation
 
-- ESP-IDF skeleton.
 - Board profiles.
 - Protocol parser.
 - Display/button abstraction.

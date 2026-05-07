@@ -37,3 +37,10 @@ button, secure storage, and signing components.
 Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion.
+
+## ESP-IDF Scaffold
+
+`firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the
+ESP32-S3 USB signer. It currently boots and logs that signing is disabled. It
+does not yet include storage, key provisioning, display review, button approval,
+USB transport, or signing components.

@@ -1,0 +1,22 @@
+{
+  "name": "ESP32-S3-DevKitC-1",
+  "target": "esp32s3",
+  "native_usb": true,
+  "status": "development_reference",
+  "display": {
+    "required_for_signing": true,
+    "connection": "external_module_required",
+    "notes": "A local display is mandatory before real-key signing claims."
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "external_button_required"
+    },
+    {
+      "name": "reject",
+      "connection": "external_button_required"
+    }
+  ],
+  "debug_policy": "Debug access must remain enabled for development builds and must be locked before any production-key experiment."
+}
