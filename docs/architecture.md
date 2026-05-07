@@ -40,6 +40,10 @@ The first firmware foundation is host-buildable C++ under
   display/button adapters. It refuses approval until the final review page is
   reached, keeps rejection available before signing, and treats approval or
   rejection as terminal.
+- `review_display`: renderer-neutral trusted display frame builder for future
+  ESP32-S3 display drivers. It turns a review page into bounded title, page
+  indicator, body lines, and action hint fields, and rejects pages that exceed
+  configured display limits.
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
   development public-key, and disabled-signing responses. It does not sign
   events.
@@ -60,6 +64,11 @@ The review-control state machine is intentionally separate from
 `approval_gate` binds the final approval to the request id and
 `approval_digest`. The future display/button adapter must satisfy both before a
 real signing backend can be connected.
+
+The review-display renderer is also intentionally hardware-neutral. It does not
+drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded frame
+that a later ESP-IDF display adapter can paint without changing review,
+approval, or signing semantics.
 
 ## ESP-IDF Scaffold
 

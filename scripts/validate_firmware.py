@@ -42,6 +42,10 @@ def validate_firmware_project(project: Path) -> None:
     main = (project / "main/main.cpp").read_text(encoding="utf-8")
     if "app_main" not in main:
         raise ValueError(f"{project}: main.cpp must define app_main")
+    component_cmake = (project / "main/CMakeLists.txt").read_text(encoding="utf-8")
+    for required_source in ("approval_gate.cpp", "review_controls.cpp", "review_display.cpp"):
+        if required_source not in component_cmake:
+            raise ValueError(f"{project}: ESP-IDF component must compile {required_source}")
     lowered = main.lower()
     for claim in FORBIDDEN_CLAIMS:
         if claim in lowered:

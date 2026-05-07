@@ -23,6 +23,8 @@ tests with strict C++ warnings.
 - Review button state-machine tests requiring traversal to the final review page
   before approval, allowing early rejection, and rejecting additional input after
   a terminal decision.
+- Review display-frame tests requiring deterministic title, page indicator,
+  body lines, action hints, and rejection of unsafe display bounds.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

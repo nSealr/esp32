@@ -46,6 +46,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("device_protocol.cpp", cmake)
         self.assertIn("approval_gate.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
+        self.assertIn("review_display.cpp", cmake)
         self.assertIn("sha256.cpp", cmake)
         self.assertIn("handle_serial_frame", main)
         self.assertIn("Signing is disabled", main)

@@ -18,11 +18,14 @@
 - Shared-spec review-screen approval digest binding in the host approval gate.
 - Host-buildable review button state machine for page traversal before
   approval and terminal approve/reject decisions.
+- Host-buildable trusted display frame renderer with bounded title, body-line,
+  page-indicator, and action-hint fields.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
-hardware smoke-test foundation. The review button state machine is implemented
-in host-core only; real display and GPIO drivers remain pending.
+hardware smoke-test foundation. The review button state machine and display
+frame renderer are implemented in host-core only; real display and GPIO drivers
+remain pending.
 
 ## M7: Firmware Foundation
 
@@ -31,6 +34,7 @@ in host-core only; real display and GPIO drivers remain pending.
 - `get_capabilities`, development `get_public_key`, and disabled `sign_event`
   USB serial smoke tests.
 - Display/button abstraction.
+- Host-rendered review frame contract for display drivers.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.
 
