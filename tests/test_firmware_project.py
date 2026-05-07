@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from scripts import detect_esp32_s3
+from scripts import smoke_capabilities
 from scripts.validate_firmware import validate_firmware_project
 
 
@@ -27,7 +28,18 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("idf-build:", makefile)
         self.assertIn("idf-flash:", makefile)
         self.assertIn("idf-monitor:", makefile)
+        self.assertIn("idf-smoke-capabilities:", makefile)
         self.assertIn("idf-env-check:", makefile)
+
+    def test_esp32_s3_usb_signer_builds_host_core_protocol(self) -> None:
+        cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(encoding="utf-8")
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("device_protocol.cpp", cmake)
+        self.assertIn("serial_frame.cpp", cmake)
+        self.assertIn("sha256.cpp", cmake)
+        self.assertIn("handle_serial_frame", main)
+        self.assertIn("Signing is disabled", main)
 
 
 class Esp32S3DetectionTests(unittest.TestCase):
@@ -83,6 +95,24 @@ class Esp32S3DetectionTests(unittest.TestCase):
         self.assertEqual(report["usb"]["vendor"], "Espressif")
         self.assertIsNone(report["toolchain"]["idf.py"])
         self.assertIsNone(report["toolchain"]["esptool.py"])
+
+
+class Esp32S3CapabilitySmokeTests(unittest.TestCase):
+    def test_smoke_script_builds_capability_frames_from_specs(self) -> None:
+        request_frame, response_frame = smoke_capabilities.load_capability_frames(ROOT.parent / "specs")
+
+        self.assertTrue(request_frame.startswith("nseal1f:request:"))
+        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertTrue(request_frame.endswith("\n"))
+        self.assertTrue(response_frame.endswith("\n"))
+
+    def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
+        frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
+
+        self.assertEqual(
+            smoke_capabilities.extract_first_protocol_frame(f"I boot: log line\n{frame}ignored"),
+            frame,
+        )
 
 
 if __name__ == "__main__":

@@ -10,14 +10,16 @@
 - ESP32-S3 DevKitC-1 board profile.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, and boot-log smoke test.
+- Shared-spec `get_capabilities` response through host-core protocol handling.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
-detection, and local hardware smoke-test foundation.
+detection, capability-response, and local hardware smoke-test foundation.
 
 ## M7: Firmware Foundation
 
 - Board profiles.
 - Protocol parser.
+- `get_capabilities` USB serial smoke test.
 - Display/button abstraction.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.

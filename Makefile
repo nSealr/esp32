@@ -1,18 +1,21 @@
 IDF_PROJECT := firmware/esp32_s3_usb_signer
 IDF_PORT ?= /dev/cu.usbmodem1101
 
-.PHONY: setup test lint audit docs ci host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor
+.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities
 
 setup:
 	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
 
-host-core-test:
+generate-host-vectors:
 	mkdir -p build/host_core
 	python3 scripts/generate_transport_vector_header.py
+
+host-core-test: generate-host-vectors
 	c++ -std=c++20 -Wall -Wextra -Werror \
 		-Ifirmware/host_core/include \
 		-Ibuild/host_core \
 		firmware/host_core/src/approval_gate.cpp \
+		firmware/host_core/src/device_protocol.cpp \
 		firmware/host_core/src/serial_frame.cpp \
 		firmware/host_core/src/sha256.cpp \
 		firmware/host_core/tests/test_host_core.cpp \
@@ -25,14 +28,17 @@ detect-board:
 idf-env-check:
 	@command -v idf.py >/dev/null || (echo "ERROR: idf.py not found. Export ESP-IDF before running this target." && exit 1)
 
-idf-build: idf-env-check
+idf-build: idf-env-check generate-host-vectors
 	cd $(IDF_PROJECT) && idf.py build
 
-idf-flash: idf-env-check
+idf-flash: idf-build
 	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) flash
 
 idf-monitor: idf-env-check
 	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) monitor
+
+idf-smoke-capabilities: idf-env-check
+	python scripts/smoke_capabilities.py --port $(IDF_PORT)
 
 test:
 	python3 scripts/verify_repo.py

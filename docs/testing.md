@@ -17,12 +17,16 @@ tests with strict C++ warnings.
 - Host test header generation from the shared `NostrSeal/specs` serial vector.
 - Approval gate tests requiring request-id-matched approval before signing is
   permitted.
+- Device protocol tests proving the shared ESP32-S3 scaffold capability request
+  returns the shared scaffold capability response.
 - ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
   report parsing, and missing-toolchain reporting.
 - Manual ESP-IDF `v5.5.4` build, flash, and boot-log smoke test on the attached
   ESP32-S3 board.
+- Optional hardware capability smoke test with `make idf-smoke-capabilities`
+  after exporting ESP-IDF and flashing the current firmware.
 
 ## Required Tests
 

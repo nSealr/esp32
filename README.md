@@ -21,13 +21,15 @@ board into a separate repository.
 - Local ESP-IDF `v5.5.4` build and flash smoke test on an attached ESP32-S3.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
+- ESP32-S3 scaffold capability response over the same `nseal1f:` frame
+  contract used by the companion.
 - Portable SHA-256 checksum helper for frame corruption detection.
 - Approval gate state machine requiring request-id-matched approval before a
   request can be signed.
 
-The current flashed firmware is only a boot scaffold. It logs startup and
-explicitly keeps signing disabled until storage, trusted review, approval
-controls, and protocol tests are implemented.
+The current firmware is still a scaffold. It logs startup, answers
+`get_capabilities`, and explicitly keeps signing disabled until storage,
+trusted review, approval controls, and signing tests are implemented.
 
 ## Initial Layout
 
@@ -48,6 +50,7 @@ Physical board detection can be checked with:
 
 ```sh
 make detect-board
+make idf-smoke-capabilities
 ```
 
 ## License

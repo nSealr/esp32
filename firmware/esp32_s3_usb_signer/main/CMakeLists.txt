@@ -1,4 +1,11 @@
 idf_component_register(
-    SRCS "main.cpp"
-    INCLUDE_DIRS "."
+    SRCS
+        "main.cpp"
+        "../../host_core/src/device_protocol.cpp"
+        "../../host_core/src/serial_frame.cpp"
+        "../../host_core/src/sha256.cpp"
+    INCLUDE_DIRS
+        "."
+        "../../host_core/include"
+        "../../../build/host_core"
 )

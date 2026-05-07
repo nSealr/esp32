@@ -4,6 +4,7 @@
 #include <string>
 
 #include "nostrseal/approval_gate.hpp"
+#include "nostrseal/device_protocol.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "transport_vector.hpp"
 
@@ -64,12 +65,22 @@ void test_approval_gate_requires_matching_approval() {
     assert(gate.decision() == nostrseal::ApprovalDecision::Rejected);
 }
 
+void test_device_protocol_reports_scaffold_capabilities() {
+    const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kCapabilityRequestFrame);
+
+    assert(response == nostrseal::test_vectors::kCapabilityResponseFrame);
+    const nostrseal::SerialFrame decoded = nostrseal::decode_serial_frame(response);
+    assert(decoded.type == nostrseal::FrameType::Response);
+    assert(decoded.payload_base64url == nostrseal::test_vectors::kCapabilityResponsePayloadBase64Url);
+}
+
 }  // namespace
 
 int main() {
     test_serial_frame_round_trip();
     test_serial_frame_rejections();
     test_approval_gate_requires_matching_approval();
+    test_device_protocol_reports_scaffold_capabilities();
     std::cout << "host core tests passed\n";
     return 0;
 }

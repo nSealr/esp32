@@ -62,9 +62,10 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x35130 bytes
+nostrseal_esp32_s3_usb_signer.bin size: 0x779a0 bytes after adding the
+host-core capability protocol path
 smallest app partition: 0x100000 bytes
-free app partition space: 0xcaed0 bytes, about 79%
+free app partition space: 0x88660 bytes, about 53%
 ```
 
 ## Verified Flash Command
@@ -94,6 +95,7 @@ A short monitor session confirmed that the scaffold boots:
 I boot.esp32s3: SPI Flash Size : 16MB
 I nostrseal: NostrSeal ESP32-S3 USB signer scaffold booted
 W nostrseal: Signing is disabled in this scaffold until storage, review, approval, and tests are implemented
+I nostrseal: USB serial frame handler ready for get_capabilities
 ```
 
 The first flash smoke test reported a hardware/config mismatch:
@@ -124,6 +126,15 @@ make IDF_PORT=/dev/cu.<device> idf-flash
 make IDF_PORT=/dev/cu.<device> idf-monitor
 ```
 
-The current scaffold logs boot status only. Signing is intentionally disabled
-until storage, review UI, approval controls, and response verification tests are
-implemented.
+## Reusable Capability Smoke Command
+
+After flashing the current firmware and exporting ESP-IDF:
+
+```sh
+make IDF_PORT=/dev/cu.<device> idf-smoke-capabilities
+```
+
+The smoke command sends the shared `get_capabilities` request frame and expects
+the shared ESP32-S3 scaffold capability response. Signing is intentionally
+disabled until storage, review UI, approval controls, and response verification
+tests are implemented.
