@@ -1,0 +1,22 @@
+{
+  "name": "serial-frame-request-kind-1-basic",
+  "format": "serial-frame-v0",
+  "prefix": "nseal1f:",
+  "type": "request",
+  "payload_base64url": "eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1iYXNpYyIsIm1ldGhvZCI6InNpZ25fZXZlbnQiLCJwYXJhbXMiOnsiZXZlbnRfdGVtcGxhdGUiOnsiY3JlYXRlZF9hdCI6MTcxMDAwMDAwMCwia2luZCI6MSwidGFncyI6W10sImNvbnRlbnQiOiJOb3N0clNlYWwgZml4dHVyZTogYmFzaWMga2luZCAxIGV2ZW50LiJ9fX0",
+  "checksum": "6afe88adb2d5a2a6",
+  "frame": "nseal1f:request:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1iYXNpYyIsIm1ldGhvZCI6InNpZ25fZXZlbnQiLCJwYXJhbXMiOnsiZXZlbnRfdGVtcGxhdGUiOnsiY3JlYXRlZF9hdCI6MTcxMDAwMDAwMCwia2luZCI6MSwidGFncyI6W10sImNvbnRlbnQiOiJOb3N0clNlYWwgZml4dHVyZTogYmFzaWMga2luZCAxIGV2ZW50LiJ9fX0:6afe88adb2d5a2a6\n",
+  "decoded": {
+    "version": 1,
+    "request_id": "req-kind-1-basic",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "NostrSeal fixture: basic kind 1 event."
+      }
+    }
+  }
+}

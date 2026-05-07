@@ -1,0 +1,25 @@
+{
+  "request": {
+    "version": 1,
+    "request_id": "req-kind-1-basic",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "NostrSeal fixture: basic kind 1 event."
+      }
+    }
+  },
+  "response": {
+    "version": 1,
+    "request_id": "req-kind-1-basic",
+    "ok": false,
+    "error": {
+      "code": "signing_disabled",
+      "message": "Signing is disabled until trusted review and physical approval are implemented.",
+      "retryable": false
+    }
+  }
+}

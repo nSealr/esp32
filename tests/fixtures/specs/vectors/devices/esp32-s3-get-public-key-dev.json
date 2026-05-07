@@ -1,0 +1,15 @@
+{
+  "request": {
+    "version": 1,
+    "request_id": "req-pubkey-1",
+    "method": "get_public_key"
+  },
+  "response": {
+    "version": 1,
+    "request_id": "req-pubkey-1",
+    "ok": true,
+    "result": {
+      "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
+    }
+  }
+}

@@ -17,8 +17,17 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SPECS = ROOT.parent / "specs"
 PREFIX = "nseal1f:"
+
+
+def default_specs_dir() -> Path:
+    sibling = ROOT.parent / "specs"
+    if sibling.exists():
+        return sibling
+    return ROOT / "tests/fixtures/specs"
+
+
+DEFAULT_SPECS = default_specs_dir()
 
 
 def base64url_json(value: dict) -> str:

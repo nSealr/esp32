@@ -1,0 +1,63 @@
+{
+  "name": "kind-1-basic",
+  "request": {
+    "version": 1,
+    "request_id": "req-kind-1-basic",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "NostrSeal fixture: basic kind 1 event."
+      }
+    }
+  },
+  "review": {
+    "kind": 1,
+    "kind_name": "Short Text Note",
+    "created_at": 1710000000,
+    "content_preview": "NostrSeal fixture: basic kind 1 event.",
+    "content_length": 38,
+    "tag_count": 0,
+    "tag_summary": [],
+    "warnings": []
+  },
+  "screen_review": {
+    "format": "screen-pages",
+    "request_id": "req-kind-1-basic",
+    "approval_digest": "10d93d266ec46780242669220c2b65dc45fd63ee91df04b8b7cee147d26717e3",
+    "pages": [
+      {
+        "title": "Event",
+        "lines": [
+          "Kind 1",
+          "Short Text Note",
+          "Created 1710000000"
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Content",
+        "lines": [
+          "NostrSeal fixture: basic kind 1 event."
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Tags",
+        "lines": [
+          "No tags"
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Decision",
+        "lines": [
+          "Approve signing only if all pages match."
+        ],
+        "action": "approve_or_reject"
+      }
+    ]
+  }
+}

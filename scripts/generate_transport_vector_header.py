@@ -8,8 +8,14 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SPECS = ROOT.parent / "specs"
 OUT = ROOT / "build/host_core/transport_vector.hpp"
+
+
+def default_specs_dir() -> Path:
+    sibling = ROOT.parent / "specs"
+    if sibling.exists():
+        return sibling
+    return ROOT / "tests/fixtures/specs"
 
 
 def cpp_string(value: str) -> str:
@@ -29,23 +35,24 @@ def serial_frame(frame_type: str, payload_base64url: str) -> str:
 
 
 def main() -> int:
+    specs = default_specs_dir()
     vector = json.loads(
-        (SPECS / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
+        (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
     capability_vector = json.loads(
-        (SPECS / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
+        (specs / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
     )
     sign_event_disabled_vector = json.loads(
-        (SPECS / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8")
+        (specs / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8")
     )
     public_key_vector = json.loads(
-        (SPECS / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
+        (specs / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
     )
     basic_review_screen = json.loads(
-        (SPECS / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
+        (specs / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
     )
     tagged_review_screen = json.loads(
-        (SPECS / "vectors/review-screens/kind-1-tags.json").read_text(encoding="utf-8")
+        (specs / "vectors/review-screens/kind-1-tags.json").read_text(encoding="utf-8")
     )
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])

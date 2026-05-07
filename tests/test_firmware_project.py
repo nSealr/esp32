@@ -108,7 +108,7 @@ class Esp32S3DetectionTests(unittest.TestCase):
 
 class Esp32S3CapabilitySmokeTests(unittest.TestCase):
     def test_smoke_script_builds_capability_frames_from_specs(self) -> None:
-        request_frame, response_frame = smoke_capabilities.load_capability_frames(ROOT.parent / "specs")
+        request_frame, response_frame = smoke_capabilities.load_capability_frames()
 
         self.assertTrue(request_frame.startswith("nseal1f:request:"))
         self.assertTrue(response_frame.startswith("nseal1f:response:"))
@@ -116,7 +116,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertTrue(response_frame.endswith("\n"))
 
     def test_smoke_script_builds_signing_disabled_frames_from_specs(self) -> None:
-        request_frame, response_frame = smoke_capabilities.load_signing_disabled_frames(ROOT.parent / "specs")
+        request_frame, response_frame = smoke_capabilities.load_signing_disabled_frames()
 
         self.assertTrue(request_frame.startswith("nseal1f:request:"))
         self.assertTrue(response_frame.startswith("nseal1f:response:"))
@@ -125,7 +125,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertTrue(response_frame.endswith("\n"))
 
     def test_smoke_script_builds_public_key_frames_from_specs(self) -> None:
-        request_frame, response_frame = smoke_capabilities.load_public_key_frames(ROOT.parent / "specs")
+        request_frame, response_frame = smoke_capabilities.load_public_key_frames()
 
         self.assertTrue(request_frame.startswith("nseal1f:request:"))
         self.assertTrue(response_frame.startswith("nseal1f:response:"))

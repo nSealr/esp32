@@ -15,6 +15,9 @@ tests with strict C++ warnings.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
 - Host test header generation from the shared `NostrSeal/specs` serial vector.
+- Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
+  when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
+  is still guarded by `NostrSeal/lab` integration checks.
 - Approval gate tests requiring request-id and shared review-screen
   approval-digest matched approval before signing is permitted.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
