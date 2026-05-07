@@ -76,6 +76,7 @@ def main() -> int:
     vector = json.loads(
         (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
+    qr_vector = json.loads((specs / "vectors/transports/qr-envelope-kind-1-basic.json").read_text(encoding="utf-8"))
     capability_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
     )
@@ -109,6 +110,8 @@ def main() -> int:
                 f"constexpr const char* kSerialFrameType = {cpp_string(vector['type'])};",
                 f"constexpr const char* kSerialFramePayloadBase64Url = {cpp_string(vector['payload_base64url'])};",
                 f"constexpr const char* kSerialFrame = {cpp_string(vector['frame'])};",
+                f"constexpr const char* kQrEnvelopeKind1BasicPayloadBase64Url = {cpp_string(qr_vector['payload_base64url'])};",
+                f"constexpr const char* kQrEnvelopeKind1Basic = {cpp_string(qr_vector['envelope'])};",
                 f"constexpr const char* kCapabilityRequestPayloadBase64Url = {cpp_string(capability_request_payload)};",
                 f"constexpr const char* kCapabilityRequestFrame = {cpp_string(serial_frame('request', capability_request_payload))};",
                 f"constexpr const char* kCapabilityResponsePayloadBase64Url = {cpp_string(capability_response_payload)};",

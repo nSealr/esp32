@@ -6,6 +6,7 @@
 
 #include "nostrseal/approval_gate.hpp"
 #include "nostrseal/device_protocol.hpp"
+#include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/review_controls.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
@@ -47,6 +48,33 @@ void test_serial_frame_rejections() {
     });
     expect_throw("serial frame payload", [] {
         (void)nostrseal::decode_serial_frame("nseal1f:request:not+base64url:d78075380263956b\n");
+    });
+}
+
+void test_qr_envelope_decodes_shared_vector() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+
+    assert(envelope.payload_base64url == nostrseal::test_vectors::kQrEnvelopeKind1BasicPayloadBase64Url);
+    assert(envelope.payload_json.find("\"request_id\":\"req-kind-1-basic\"") != std::string::npos);
+    assert(envelope.payload_json.find("\"method\":\"sign_event\"") != std::string::npos);
+}
+
+void test_qr_envelope_rejections() {
+    expect_throw("QR envelope must start with nseal1:", [] {
+        (void)nostrseal::decode_qr_envelope("nostr:abc");
+    });
+    expect_throw("QR envelope payload must be unpadded base64url", [] {
+        (void)nostrseal::decode_qr_envelope("nseal1:abc=");
+    });
+    expect_throw("QR envelope payload must be unpadded base64url", [] {
+        (void)nostrseal::decode_qr_envelope("nseal1:not+base64url");
+    });
+    expect_throw("QR envelope payload has invalid base64url length", [] {
+        (void)nostrseal::decode_qr_envelope("nseal1:A");
+    });
+    expect_throw("QR envelope payload is not valid JSON", [] {
+        (void)nostrseal::decode_qr_envelope("nseal1:bm90LWpzb24");
     });
 }
 
@@ -270,6 +298,8 @@ void test_device_protocol_reports_development_public_key() {
 int main() {
     test_serial_frame_round_trip();
     test_serial_frame_rejections();
+    test_qr_envelope_decodes_shared_vector();
+    test_qr_envelope_rejections();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

@@ -17,6 +17,8 @@
   handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
+- Shared-spec QR envelope decode boundary for future ESP32-S3 QR vault camera
+  input.
 - Shared-spec review-screen approval digest binding in the host approval gate.
 - Host-buildable review button state machine for page traversal before
   approval and terminal approve/reject decisions.
@@ -28,10 +30,11 @@
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
-hardware smoke-test foundation. The review button state machine and display
-frame renderer are implemented in host-core only. The trusted review session now
-ties those pieces to approval-digest binding for future adapters; real display
-and GPIO drivers remain pending.
+hardware smoke-test foundation. The QR envelope decoder, review button state
+machine, and display frame renderer are implemented in host-core only. The
+trusted review session now ties review controls and display frames to
+approval-digest binding for future adapters; real camera, display, and GPIO
+drivers remain pending.
 
 ## M7: Firmware Foundation
 
@@ -58,6 +61,8 @@ and GPIO drivers remain pending.
   camera is the primary board-profile candidate; T-Camera Plus S3 remains
   secondary evaluation hardware in `NostrSeal/lab`.
 - QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
+  Status: host-core `nseal1:` envelope decoding is implemented; camera capture,
+  animated-frame reconstruction, and request JSON parsing remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.

@@ -14,6 +14,8 @@ tests with strict C++ warnings.
 - Serial frame round-trip test against the companion-compatible known frame.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
+- QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
+  unpadded base64url rejection, and non-JSON payload rejection.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

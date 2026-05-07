@@ -21,6 +21,9 @@ board into a separate repository.
 - Local ESP-IDF `v5.5.4` build and flash smoke test on an attached ESP32-S3.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
+- `nseal1:` QR envelope decode boundary compatible with the shared QR
+  transport vector. It validates envelope framing only; camera capture,
+  animated QR reconstruction, request parsing, and signing remain future work.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

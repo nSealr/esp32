@@ -47,6 +47,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
 
         self.assertIn("device_protocol.cpp", cmake)
         self.assertIn("approval_gate.cpp", cmake)
+        self.assertIn("qr_envelope.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
         self.assertIn("review_display.cpp", cmake)
         self.assertIn("trusted_review.cpp", cmake)
