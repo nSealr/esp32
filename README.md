@@ -28,8 +28,8 @@ board into a separate repository.
 - Primary ESP-IDF console configured on native USB Serial/JTAG so the scaffold
   can receive hardware smoke-test requests over the attached USB-C cable.
 - Portable SHA-256 checksum helper for frame corruption detection.
-- Approval gate state machine requiring request-id-matched approval before a
-  request can be signed.
+- Approval gate state machine requiring request-id and approval-digest matched
+  approval before a request can be signed.
 
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for

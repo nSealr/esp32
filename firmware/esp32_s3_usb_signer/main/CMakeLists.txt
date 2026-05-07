@@ -1,6 +1,7 @@
 idf_component_register(
     SRCS
         "main.cpp"
+        "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/serial_frame.cpp"
         "../../host_core/src/sha256.cpp"

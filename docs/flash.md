@@ -36,6 +36,14 @@ export PATH=/opt/homebrew/opt/python@3.12/libexec/bin:/opt/homebrew/bin:$PATH
 . /Users/vincenzo/esp/esp-idf-v5.5.4/export.sh
 ```
 
+If the shell still resolves `python3` to Python 3.9, point ESP-IDF directly at
+the existing Python 3.12 environment:
+
+```sh
+export IDF_PYTHON_ENV_PATH=/Users/vincenzo/.espressif/python_env/idf5.5_py3.12_env
+. /Users/vincenzo/esp/esp-idf-v5.5.4/export.sh
+```
+
 ## Detection Command
 
 Run the host-side detection gate with:
@@ -62,10 +70,10 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x748f0 bytes after adding the
-host-core capability protocol path
+nostrseal_esp32_s3_usb_signer.bin size: 0x74ab0 bytes after adding the
+host-core approval gate to the ESP-IDF component
 smallest app partition: 0x100000 bytes
-free app partition space: 0x8b710 bytes, about 54%
+free app partition space: 0x8b550 bytes, about 54%
 ```
 
 The firmware defaults set native USB Serial/JTAG as the primary ESP-IDF console:
@@ -104,7 +112,7 @@ A short monitor session confirmed that the scaffold boots:
 I boot.esp32s3: SPI Flash Size : 16MB
 I nostrseal: NostrSeal ESP32-S3 USB signer scaffold booted
 W nostrseal: Signing is disabled in this scaffold until storage, review, approval, and tests are implemented
-I nostrseal: USB serial frame handler ready for get_capabilities
+I nostrseal: USB serial frame handler ready for get_capabilities, get_public_key, and disabled sign_event
 ```
 
 The first flash smoke test reported a hardware/config mismatch:

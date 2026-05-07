@@ -28,7 +28,8 @@ The first firmware foundation is host-buildable C++ under
 - `serial_frame`: encodes and decodes newline-terminated `nseal1f:` frames with
   type, base64url JSON payload, and checksum.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
-- `approval_gate`: request-id-bound approval state machine.
+- `approval_gate`: request-id and approval-digest bound approval state
+  machine, checked against shared `NostrSeal/specs` review-screen vectors.
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
   development public-key, and disabled-signing responses. It does not sign
   events.
@@ -40,6 +41,9 @@ button, secure storage, and signing components.
 Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion.
+The same generated header now includes review-screen approval digests, allowing
+the host-core approval gate to reject request/review swaps before any future
+signing backend is connected.
 
 ## ESP-IDF Scaffold
 

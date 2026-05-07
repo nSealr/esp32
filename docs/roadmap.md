@@ -15,6 +15,7 @@
   handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
+- Shared-spec review-screen approval digest binding in the host approval gate.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local

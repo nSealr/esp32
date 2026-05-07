@@ -48,20 +48,24 @@ void test_serial_frame_rejections() {
 
 void test_approval_gate_requires_matching_approval() {
     nostrseal::ApprovalGate gate;
-    gate.begin_review("req-kind-1-basic");
+    gate.begin_review("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
 
-    assert(!gate.can_sign("req-kind-1-basic"));
-    assert(!gate.can_sign("different"));
+    assert(!gate.can_sign("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest));
+    assert(!gate.can_sign("different", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest));
 
-    gate.approve("different");
-    assert(!gate.can_sign("req-kind-1-basic"));
+    gate.approve("req-kind-1-basic", "00");
+    assert(!gate.can_sign("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest));
 
-    gate.approve("req-kind-1-basic");
-    assert(gate.can_sign("req-kind-1-basic"));
+    gate.approve("different", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
+    assert(!gate.can_sign("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest));
 
-    gate.begin_review("req-kind-1-tags");
+    gate.approve("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
+    assert(gate.can_sign("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest));
+    assert(!gate.can_sign("req-kind-1-basic", nostrseal::test_vectors::kTaggedReviewScreenApprovalDigest));
+
+    gate.begin_review("req-kind-1-tags", nostrseal::test_vectors::kTaggedReviewScreenApprovalDigest);
     gate.reject("req-kind-1-tags");
-    assert(!gate.can_sign("req-kind-1-tags"));
+    assert(!gate.can_sign("req-kind-1-tags", nostrseal::test_vectors::kTaggedReviewScreenApprovalDigest));
     assert(gate.decision() == nostrseal::ApprovalDecision::Rejected);
 }
 

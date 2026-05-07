@@ -41,6 +41,12 @@ def main() -> int:
     public_key_vector = json.loads(
         (SPECS / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
     )
+    basic_review_screen = json.loads(
+        (SPECS / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
+    )
+    tagged_review_screen = json.loads(
+        (SPECS / "vectors/review-screens/kind-1-tags.json").read_text(encoding="utf-8")
+    )
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
     sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
@@ -69,6 +75,8 @@ def main() -> int:
                 f"constexpr const char* kPublicKeyRequestFrame = {cpp_string(serial_frame('request', public_key_request_payload))};",
                 f"constexpr const char* kPublicKeyResponsePayloadBase64Url = {cpp_string(public_key_response_payload)};",
                 f"constexpr const char* kPublicKeyResponseFrame = {cpp_string(serial_frame('response', public_key_response_payload))};",
+                f"constexpr const char* kBasicReviewScreenApprovalDigest = {cpp_string(basic_review_screen['screen_review']['approval_digest'])};",
+                f"constexpr const char* kTaggedReviewScreenApprovalDigest = {cpp_string(tagged_review_screen['screen_review']['approval_digest'])};",
                 "}  // namespace nostrseal::test_vectors",
                 "",
             ]

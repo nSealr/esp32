@@ -44,6 +44,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
 
         self.assertIn("device_protocol.cpp", cmake)
+        self.assertIn("approval_gate.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
         self.assertIn("sha256.cpp", cmake)
         self.assertIn("handle_serial_frame", main)
