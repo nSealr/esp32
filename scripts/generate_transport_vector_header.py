@@ -42,6 +42,24 @@ def cpp_review_action(action: str) -> str:
     raise ValueError(f"unsupported review page action: {action}")
 
 
+def cpp_review_button(button: str) -> str:
+    if button == "next":
+        return "nostrseal::ReviewButton::Next"
+    if button == "approve":
+        return "nostrseal::ReviewButton::Approve"
+    if button == "reject":
+        return "nostrseal::ReviewButton::Reject"
+    raise ValueError(f"unsupported review button: {button}")
+
+
+def cpp_optional_bool(value: bool | None) -> str:
+    if value is None:
+        return "std::nullopt"
+    if value is True:
+        return "true"
+    return "false"
+
+
 def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
     lines = [
         f"inline nostrseal::TrustedReviewRequest {name}() {{",
@@ -71,6 +89,47 @@ def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
     return lines
 
 
+def qr_review_buttons_factory(name: str, buttons: list[str]) -> list[str]:
+    button_values = ", ".join(cpp_review_button(button) for button in buttons)
+    return [
+        f"inline std::vector<nostrseal::ReviewButton> {name}() {{",
+        f"    return {{{button_values}}};",
+        "}",
+    ]
+
+
+def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]:
+    lines = [
+        f"inline std::vector<nostrseal::QrReviewTranscriptStep> {name}() {{",
+        "    return {",
+    ]
+    for step in transcript:
+        frame = step["frame"]
+        body_lines = ", ".join(cpp_string(line) for line in frame["body_lines"])
+        lines.extend(
+            [
+                "        nostrseal::QrReviewTranscriptStep{",
+                "            nostrseal::ReviewDisplayFrame{",
+                f"                {cpp_string(frame['title'])},",
+                f"                {cpp_string(frame['page_indicator'])},",
+                f"                {{{body_lines}}},",
+                f"                {cpp_string(frame['action_hint'])},",
+                "            },",
+                f"            {cpp_review_button(step['button'])},",
+                f"            {cpp_optional_bool(step['decision'])},",
+                f"            {str(step['approved_for_signing']).lower()},",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def main() -> int:
     specs = default_specs_dir()
     vector = json.loads(
@@ -92,6 +151,12 @@ def main() -> int:
     tagged_review_screen = json.loads(
         (specs / "vectors/review-screens/kind-1-tags.json").read_text(encoding="utf-8")
     )
+    basic_review_approve_transcript = json.loads(
+        (specs / "vectors/review-transcripts/kind-1-basic-approve.json").read_text(encoding="utf-8")
+    )
+    basic_review_reject_transcript = json.loads(
+        (specs / "vectors/review-transcripts/kind-1-basic-reject.json").read_text(encoding="utf-8")
+    )
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
     sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
@@ -104,6 +169,10 @@ def main() -> int:
             [
                 "#pragma once",
                 "",
+                "#include <optional>",
+                "#include <vector>",
+                "",
+                '#include "nostrseal/qr_review_flow.hpp"',
                 '#include "nostrseal/trusted_review.hpp"',
                 "",
                 "namespace nostrseal::test_vectors {",
@@ -130,6 +199,26 @@ def main() -> int:
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",
                 *trusted_review_factory("tagged_trusted_review_request", tagged_review_screen["screen_review"]),
+                "",
+                *qr_review_buttons_factory(
+                    "basic_qr_review_approve_buttons",
+                    basic_review_approve_transcript["buttons"],
+                ),
+                "",
+                *qr_review_transcript_factory(
+                    "basic_qr_review_approve_transcript",
+                    basic_review_approve_transcript["transcript"],
+                ),
+                "",
+                *qr_review_buttons_factory(
+                    "basic_qr_review_reject_buttons",
+                    basic_review_reject_transcript["buttons"],
+                ),
+                "",
+                *qr_review_transcript_factory(
+                    "basic_qr_review_reject_transcript",
+                    basic_review_reject_transcript["transcript"],
+                ),
                 "}  // namespace nostrseal::test_vectors",
                 "",
             ]

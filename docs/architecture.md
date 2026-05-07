@@ -119,7 +119,10 @@ signature-producing function in this flow.
 The QR review transcript helper records the frame shown before each physical
 button input, the optional terminal decision, and whether the approval gate has
 been satisfied. This gives display/GPIO adapters a deterministic host-side
-oracle for review-loop tests without introducing a signing backend.
+oracle for review-loop tests without introducing a signing backend. ESP32
+host-core tests consume the shared `NostrSeal/specs` QR review-transcript
+vectors so future firmware adapters stay aligned with the cross-repository
+review contract.
 
 The trusted-review session intentionally stops before hardware drivers, key
 storage, or Schnorr signing. It proves the local review loop can only reach

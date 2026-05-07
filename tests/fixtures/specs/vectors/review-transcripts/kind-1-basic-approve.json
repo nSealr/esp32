@@ -1,0 +1,83 @@
+{
+  "name": "kind-1-basic-approve",
+  "format": "qr-review-transcript-v0",
+  "source_vector": "qr-envelope-kind-1-basic",
+  "screen_review_vector": "kind-1-basic",
+  "qr_envelope": "nseal1:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1iYXNpYyIsIm1ldGhvZCI6InNpZ25fZXZlbnQiLCJwYXJhbXMiOnsiZXZlbnRfdGVtcGxhdGUiOnsiY3JlYXRlZF9hdCI6MTcxMDAwMDAwMCwia2luZCI6MSwidGFncyI6W10sImNvbnRlbnQiOiJOb3N0clNlYWwgZml4dHVyZTogYmFzaWMga2luZCAxIGV2ZW50LiJ9fX0",
+  "request": {
+    "version": 1,
+    "request_id": "req-kind-1-basic",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "NostrSeal fixture: basic kind 1 event."
+      }
+    }
+  },
+  "approval_digest": "10d93d266ec46780242669220c2b65dc45fd63ee91df04b8b7cee147d26717e3",
+  "buttons": [
+    "next",
+    "next",
+    "next",
+    "approve"
+  ],
+  "transcript": [
+    {
+      "frame": {
+        "title": "Event",
+        "page_indicator": "Page 1/4",
+        "body_lines": [
+          "Kind 1",
+          "Short Text Note",
+          "Created 1710000000"
+        ],
+        "action_hint": "Next"
+      },
+      "button": "next",
+      "decision": null,
+      "approved_for_signing": false
+    },
+    {
+      "frame": {
+        "title": "Content",
+        "page_indicator": "Page 2/4",
+        "body_lines": [
+          "NostrSeal fixture: basic kind 1 event."
+        ],
+        "action_hint": "Next"
+      },
+      "button": "next",
+      "decision": null,
+      "approved_for_signing": false
+    },
+    {
+      "frame": {
+        "title": "Tags",
+        "page_indicator": "Page 3/4",
+        "body_lines": [
+          "No tags"
+        ],
+        "action_hint": "Next"
+      },
+      "button": "next",
+      "decision": null,
+      "approved_for_signing": false
+    },
+    {
+      "frame": {
+        "title": "Decision",
+        "page_indicator": "Page 4/4",
+        "body_lines": [
+          "Approve signing only if all pages match."
+        ],
+        "action_hint": "Approve / Reject"
+      },
+      "button": "approve",
+      "decision": true,
+      "approved_for_signing": true
+    }
+  ]
+}

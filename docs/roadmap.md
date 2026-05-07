@@ -39,7 +39,8 @@
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
   review frames and approval state, without signing.
 - Deterministic QR review transcript helper for future display/button adapter
-  acceptance tests.
+  acceptance tests, checked against shared `NostrSeal/specs` transcript
+  vectors.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -52,7 +53,8 @@ trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
 that same session boundary through a raw-QR review flow. Real camera, display,
 and GPIO drivers remain pending. QR review transcripts provide a deterministic
-host-side oracle for those adapters.
+host-side oracle for those adapters and are now checked against shared
+`NostrSeal/specs` vectors.
 
 ## M7: Firmware Foundation
 

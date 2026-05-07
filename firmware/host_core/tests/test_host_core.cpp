@@ -38,6 +38,21 @@ void assert_trusted_review_pages(
     }
 }
 
+void assert_qr_review_transcript(
+    const std::vector<nostrseal::QrReviewTranscriptStep>& actual,
+    const std::vector<nostrseal::QrReviewTranscriptStep>& expected) {
+    assert(actual.size() == expected.size());
+    for (std::size_t index = 0; index < actual.size(); ++index) {
+        assert(actual[index].frame.title == expected[index].frame.title);
+        assert(actual[index].frame.page_indicator == expected[index].frame.page_indicator);
+        assert(actual[index].frame.body_lines == expected[index].frame.body_lines);
+        assert(actual[index].frame.action_hint == expected[index].frame.action_hint);
+        assert(actual[index].button == expected[index].button);
+        assert(actual[index].decision == expected[index].decision);
+        assert(actual[index].approved_for_signing == expected[index].approved_for_signing);
+    }
+}
+
 void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame frame{
         nostrseal::FrameType::Request,
@@ -307,35 +322,21 @@ void test_qr_review_flow_rejects_unsafe_scanned_qr() {
 void test_qr_review_flow_transcript_records_display_and_approval_steps() {
     const std::vector<nostrseal::QrReviewTranscriptStep> transcript = nostrseal::run_qr_review_transcript(
         nostrseal::test_vectors::kQrEnvelopeKind1Basic,
-        {
-            nostrseal::ReviewButton::Next,
-            nostrseal::ReviewButton::Next,
-            nostrseal::ReviewButton::Next,
-            nostrseal::ReviewButton::Approve,
-        });
+        nostrseal::test_vectors::basic_qr_review_approve_buttons());
 
-    assert(transcript.size() == 4U);
-    assert(transcript[0].frame.title == "Event");
-    assert(!transcript[0].decision.has_value());
-    assert(!transcript[0].approved_for_signing);
-    assert(transcript[3].frame.title == "Decision");
-    assert(transcript[3].decision.has_value());
-    assert(transcript[3].decision.value());
-    assert(transcript[3].approved_for_signing);
+    assert_qr_review_transcript(
+        transcript,
+        nostrseal::test_vectors::basic_qr_review_approve_transcript());
 }
 
 void test_qr_review_flow_transcript_records_early_rejection() {
     const std::vector<nostrseal::QrReviewTranscriptStep> transcript = nostrseal::run_qr_review_transcript(
         nostrseal::test_vectors::kQrEnvelopeKind1Basic,
-        {
-            nostrseal::ReviewButton::Reject,
-        });
+        nostrseal::test_vectors::basic_qr_review_reject_buttons());
 
-    assert(transcript.size() == 1U);
-    assert(transcript[0].frame.title == "Event");
-    assert(transcript[0].decision.has_value());
-    assert(!transcript[0].decision.value());
-    assert(!transcript[0].approved_for_signing);
+    assert_qr_review_transcript(
+        transcript,
+        nostrseal::test_vectors::basic_qr_review_reject_transcript());
 }
 
 void test_approval_gate_requires_matching_approval() {
