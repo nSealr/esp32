@@ -39,6 +39,8 @@
 - QR-derived trusted-review session creation from parsed request data.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
   review frames and approval state, without signing.
+- `QrReviewIo` host-core adapter harness for future scanner, display, and
+  physical-button drivers, without signing.
 - Deterministic QR review transcript helper for future display/button adapter
   acceptance tests, checked against shared `NostrSeal/specs` transcript
   vectors.
@@ -55,10 +57,12 @@ minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
 that same session boundary through a raw-QR review flow. Display frames now
-wrap and truncate body text to configured limits. Real camera, display, and
-GPIO drivers remain pending. QR review transcripts provide a deterministic
-host-side oracle for those adapters and are now checked against shared
-`NostrSeal/specs` vectors.
+wrap and truncate body text to configured limits. The host-core now also has a
+scanner/display/button I/O harness that shows every trusted frame before
+reading physical-style input and returns only the terminal approval state. Real
+camera, display, and GPIO drivers remain pending. QR review transcripts provide
+a deterministic host-side oracle for those adapters and are now checked against
+shared `NostrSeal/specs` vectors.
 
 ## M7: Firmware Foundation
 
@@ -67,6 +71,9 @@ host-side oracle for those adapters and are now checked against shared
 - `get_capabilities`, development `get_public_key`, and disabled `sign_event`
   USB serial smoke tests.
 - Display/button abstraction.
+  Status: host-core `QrReviewIo` now defines the scanner/display/button
+  adapter boundary for the QR review loop, while real ESP-IDF drivers remain
+  pending.
 - Host-rendered review frame contract for display drivers.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.

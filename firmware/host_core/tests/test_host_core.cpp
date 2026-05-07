@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "nostrseal/approval_gate.hpp"
@@ -52,6 +53,31 @@ void assert_qr_review_transcript(
         assert(actual[index].approved_for_signing == expected[index].approved_for_signing);
     }
 }
+
+class RecordingQrReviewIo : public nostrseal::QrReviewIo {
+public:
+    explicit RecordingQrReviewIo(std::vector<nostrseal::ReviewButton> buttons) : buttons_(std::move(buttons)) {}
+
+    std::string scan_request_qr() override {
+        return nostrseal::test_vectors::kQrEnvelopeKind1Basic;
+    }
+
+    void show_review_frame(const nostrseal::ReviewDisplayFrame& frame) override {
+        frames.push_back(frame);
+    }
+
+    nostrseal::ReviewButton read_review_button() override {
+        assert(!buttons_.empty());
+        const nostrseal::ReviewButton button = buttons_.front();
+        buttons_.erase(buttons_.begin());
+        return button;
+    }
+
+    std::vector<nostrseal::ReviewDisplayFrame> frames;
+
+private:
+    std::vector<nostrseal::ReviewButton> buttons_;
+};
 
 void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame frame{
@@ -339,6 +365,26 @@ void test_qr_review_flow_transcript_records_early_rejection() {
         nostrseal::test_vectors::basic_qr_review_reject_transcript());
 }
 
+void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing() {
+    RecordingQrReviewIo io{{nostrseal::ReviewButton::Next,
+                            nostrseal::ReviewButton::Next,
+                            nostrseal::ReviewButton::Next,
+                            nostrseal::ReviewButton::Approve}};
+
+    const nostrseal::QrReviewIoFlowResult result = nostrseal::run_qr_review_io_flow(io);
+
+    assert(result.request_id == "req-kind-1-basic");
+    assert(result.approval_digest == nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
+    assert(result.decision.has_value());
+    assert(result.decision.value());
+    assert(result.approved_for_signing);
+    assert(io.frames.size() == 4);
+    assert(io.frames.front().title == "Event");
+    assert(io.frames.front().page_indicator == "Page 1/4");
+    assert(io.frames.back().title == "Decision");
+    assert(io.frames.back().action_hint == "Approve / Reject");
+}
+
 void test_approval_gate_requires_matching_approval() {
     nostrseal::ApprovalGate gate;
     gate.begin_review("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
@@ -618,6 +664,7 @@ int main() {
     test_qr_review_flow_rejects_unsafe_scanned_qr();
     test_qr_review_flow_transcript_records_display_and_approval_steps();
     test_qr_review_flow_transcript_records_early_rejection();
+    test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

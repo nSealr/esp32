@@ -47,8 +47,9 @@ The first firmware foundation is host-buildable C++ under
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
 - `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
-  envelopes to trusted review frames and approval state. It is the adapter
-  target for future camera/display/GPIO code and has no signing backend.
+  envelopes to trusted review frames and approval state. It includes the
+  `QrReviewIo` adapter harness for future scanner, display, and GPIO button
+  code, and has no signing backend.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -120,6 +121,13 @@ QR envelope decode, request parsing, trusted-review construction, frame
 rendering, and button handling. Rejected QR requests fail before any review
 frame is shown. Approval only reaches the host-core approval state; there is no
 signature-producing function in this flow.
+
+`QrReviewIo` is the first driver-facing harness for that flow. A future camera
+adapter provides one scanned QR envelope, a display adapter paints the bounded
+frame supplied by host-core, and physical controls provide `next`, `approve`,
+or `reject`. The harness shows the current trusted frame before every button
+read and returns only the terminal approval state, keeping camera/display/GPIO
+bring-up separate from key storage and signing.
 
 The QR review transcript helper records the frame shown before each physical
 button input, the optional terminal decision, and whether the approval gate has

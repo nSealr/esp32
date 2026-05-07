@@ -28,6 +28,24 @@ private:
     TrustedReviewSession session_;
 };
 
+class QrReviewIo {
+public:
+    virtual ~QrReviewIo() = default;
+
+    virtual std::string scan_request_qr() = 0;
+    virtual void show_review_frame(const ReviewDisplayFrame& frame) = 0;
+    virtual ReviewButton read_review_button() = 0;
+};
+
+struct QrReviewIoFlowResult {
+    std::string request_id;
+    std::string approval_digest;
+    std::optional<bool> decision;
+    bool approved_for_signing;
+};
+
+QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits = {});
+
 struct QrReviewTranscriptStep {
     ReviewDisplayFrame frame;
     ReviewButton button;

@@ -42,6 +42,21 @@ std::optional<bool> QrReviewFlow::handle_button(ReviewButton button) {
     return session_.handle_button(button);
 }
 
+QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits) {
+    QrReviewFlow flow{io.scan_request_qr(), limits};
+    std::optional<bool> decision;
+    while (!decision.has_value()) {
+        io.show_review_frame(flow.current_frame());
+        decision = flow.handle_button(io.read_review_button());
+    }
+    return QrReviewIoFlowResult{
+        flow.request_id(),
+        flow.approval_digest(),
+        decision,
+        flow.approved_for_signing(),
+    };
+}
+
 std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     const std::string& qr_envelope,
     const std::vector<ReviewButton>& buttons,

@@ -29,6 +29,9 @@ tests with strict C++ warnings.
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review
   without a signing backend and unsafe QR requests are rejected before display.
+- QR review I/O harness tests proving scanner, display, and physical-button
+  adapter boundaries can drive the host-core review loop without adding a
+  signing backend.
 - QR review transcript tests covering full approval traversal and early
   rejection as deterministic frame/button/decision records from shared
   `NostrSeal/specs` review-transcript vectors.
