@@ -11,6 +11,11 @@ std::string handle_serial_frame(const std::string& line) {
         request.payload_base64url == test_vectors::kCapabilityRequestPayloadBase64Url) {
         return encode_serial_frame(SerialFrame{FrameType::Response, test_vectors::kCapabilityResponsePayloadBase64Url});
     }
+    if (request.type == FrameType::Request &&
+        request.payload_base64url == test_vectors::kSignEventRequestPayloadBase64Url) {
+        return encode_serial_frame(
+            SerialFrame{FrameType::Response, test_vectors::kSignEventDisabledResponsePayloadBase64Url});
+    }
     return encode_serial_frame(SerialFrame{FrameType::Error, "eyJlcnJvciI6InVuc3VwcG9ydGVkX3JlcXVlc3QifQ"});
 }
 

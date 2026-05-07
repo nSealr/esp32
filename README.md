@@ -30,7 +30,8 @@ board into a separate repository.
   request can be signed.
 
 The current firmware is still a scaffold. It logs startup, answers
-`get_capabilities`, and explicitly keeps signing disabled until storage,
+`get_capabilities`, returns an explicit `signing_disabled` protocol response for
+the shared `sign_event` fixture, and keeps real signing disabled until storage,
 trusted review, approval controls, and signing tests are implemented.
 
 ## Initial Layout

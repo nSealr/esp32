@@ -19,14 +19,17 @@ tests with strict C++ warnings.
   permitted.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
+- Device protocol tests proving the shared `sign_event` fixture returns the
+  shared `signing_disabled` scaffold response.
 - ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
   report parsing, and missing-toolchain reporting.
 - Manual ESP-IDF `v5.5.4` build, flash, and boot-log smoke test on the attached
   ESP32-S3 board.
-- Optional hardware capability smoke test with `make idf-smoke-capabilities`
-  after exporting ESP-IDF and flashing the current firmware.
+- Optional hardware capability/signing-disabled smoke test with
+  `make idf-smoke-capabilities` after exporting ESP-IDF and flashing the current
+  firmware.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.

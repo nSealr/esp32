@@ -74,6 +74,15 @@ void test_device_protocol_reports_scaffold_capabilities() {
     assert(decoded.payload_base64url == nostrseal::test_vectors::kCapabilityResponsePayloadBase64Url);
 }
 
+void test_device_protocol_rejects_signing_while_disabled() {
+    const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kSignEventRequestFrame);
+
+    assert(response == nostrseal::test_vectors::kSignEventDisabledResponseFrame);
+    const nostrseal::SerialFrame decoded = nostrseal::decode_serial_frame(response);
+    assert(decoded.type == nostrseal::FrameType::Response);
+    assert(decoded.payload_base64url == nostrseal::test_vectors::kSignEventDisabledResponsePayloadBase64Url);
+}
+
 }  // namespace
 
 int main() {
@@ -81,6 +90,7 @@ int main() {
     test_serial_frame_rejections();
     test_approval_gate_requires_matching_approval();
     test_device_protocol_reports_scaffold_capabilities();
+    test_device_protocol_rejects_signing_while_disabled();
     std::cout << "host core tests passed\n";
     return 0;
 }

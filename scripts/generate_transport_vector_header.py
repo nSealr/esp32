@@ -35,8 +35,13 @@ def main() -> int:
     capability_vector = json.loads(
         (SPECS / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
     )
+    sign_event_disabled_vector = json.loads(
+        (SPECS / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8")
+    )
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
+    sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
+    sign_event_disabled_response_payload = base64url_json(sign_event_disabled_vector["response"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(
         "\n".join(
@@ -51,6 +56,10 @@ def main() -> int:
                 f"constexpr const char* kCapabilityRequestFrame = {cpp_string(serial_frame('request', capability_request_payload))};",
                 f"constexpr const char* kCapabilityResponsePayloadBase64Url = {cpp_string(capability_response_payload)};",
                 f"constexpr const char* kCapabilityResponseFrame = {cpp_string(serial_frame('response', capability_response_payload))};",
+                f"constexpr const char* kSignEventRequestPayloadBase64Url = {cpp_string(sign_event_request_payload)};",
+                f"constexpr const char* kSignEventRequestFrame = {cpp_string(serial_frame('request', sign_event_request_payload))};",
+                f"constexpr const char* kSignEventDisabledResponsePayloadBase64Url = {cpp_string(sign_event_disabled_response_payload)};",
+                f"constexpr const char* kSignEventDisabledResponseFrame = {cpp_string(serial_frame('response', sign_event_disabled_response_payload))};",
                 "}  // namespace nostrseal::test_vectors",
                 "",
             ]

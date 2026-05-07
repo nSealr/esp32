@@ -62,10 +62,10 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x74660 bytes after adding the
+nostrseal_esp32_s3_usb_signer.bin size: 0x748f0 bytes after adding the
 host-core capability protocol path
 smallest app partition: 0x100000 bytes
-free app partition space: 0x8b9a0 bytes, about 55%
+free app partition space: 0x8b710 bytes, about 54%
 ```
 
 The firmware defaults set native USB Serial/JTAG as the primary ESP-IDF console:
@@ -143,9 +143,10 @@ After flashing the current firmware and exporting ESP-IDF:
 make IDF_PORT=/dev/cu.<device> idf-smoke-capabilities
 ```
 
-The smoke command sends the shared `get_capabilities` request frame and expects
-the shared ESP32-S3 scaffold capability response. On the attached board this
-smoke test passed on `/dev/cu.usbmodem1101` after configuring native USB
-Serial/JTAG as the primary console. Signing is intentionally disabled until
-storage, review UI, approval controls, and response verification tests are
-implemented.
+The smoke command sends the shared `get_capabilities` request frame and the
+shared basic `sign_event` request frame. It expects the ESP32-S3 scaffold
+capability response followed by the explicit `signing_disabled` response. On the
+attached board this smoke test passed on `/dev/cu.usbmodem1101` after
+configuring native USB Serial/JTAG as the primary console. Real signing is
+intentionally disabled until storage, review UI, approval controls, and response
+verification tests are implemented.
