@@ -143,10 +143,11 @@ After flashing the current firmware and exporting ESP-IDF:
 make IDF_PORT=/dev/cu.<device> idf-smoke-capabilities
 ```
 
-The smoke command sends the shared `get_capabilities` request frame and the
-shared basic `sign_event` request frame. It expects the ESP32-S3 scaffold
-capability response followed by the explicit `signing_disabled` response. On the
-attached board this smoke test passed on `/dev/cu.usbmodem1101` after
-configuring native USB Serial/JTAG as the primary console. Real signing is
-intentionally disabled until storage, review UI, approval controls, and response
-verification tests are implemented.
+The smoke command sends the shared `get_capabilities` request frame, the shared
+`get_public_key` development request frame, and the shared basic `sign_event`
+request frame. It expects the ESP32-S3 scaffold capability response,
+deterministic development public-key response, and explicit `signing_disabled`
+response. On the attached board this smoke test passed on
+`/dev/cu.usbmodem1101` after configuring native USB Serial/JTAG as the primary
+console. Real signing is intentionally disabled until storage, review UI,
+approval controls, and response verification tests are implemented.

@@ -45,6 +45,11 @@ def load_signing_disabled_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, 
     return vector_frames(vector)
 
 
+def load_public_key_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
+    vector = json.loads((specs_dir / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8"))
+    return vector_frames(vector)
+
+
 def vector_frames(vector: dict) -> tuple[str, str]:
     request_payload = base64url_json(vector["request"])
     response_payload = base64url_json(vector["response"])
@@ -85,6 +90,7 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
     deadline = time.monotonic() + timeout
     exchanges = [
         load_capability_frames(specs_dir),
+        load_public_key_frames(specs_dir),
         load_signing_disabled_frames(specs_dir),
     ]
     responses: list[str] = []

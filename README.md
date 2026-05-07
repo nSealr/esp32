@@ -23,6 +23,8 @@ board into a separate repository.
   framing draft.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
+- ESP32-S3 scaffold `get_public_key` response using the shared deterministic
+  development-only fixture key.
 - Primary ESP-IDF console configured on native USB Serial/JTAG so the scaffold
   can receive hardware smoke-test requests over the attached USB-C cable.
 - Portable SHA-256 checksum helper for frame corruption detection.
@@ -30,7 +32,8 @@ board into a separate repository.
   request can be signed.
 
 The current firmware is still a scaffold. It logs startup, answers
-`get_capabilities`, returns an explicit `signing_disabled` protocol response for
+`get_capabilities`, returns the deterministic development public key for
+`get_public_key`, returns an explicit `signing_disabled` protocol response for
 the shared `sign_event` fixture, and keeps real signing disabled until storage,
 trusted review, approval controls, and signing tests are implemented.
 

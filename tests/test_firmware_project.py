@@ -123,6 +123,15 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
 
+    def test_smoke_script_builds_public_key_frames_from_specs(self) -> None:
+        request_frame, response_frame = smoke_capabilities.load_public_key_frames(ROOT.parent / "specs")
+
+        self.assertTrue(request_frame.startswith("nseal1f:request:"))
+        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertIn("response", response_frame)
+        self.assertTrue(request_frame.endswith("\n"))
+        self.assertTrue(response_frame.endswith("\n"))
+
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
         frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
 

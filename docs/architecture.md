@@ -29,8 +29,9 @@ The first firmware foundation is host-buildable C++ under
   type, base64url JSON payload, and checksum.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id-bound approval state machine.
-- `device_protocol`: scaffold request dispatcher for shared-spec capability
-  responses. It does not sign events.
+- `device_protocol`: scaffold request dispatcher for shared-spec capability,
+  development public-key, and disabled-signing responses. It does not sign
+  events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -46,6 +47,7 @@ companion.
 ESP32-S3 USB signer. It currently boots, uses native USB Serial/JTAG as the
 primary ESP-IDF console, reads newline-terminated `nseal1f:` frames from that
 console, answers the shared `get_capabilities` request, returns the shared
+development public key for `get_public_key`, returns the shared
 `signing_disabled` response for the basic `sign_event` fixture, and logs that
-signing is disabled. It does not yet include storage, key provisioning, display
-review, button approval, or signing components.
+signing is disabled. It does not yet include storage, production key
+provisioning, display review, button approval, or signing components.

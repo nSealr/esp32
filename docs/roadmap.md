@@ -11,17 +11,21 @@
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, and boot-log smoke test.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
+- Shared-spec `get_public_key` development response through host-core protocol
+  handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
-detection, capability-response, and local hardware smoke-test foundation.
+detection, capability-response, development public-key response, and local
+hardware smoke-test foundation.
 
 ## M7: Firmware Foundation
 
 - Board profiles.
 - Protocol parser.
-- `get_capabilities` and disabled `sign_event` USB serial smoke tests.
+- `get_capabilities`, development `get_public_key`, and disabled `sign_event`
+  USB serial smoke tests.
 - Display/button abstraction.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.
@@ -29,8 +33,8 @@ detection, capability-response, and local hardware smoke-test foundation.
 ## M8: ESP32-S3 USB Signer MVP
 
 - USB transport.
-- `get_public_key`.
-- `sign_event`.
+- Production key generation/import and `get_public_key`.
+- `sign_event` behind display review and physical approval.
 - Approval loop.
 - Companion integration.
 
