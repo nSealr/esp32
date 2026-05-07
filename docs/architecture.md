@@ -101,13 +101,16 @@ storage, and signing remain absent.
 
 The QR review builder consumes those parsed primitives and emits the same page
 order, text, and `approval_digest` as `NostrSeal/specs` review-screen vectors
-for basic and tagged kind `1` requests. It still stops before trusted-review
-session creation from QR, hardware display output, or signing.
+for basic and tagged kind `1` requests. It can create a `TrustedReviewSession`
+from a parsed QR request, so the future QR path can reuse the same bounded
+display frames, final-page traversal, and request/digest-bound approval gate as
+the USB/display signer line. It still stops before hardware display output or
+signing.
 
-The trusted-review session intentionally stops before JSON parsing, hardware
-drivers, key storage, or Schnorr signing. It proves the local review loop can
-only reach `can_sign` after the user has traversed the displayed pages and
-approved the request bound to the displayed `approval_digest`.
+The trusted-review session intentionally stops before hardware drivers, key
+storage, or Schnorr signing. It proves the local review loop can only reach
+`can_sign` after the user has traversed the displayed pages and approved the
+request bound to the displayed `approval_digest`.
 
 ## ESP-IDF Scaffold
 

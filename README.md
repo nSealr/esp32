@@ -39,6 +39,9 @@ board into a separate repository.
   against shared `NostrSeal/specs` review-screen vectors. QR-derived
   `approval_digest` now matches shared basic/tagged vectors, while camera
   input, display/GPIO drivers, key storage, and signing remain disabled.
+- QR-derived trusted-review session creation that drives the existing bounded
+  display-frame and approval-gate state machines. It is still host-core only
+  and has no signing backend.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

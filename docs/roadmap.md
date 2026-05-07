@@ -35,6 +35,7 @@
 - Host-buildable trusted review session combining display frames, button
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
+- QR-derived trusted-review session creation from parsed request data.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -44,8 +45,9 @@ host-supplied signed-field rejection, review page generation, and display frame
 renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
-approval-digest binding for future adapters; QR-derived trusted-review session
-creation, real camera, display, and GPIO drivers remain pending.
+approval-digest binding for future adapters, and QR-derived requests can enter
+that same session boundary. Real camera, display, and GPIO drivers remain
+pending.
 
 ## M7: Firmware Foundation
 

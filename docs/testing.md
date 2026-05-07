@@ -25,6 +25,8 @@ tests with strict C++ warnings.
   `content` extraction plus missing or wrong-type field rejection.
 - QR trusted-review tests comparing ESP32-generated pages and
   `approval_digest` values with shared basic and tagged review-screen vectors.
+- QR trusted-review session tests proving parsed QR requests drive bounded
+  display frames, final-page traversal, and request/digest-bound approval.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

@@ -309,4 +309,8 @@ TrustedReviewRequest build_qr_trusted_review_request(const QrSigningRequest& req
     };
 }
 
+TrustedReviewSession begin_qr_trusted_review(const QrSigningRequest& request, ReviewDisplayLimits limits) {
+    return TrustedReviewSession{build_qr_trusted_review_request(request), limits};
+}
+
 }  // namespace nostrseal
