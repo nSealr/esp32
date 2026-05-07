@@ -14,6 +14,7 @@ tests with strict C++ warnings.
 - Serial frame round-trip test against the companion-compatible known frame.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
+- Host test header generation from the shared `NostrSeal/specs` serial vector.
 - Approval gate tests requiring request-id-matched approval before signing is
   permitted.
 

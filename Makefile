@@ -5,8 +5,10 @@ setup:
 
 host-core-test:
 	mkdir -p build/host_core
+	python3 scripts/generate_transport_vector_header.py
 	c++ -std=c++20 -Wall -Wextra -Werror \
 		-Ifirmware/host_core/include \
+		-Ibuild/host_core \
 		firmware/host_core/src/approval_gate.cpp \
 		firmware/host_core/src/serial_frame.cpp \
 		firmware/host_core/src/sha256.cpp \

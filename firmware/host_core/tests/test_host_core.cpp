@@ -5,6 +5,7 @@
 
 #include "nostrseal/approval_gate.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "transport_vector.hpp"
 
 namespace {
 
@@ -21,11 +22,11 @@ void expect_throw(const std::string& expected, const auto& fn) {
 void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame frame{
         nostrseal::FrameType::Request,
-        "eyJ2ZXJzaW9uIjoxfQ",
+        nostrseal::test_vectors::kSerialFramePayloadBase64Url,
     };
 
     const std::string encoded = nostrseal::encode_serial_frame(frame);
-    assert(encoded == "nseal1f:request:eyJ2ZXJzaW9uIjoxfQ:d78075380263956b\n");
+    assert(encoded == nostrseal::test_vectors::kSerialFrame);
 
     const nostrseal::SerialFrame decoded = nostrseal::decode_serial_frame(encoded);
     assert(decoded.type == nostrseal::FrameType::Request);

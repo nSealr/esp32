@@ -33,3 +33,7 @@ The first firmware foundation is host-buildable C++ under
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
 button, secure storage, and signing components.
+
+Host tests generate their transport-vector header from `NostrSeal/specs` so the
+firmware core is checked against the same serial frame vector used by the
+companion.
