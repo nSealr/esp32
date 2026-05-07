@@ -7,11 +7,12 @@ board into a separate repository.
 
 ## Planned Targets
 
-- ESP32-S3 USB/NIP-46 signer with display and buttons.
-- ESP32-S3 QR vault with camera/display research boards.
-- Classic ESP32/TTGO compatibility signer.
-- ESP32-S3 plus TROPIC01 embedded variant.
-- Custom ESP32-S3 product PCB firmware.
+- ESP32 USB/NIP-46 signer with ESP32-S3 as the primary display/button target.
+- ESP32 stateless QR vault with T-Display S3 Pro OV5640 as the primary
+  camera/display target.
+- Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.
+- Future ESP32-S3 plus TROPIC01 prototype only under the custom
+  persistent-secret hardware-wallet research family.
 
 ## Current Capabilities
 
@@ -63,7 +64,7 @@ board into a separate repository.
 - Generated host test fixtures from shared serial and review-screen vectors in
   `NostrSeal/specs`.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
-  primary ESP32-S3 QR vault candidate. The profile documents display, camera,
+  primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
   does not add real camera/display/GPIO drivers.
 
@@ -73,10 +74,11 @@ The current firmware is still a scaffold. It logs startup, answers
 the shared `sign_event` fixture, and keeps real signing disabled until storage,
 trusted review, approval controls, and signing tests are implemented.
 
-The future ESP32-S3 QR vault target belongs in this repository as ESP32
+The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen
 vectors, `approval_digest`, and signing vectors from `NostrSeal/specs`; it
-should not depend on Raspberry implementation code.
+should not depend on Raspberry implementation code. It has no persistent secret
+and no TROPIC01 dependency.
 
 ## Initial Layout
 
