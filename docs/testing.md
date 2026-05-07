@@ -14,7 +14,8 @@ tests with strict C++ warnings.
 - Serial frame round-trip test against the companion-compatible known frame.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
-- Host test header generation from the shared `NostrSeal/specs` serial vector.
+- Host test header generation from the shared `NostrSeal/specs` serial and
+  review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
   is still guarded by `NostrSeal/lab` integration checks.
@@ -27,7 +28,9 @@ tests with strict C++ warnings.
   body lines, action hints, and rejection of unsafe display bounds.
 - Trusted review-session tests requiring display navigation, final-page
   approval, request/digest-bound `can_sign`, and rejection as a terminal
-  non-signing decision.
+  non-signing decision. These tests consume generated trusted review requests
+  from the shared review-screen vectors instead of duplicating page content by
+  hand.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

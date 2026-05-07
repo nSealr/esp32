@@ -184,34 +184,7 @@ void test_review_display_rejects_unsafe_frame_bounds() {
 }
 
 void test_trusted_review_session_binds_display_navigation_and_approval() {
-    nostrseal::TrustedReviewSession session{
-        nostrseal::TrustedReviewRequest{
-            "req-kind-1-basic",
-            nostrseal::test_vectors::kBasicReviewScreenApprovalDigest,
-            {
-                nostrseal::TrustedReviewPage{
-                    "Event",
-                    {"Kind 1", "Short Text Note", "Created 1710000000"},
-                    nostrseal::ReviewPageAction::Next,
-                },
-                nostrseal::TrustedReviewPage{
-                    "Content",
-                    {"NostrSeal fixture: basic kind 1 event."},
-                    nostrseal::ReviewPageAction::Next,
-                },
-                nostrseal::TrustedReviewPage{
-                    "Tags",
-                    {"No tags"},
-                    nostrseal::ReviewPageAction::Next,
-                },
-                nostrseal::TrustedReviewPage{
-                    "Decision",
-                    {"Approve signing only if all pages match."},
-                    nostrseal::ReviewPageAction::ApproveOrReject,
-                },
-            },
-        },
-    };
+    nostrseal::TrustedReviewSession session{nostrseal::test_vectors::basic_trusted_review_request()};
 
     const nostrseal::ReviewDisplayFrame first_frame = session.current_frame();
     assert(first_frame.title == "Event");
@@ -240,19 +213,22 @@ void test_trusted_review_session_binds_display_navigation_and_approval() {
 }
 
 void test_trusted_review_session_keeps_rejection_terminal() {
-    nostrseal::TrustedReviewSession session{
-        nostrseal::TrustedReviewRequest{
-            "req-kind-1-tags",
-            nostrseal::test_vectors::kTaggedReviewScreenApprovalDigest,
-            {
-                nostrseal::TrustedReviewPage{
-                    "Warnings",
-                    {"Event includes pubkey mentions."},
-                    nostrseal::ReviewPageAction::ApproveOrReject,
-                },
-            },
-        },
-    };
+    nostrseal::TrustedReviewSession session{nostrseal::test_vectors::tagged_trusted_review_request()};
+
+    const nostrseal::ReviewDisplayFrame first_frame = session.current_frame();
+    assert(first_frame.title == "Event");
+    assert(first_frame.page_indicator == "Page 1/4");
+
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+    const nostrseal::ReviewDisplayFrame tags_frame = session.current_frame();
+    assert(tags_frame.title == "Tags");
+    assert((tags_frame.body_lines == std::vector<std::string>{"2 tags", "p: 4f355bdc...", "t: nostrseal"}));
+
+    (void)session.handle_button(nostrseal::ReviewButton::Next);
+    const nostrseal::ReviewDisplayFrame warnings_frame = session.current_frame();
+    assert(warnings_frame.title == "Warnings");
+    assert((warnings_frame.body_lines == std::vector<std::string>{"Event includes pubkey mentions."}));
 
     const auto rejection = session.handle_button(nostrseal::ReviewButton::Reject);
 

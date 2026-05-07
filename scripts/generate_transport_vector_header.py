@@ -34,6 +34,43 @@ def serial_frame(frame_type: str, payload_base64url: str) -> str:
     return f"nseal1f:{frame_type}:{payload_base64url}:{checksum}\n"
 
 
+def cpp_review_action(action: str) -> str:
+    if action == "next":
+        return "nostrseal::ReviewPageAction::Next"
+    if action == "approve_or_reject":
+        return "nostrseal::ReviewPageAction::ApproveOrReject"
+    raise ValueError(f"unsupported review page action: {action}")
+
+
+def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
+    lines = [
+        f"inline nostrseal::TrustedReviewRequest {name}() {{",
+        "    return nostrseal::TrustedReviewRequest{",
+        f"        {cpp_string(screen_review['request_id'])},",
+        f"        {cpp_string(screen_review['approval_digest'])},",
+        "        {",
+    ]
+    for page in screen_review["pages"]:
+        body_lines = ", ".join(cpp_string(line) for line in page["lines"])
+        lines.extend(
+            [
+                "            nostrseal::TrustedReviewPage{",
+                f"                {cpp_string(page['title'])},",
+                f"                {{{body_lines}}},",
+                f"                {cpp_review_action(page['action'])},",
+                "            },",
+            ]
+        )
+    lines.extend(
+        [
+            "        },",
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def main() -> int:
     specs = default_specs_dir()
     vector = json.loads(
@@ -66,6 +103,8 @@ def main() -> int:
             [
                 "#pragma once",
                 "",
+                '#include "nostrseal/trusted_review.hpp"',
+                "",
                 "namespace nostrseal::test_vectors {",
                 f"constexpr const char* kSerialFrameType = {cpp_string(vector['type'])};",
                 f"constexpr const char* kSerialFramePayloadBase64Url = {cpp_string(vector['payload_base64url'])};",
@@ -84,6 +123,10 @@ def main() -> int:
                 f"constexpr const char* kPublicKeyResponseFrame = {cpp_string(serial_frame('response', public_key_response_payload))};",
                 f"constexpr const char* kBasicReviewScreenApprovalDigest = {cpp_string(basic_review_screen['screen_review']['approval_digest'])};",
                 f"constexpr const char* kTaggedReviewScreenApprovalDigest = {cpp_string(tagged_review_screen['screen_review']['approval_digest'])};",
+                "",
+                *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
+                "",
+                *trusted_review_factory("tagged_trusted_review_request", tagged_review_screen["screen_review"]),
                 "}  // namespace nostrseal::test_vectors",
                 "",
             ]

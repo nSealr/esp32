@@ -32,6 +32,8 @@ board into a separate repository.
   approval before a request can be signed.
 - Host-buildable review controls, display frames, and trusted review session
   that model the future display/button approval loop without enabling signing.
+- Generated host test fixtures from shared serial and review-screen vectors in
+  `NostrSeal/specs`.
 
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for

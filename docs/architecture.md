@@ -60,9 +60,10 @@ button, secure storage, and signing components.
 Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion.
-The same generated header now includes review-screen approval digests, allowing
-the host-core approval gate to reject request/review swaps before any future
-signing backend is connected.
+The same generated header now includes review-screen approval digests and
+trusted review request factories, allowing the host-core approval gate and
+trusted-review session to reject request/review swaps before any future signing
+backend is connected.
 
 The review-control state machine is intentionally separate from
 `approval_gate`: `review_controls` models local user navigation, while
