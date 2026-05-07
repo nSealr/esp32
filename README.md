@@ -29,6 +29,9 @@ board into a separate repository.
   version, `request_id`, method, `params` presence, and the raw
   `params.event_template` object boundary. It does not parse event-template
   fields or enable signing.
+- QR event-template safety gate rejecting host-supplied `id`, `pubkey`, or
+  `sig` fields before any future review/signing path. The parser tolerates
+  normal JSON string escapes while keeping full event semantics pending.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

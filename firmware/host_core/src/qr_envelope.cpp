@@ -121,6 +121,37 @@ void skip_ws(const std::string& json, std::size_t& offset) {
     }
 }
 
+int hex_value(char ch) {
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    }
+    if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    }
+    if (ch >= 'A' && ch <= 'F') {
+        return ch - 'A' + 10;
+    }
+    return -1;
+}
+
+char parse_json_ascii_unicode_escape(const std::string& json, std::size_t& offset) {
+    if (offset + 4U > json.size()) {
+        throw QrEnvelopeError("QR signing request JSON unicode escape is truncated");
+    }
+    int codepoint = 0;
+    for (int index = 0; index < 4; ++index) {
+        const int nibble = hex_value(json[offset++]);
+        if (nibble < 0) {
+            throw QrEnvelopeError("QR signing request JSON unicode escape is invalid");
+        }
+        codepoint = (codepoint << 4) | nibble;
+    }
+    if (codepoint > 0x7f) {
+        return '?';
+    }
+    return static_cast<char>(codepoint);
+}
+
 std::string parse_simple_json_string(const std::string& json, std::size_t& offset) {
     if (offset >= json.size() || json[offset] != '"') {
         throw QrEnvelopeError("QR signing request JSON string is required");
@@ -133,7 +164,38 @@ std::string parse_simple_json_string(const std::string& json, std::size_t& offse
             return value;
         }
         if (ch == '\\') {
-            throw QrEnvelopeError("QR signing request JSON string escapes are not supported");
+            if (offset >= json.size()) {
+                throw QrEnvelopeError("QR signing request JSON string escape is truncated");
+            }
+            const char escaped = json[offset++];
+            switch (escaped) {
+                case '"':
+                case '\\':
+                case '/':
+                    value.push_back(escaped);
+                    break;
+                case 'b':
+                    value.push_back('\b');
+                    break;
+                case 'f':
+                    value.push_back('\f');
+                    break;
+                case 'n':
+                    value.push_back('\n');
+                    break;
+                case 'r':
+                    value.push_back('\r');
+                    break;
+                case 't':
+                    value.push_back('\t');
+                    break;
+                case 'u':
+                    value.push_back(parse_json_ascii_unicode_escape(json, offset));
+                    break;
+                default:
+                    throw QrEnvelopeError("QR signing request JSON string escape is invalid");
+            }
+            continue;
         }
         if (static_cast<unsigned char>(ch) < 0x20U) {
             throw QrEnvelopeError("QR signing request JSON string contains control character");
@@ -263,6 +325,15 @@ std::map<std::string, JsonTopLevelValue> parse_top_level_object(const std::strin
     return values;
 }
 
+void reject_forbidden_event_template_fields(const std::string& event_template_json) {
+    const auto event_template = parse_top_level_object(event_template_json);
+    for (const char* field : {"id", "pubkey", "sig"}) {
+        if (event_template.find(field) != event_template.end()) {
+            throw QrEnvelopeError(std::string{"QR signing request event_template must not include "} + field);
+        }
+    }
+}
+
 }  // namespace
 
 QrEnvelope decode_qr_envelope(const std::string& envelope) {
@@ -305,6 +376,7 @@ QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
     if (event_template == params_values.end() || event_template->second.kind != JsonValueKind::Object) {
         throw QrEnvelopeError("QR signing request event_template object is required");
     }
+    reject_forbidden_event_template_fields(event_template->second.value);
     return QrSigningRequest{1, request_id->second.value, method->second.value, true, true, event_template->second.value};
 }
 
