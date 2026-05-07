@@ -23,8 +23,8 @@ tests with strict C++ warnings.
   rejection of host-supplied `id`, `pubkey`, and `sig` fields.
 - QR event-template field tests covering `created_at`, `kind`, `tags`, and
   `content` extraction plus missing or wrong-type field rejection.
-- QR review-page tests comparing ESP32-generated pages with shared basic and
-  tagged review-screen vectors.
+- QR trusted-review tests comparing ESP32-generated pages and
+  `approval_digest` values with shared basic and tagged review-screen vectors.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

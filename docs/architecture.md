@@ -41,8 +41,8 @@ The first firmware foundation is host-buildable C++ under
   code exists. It parses only the minimum unsigned event-template fields:
   `created_at`, `kind`, `tags`, and `content`.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
-  trusted-review pages that match the shared review-screen vectors. It does not
-  compute `approval_digest` yet.
+  trusted-review pages and QR-derived `approval_digest` values that match the
+  shared review-screen vectors.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -99,10 +99,10 @@ current field parser validates only the unsigned event-template primitives that
 future review generation needs; tag semantics, event id computation, key
 storage, and signing remain absent.
 
-The QR review-page builder consumes those parsed primitives and emits the same
-page order and text as `NostrSeal/specs` review-screen vectors for basic and
-tagged kind `1` requests. It still stops before approval-digest calculation,
-trusted-review session creation from QR, hardware display output, or signing.
+The QR review builder consumes those parsed primitives and emits the same page
+order, text, and `approval_digest` as `NostrSeal/specs` review-screen vectors
+for basic and tagged kind `1` requests. It still stops before trusted-review
+session creation from QR, hardware display output, or signing.
 
 The trusted-review session intentionally stops before JSON parsing, hardware
 drivers, key storage, or Schnorr signing. It proves the local review loop can

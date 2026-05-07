@@ -201,6 +201,18 @@ void test_qr_review_pages_match_shared_basic_vector() {
         nostrseal::test_vectors::basic_trusted_review_request().pages);
 }
 
+void test_qr_trusted_review_request_matches_shared_basic_vector() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(envelope);
+    const nostrseal::TrustedReviewRequest review_request = nostrseal::build_qr_trusted_review_request(request);
+    const nostrseal::TrustedReviewRequest expected = nostrseal::test_vectors::basic_trusted_review_request();
+
+    assert(review_request.request_id == expected.request_id);
+    assert(review_request.approval_digest == expected.approval_digest);
+    assert_trusted_review_pages(review_request.pages, expected.pages);
+}
+
 void test_qr_review_pages_match_shared_tagged_vector() {
     const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
         "ignored",
@@ -209,6 +221,18 @@ void test_qr_review_pages_match_shared_tagged_vector() {
     assert_trusted_review_pages(
         nostrseal::build_qr_review_pages(request),
         nostrseal::test_vectors::tagged_trusted_review_request().pages);
+}
+
+void test_qr_trusted_review_request_matches_shared_tagged_vector() {
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+        "ignored",
+        R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})"});
+    const nostrseal::TrustedReviewRequest review_request = nostrseal::build_qr_trusted_review_request(request);
+    const nostrseal::TrustedReviewRequest expected = nostrseal::test_vectors::tagged_trusted_review_request();
+
+    assert(review_request.request_id == expected.request_id);
+    assert(review_request.approval_digest == expected.approval_digest);
+    assert_trusted_review_pages(review_request.pages, expected.pages);
 }
 
 void test_approval_gate_requires_matching_approval() {
@@ -439,7 +463,9 @@ int main() {
     test_qr_envelope_rejections();
     test_qr_signing_request_rejections();
     test_qr_review_pages_match_shared_basic_vector();
+    test_qr_trusted_review_request_matches_shared_basic_vector();
     test_qr_review_pages_match_shared_tagged_vector();
+    test_qr_trusted_review_request_matches_shared_tagged_vector();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

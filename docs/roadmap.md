@@ -25,7 +25,8 @@
   `sig` fields before any future review or signing path.
 - Minimal QR event-template field parser for `created_at`, `kind`, `tags`, and
   `content`.
-- QR trusted-review page builder checked against shared review-screen vectors.
+- QR trusted-review builder checked against shared review-screen page and
+  `approval_digest` vectors.
 - Shared-spec review-screen approval digest binding in the host approval gate.
 - Host-buildable review button state machine for page traversal before
   approval and terminal approve/reject decisions.
@@ -43,8 +44,8 @@ host-supplied signed-field rejection, review page generation, and display frame
 renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
-approval-digest binding for future adapters; QR-derived `approval_digest`, real
-camera, display, and GPIO drivers remain pending.
+approval-digest binding for future adapters; QR-derived trusted-review session
+creation, real camera, display, and GPIO drivers remain pending.
 
 ## M7: Firmware Foundation
 
@@ -76,8 +77,8 @@ camera, display, and GPIO drivers remain pending.
   are implemented. It also rejects host-supplied `id`, `pubkey`, or `sig`
   fields and parses the minimal unsigned event fields `created_at`, `kind`,
   `tags`, and `content`. QR review pages now match shared basic/tagged
-  review-screen vectors; camera capture, animated-frame reconstruction,
-  QR-derived `approval_digest`, hardware display output, and signing-vector
+  review-screen page and `approval_digest` vectors; camera capture,
+  animated-frame reconstruction, hardware display output, and signing-vector
   consumption remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
