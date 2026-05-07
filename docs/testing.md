@@ -19,6 +19,8 @@ tests with strict C++ warnings.
   permitted.
 - ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
   profile, and unsupported-claim rejection.
+- ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
+  report parsing, and missing-toolchain reporting.
 
 ## Required Tests
 

@@ -17,15 +17,16 @@ board into a separate repository.
 
 - Host-buildable C++ firmware core foundation.
 - ESP-IDF scaffold for the ESP32-S3 USB signer target.
+- Host-side ESP32-S3 detection gate for native USB/JTAG serial boards.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
 - Portable SHA-256 checksum helper for frame corruption detection.
 - Approval gate state machine requiring request-id-matched approval before a
   request can be signed.
 
-No firmware build or flash has been performed yet because local `idf.py`,
-`esptool`, and a usable ESP32-S3 serial port were not available during this
-implementation pass.
+No firmware build or flash has been performed yet. A physical ESP32-S3 board is
+now visible at `/dev/cu.usbmodem1101`, but local `idf.py`, `esptool.py`, and
+`esptool` are not available in the current shell.
 
 ## Initial Layout
 
@@ -42,6 +43,11 @@ make ci
 ```
 
 Build/flash prerequisites and commands are documented in `docs/flash.md`.
+Physical board detection can be checked with:
+
+```sh
+make detect-board
+```
 
 ## License
 

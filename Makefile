@@ -1,4 +1,4 @@
-.PHONY: setup test lint audit docs ci host-core-test
+.PHONY: setup test lint audit docs ci host-core-test detect-board
 
 setup:
 	@echo "No setup required until the ESP-IDF project is introduced."
@@ -15,6 +15,9 @@ host-core-test:
 		firmware/host_core/tests/test_host_core.cpp \
 		-o build/host_core/test_host_core
 	build/host_core/test_host_core
+
+detect-board:
+	python3 scripts/detect_esp32_s3.py --json
 
 test:
 	python3 scripts/verify_repo.py

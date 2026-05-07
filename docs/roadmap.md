@@ -8,8 +8,10 @@
 - Host test binary with strict warnings.
 - ESP-IDF project scaffold.
 - ESP32-S3 DevKitC-1 board profile.
+- Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 
-Status: implemented as the first firmware-core and ESP-IDF scaffold foundation.
+Status: implemented as the first firmware-core, ESP-IDF scaffold, and hardware
+detection foundation.
 
 ## M7: Firmware Foundation
 

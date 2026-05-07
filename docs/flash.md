@@ -5,13 +5,33 @@ The repository now contains an ESP-IDF project scaffold at
 
 ## Current Local Tool Status
 
-On the workstation used for this implementation pass:
+On the workstation used for this implementation pass, the ESP32-S3 board is now
+visible:
 
-- `idf.py` was not installed.
-- `esptool.py` / `esptool` was not installed.
-- No ESP32-S3 serial device was visible under `/dev/cu.*`.
+- serial port: `/dev/cu.usbmodem1101`
+- USB vendor: `Espressif`
+- USB product: `USB JTAG_serial debug unit`
+- USB serial number: `EC:DA:3B:95:32:98`
+- native USB JTAG/serial: detected
+
+The firmware toolchain is still missing from the current shell:
+
+- `idf.py`: missing
+- `esptool.py`: missing
+- `esptool`: missing
 
 Therefore no firmware build or flash was attempted.
+
+## Detection Command
+
+Run the host-side detection gate with:
+
+```sh
+make detect-board
+```
+
+This command is intentionally separate from `make ci` because CI and most
+developer machines will not have a physical board attached.
 
 ## Expected Build Command
 
