@@ -18,6 +18,7 @@ host-core-test: generate-host-vectors
 		firmware/host_core/src/device_protocol.cpp \
 		firmware/host_core/src/qr_envelope.cpp \
 		firmware/host_core/src/qr_review.cpp \
+		firmware/host_core/src/qr_review_flow.cpp \
 		firmware/host_core/src/review_controls.cpp \
 		firmware/host_core/src/review_display.cpp \
 		firmware/host_core/src/serial_frame.cpp \

@@ -43,6 +43,9 @@ The first firmware foundation is host-buildable C++ under
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
+- `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
+  envelopes to trusted review frames and approval state. It is the adapter
+  target for future camera/display/GPIO code and has no signing backend.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -106,6 +109,12 @@ from a parsed QR request, so the future QR path can reuse the same bounded
 display frames, final-page traversal, and request/digest-bound approval gate as
 the USB/display signer line. It still stops before hardware display output or
 signing.
+
+`QrReviewFlow` packages that sequence for future scanner/display adapters: raw
+QR envelope decode, request parsing, trusted-review construction, frame
+rendering, and button handling. Rejected QR requests fail before any review
+frame is shown. Approval only reaches the host-core approval state; there is no
+signature-producing function in this flow.
 
 The trusted-review session intentionally stops before hardware drivers, key
 storage, or Schnorr signing. It proves the local review loop can only reach

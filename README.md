@@ -42,6 +42,9 @@ board into a separate repository.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
+- `QrReviewFlow` host-core boundary from raw scanned `nseal1:` QR envelope to
+  trusted review frames and physical approval state. It rejects unsafe QR
+  requests before a future camera/display adapter can display them.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

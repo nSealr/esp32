@@ -8,6 +8,7 @@
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/qr_review.hpp"
+#include "nostrseal/qr_review_flow.hpp"
 #include "nostrseal/review_controls.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
@@ -264,6 +265,45 @@ void test_qr_trusted_review_session_binds_qr_digest_and_navigation() {
     assert(session.can_sign());
 }
 
+void test_qr_review_flow_drives_scanned_qr_without_signing_backend() {
+    nostrseal::QrReviewFlow flow{nostrseal::test_vectors::kQrEnvelopeKind1Basic};
+    const nostrseal::TrustedReviewRequest expected = nostrseal::test_vectors::basic_trusted_review_request();
+
+    assert(flow.request_id() == expected.request_id);
+    assert(flow.approval_digest() == expected.approval_digest);
+    assert(!flow.approved_for_signing());
+
+    const nostrseal::ReviewDisplayFrame first_frame = flow.current_frame();
+    assert(first_frame.title == "Event");
+    assert(first_frame.page_indicator == "Page 1/4");
+
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)flow.handle_button(nostrseal::ReviewButton::Approve);
+    });
+
+    (void)flow.handle_button(nostrseal::ReviewButton::Next);
+    (void)flow.handle_button(nostrseal::ReviewButton::Next);
+    (void)flow.handle_button(nostrseal::ReviewButton::Next);
+
+    const nostrseal::ReviewDisplayFrame decision_frame = flow.current_frame();
+    assert(decision_frame.title == "Decision");
+    assert(!flow.approved_for_signing());
+
+    const auto approval = flow.handle_button(nostrseal::ReviewButton::Approve);
+    assert(approval.has_value());
+    assert(approval.value());
+    assert(flow.approved_for_signing());
+    assert(flow.decision() == nostrseal::ApprovalDecision::Approved);
+}
+
+void test_qr_review_flow_rejects_unsafe_scanned_qr() {
+    expect_throw("QR signing request event_template must not include sig", [] {
+        nostrseal::QrReviewFlow flow{
+            R"(nseal1:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1iYXNpYyIsIm1ldGhvZCI6InNpZ25fZXZlbnQiLCJwYXJhbXMiOnsiZXZlbnRfdGVtcGxhdGUiOnsiY3JlYXRlZF9hdCI6MTcxMDAwMDAwMCwia2luZCI6MSwidGFncyI6W10sImNvbnRlbnQiOiIiLCJzaWciOiIwMCJ9fX0)"};
+        (void)flow;
+    });
+}
+
 void test_approval_gate_requires_matching_approval() {
     nostrseal::ApprovalGate gate;
     gate.begin_review("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
@@ -496,6 +536,8 @@ int main() {
     test_qr_review_pages_match_shared_tagged_vector();
     test_qr_trusted_review_request_matches_shared_tagged_vector();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
+    test_qr_review_flow_drives_scanned_qr_without_signing_backend();
+    test_qr_review_flow_rejects_unsafe_scanned_qr();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

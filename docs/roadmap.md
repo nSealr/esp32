@@ -36,6 +36,8 @@
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
 - QR-derived trusted-review session creation from parsed request data.
+- `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
+  review frames and approval state, without signing.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -46,8 +48,8 @@ renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
-that same session boundary. Real camera, display, and GPIO drivers remain
-pending.
+that same session boundary through a raw-QR review flow. Real camera, display,
+and GPIO drivers remain pending.
 
 ## M7: Firmware Foundation
 
@@ -81,7 +83,8 @@ pending.
   `tags`, and `content`. QR review pages now match shared basic/tagged
   review-screen page and `approval_digest` vectors; camera capture,
   animated-frame reconstruction, hardware display output, and signing-vector
-  consumption remain pending.
+  consumption remain pending. Raw QR review flow is available in host-core for
+  future camera/display/GPIO adapters.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.
