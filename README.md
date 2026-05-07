@@ -32,6 +32,9 @@ board into a separate repository.
 - QR event-template safety gate rejecting host-supplied `id`, `pubkey`, or
   `sig` fields before any future review/signing path. The parser tolerates
   normal JSON string escapes while keeping full event semantics pending.
+- Minimal QR event-template field parsing for `created_at`, `kind`, `tags`, and
+  `content`. This prepares trusted review generation without enabling tag
+  semantics, key storage, or signing.
 - ESP32-S3 scaffold capability response over the same `nseal1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic

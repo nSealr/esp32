@@ -23,6 +23,8 @@
   raw `params.event_template` object boundary.
 - QR event-template safety gate rejecting host-supplied `id`, `pubkey`, or
   `sig` fields before any future review or signing path.
+- Minimal QR event-template field parser for `created_at`, `kind`, `tags`, and
+  `content`.
 - Shared-spec review-screen approval digest binding in the host approval gate.
 - Host-buildable review button state machine for page traversal before
   approval and terminal approve/reject decisions.
@@ -37,9 +39,11 @@ detection, capability-response, development public-key response, and local
 hardware smoke-test foundation. The QR envelope decoder, QR request metadata
 parser, event-template object boundary extraction, review button state machine,
 host-supplied signed-field rejection, review button state machine, and display
-frame renderer are implemented in host-core only. The trusted review session
-now ties review controls and display frames to approval-digest binding for
-future adapters; real camera, display, and GPIO drivers remain pending.
+frame renderer are implemented in host-core only. The QR path also validates
+the minimal unsigned event-template fields needed by future review generation.
+The trusted review session now ties review controls and display frames to
+approval-digest binding for future adapters; real camera, display, and GPIO
+drivers remain pending.
 
 ## M7: Firmware Foundation
 
@@ -69,8 +73,9 @@ future adapters; real camera, display, and GPIO drivers remain pending.
   Status: host-core `nseal1:` envelope decoding, top-level `sign_event`
   metadata parsing, and raw `params.event_template` object boundary extraction
   are implemented. It also rejects host-supplied `id`, `pubkey`, or `sig`
-  fields; camera capture, animated-frame reconstruction, full event-template
-  parsing, review generation, and signing-vector consumption remain pending.
+  fields and parses the minimal unsigned event fields `created_at`, `kind`,
+  `tags`, and `content`; camera capture, animated-frame reconstruction, tag
+  semantics, review generation, and signing-vector consumption remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.

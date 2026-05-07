@@ -38,7 +38,8 @@ The first firmware foundation is host-buildable C++ under
   vault target. It also classifies decoded `sign_event` requests by top-level
   metadata, extracts the raw `params.event_template` object boundary, and
   rejects host-supplied `id`, `pubkey`, or `sig` fields before review/signing
-  code exists.
+  code exists. It parses only the minimum unsigned event-template fields:
+  `created_at`, `kind`, `tags`, and `content`.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -90,7 +91,10 @@ parsing, review generation, or signing. Its request parser extracts version,
 object boundary before later review code does real request handling. It also
 tolerates normal JSON string escapes and rejects event templates that already
 include `id`, `pubkey`, or `sig`. Those layers must be added behind separate
-tests and must continue to consume shared vectors from `NostrSeal/specs`.
+tests and must continue to consume shared vectors from `NostrSeal/specs`. The
+current field parser validates only the unsigned event-template primitives that
+future review generation needs; tag semantics, event id computation, key
+storage, and signing remain absent.
 
 The trusted-review session intentionally stops before JSON parsing, hardware
 drivers, key storage, or Schnorr signing. It proves the local review loop can

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <string_view>
 #include <vector>
@@ -325,13 +326,60 @@ std::map<std::string, JsonTopLevelValue> parse_top_level_object(const std::strin
     return values;
 }
 
-void reject_forbidden_event_template_fields(const std::string& event_template_json) {
+std::uint64_t parse_unsigned_decimal(std::string_view token, const char* field_name) {
+    if (token.empty() || token.front() == '-') {
+        throw QrEnvelopeError(std::string{"QR signing request event_template "} + field_name + " is required");
+    }
+    std::uint64_t value = 0;
+    for (const char ch : token) {
+        if (ch < '0' || ch > '9') {
+            throw QrEnvelopeError(std::string{"QR signing request event_template "} + field_name + " is required");
+        }
+        const std::uint64_t digit = static_cast<std::uint64_t>(ch - '0');
+        if (value > (std::numeric_limits<std::uint64_t>::max() - digit) / 10U) {
+            throw QrEnvelopeError(std::string{"QR signing request event_template "} + field_name + " is invalid");
+        }
+        value = (value * 10U) + digit;
+    }
+    return value;
+}
+
+QrEventTemplate parse_event_template_fields(const std::string& event_template_json) {
     const auto event_template = parse_top_level_object(event_template_json);
     for (const char* field : {"id", "pubkey", "sig"}) {
         if (event_template.find(field) != event_template.end()) {
             throw QrEnvelopeError(std::string{"QR signing request event_template must not include "} + field);
         }
     }
+
+    const auto created_at = event_template.find("created_at");
+    if (created_at == event_template.end() || created_at->second.kind != JsonValueKind::Number) {
+        throw QrEnvelopeError("QR signing request event_template created_at is required");
+    }
+    const auto kind = event_template.find("kind");
+    if (kind == event_template.end() || kind->second.kind != JsonValueKind::Number) {
+        throw QrEnvelopeError("QR signing request event_template kind is required");
+    }
+    const auto tags = event_template.find("tags");
+    if (tags == event_template.end() || tags->second.kind != JsonValueKind::Array) {
+        throw QrEnvelopeError("QR signing request event_template tags array is required");
+    }
+    const auto content = event_template.find("content");
+    if (content == event_template.end() || content->second.kind != JsonValueKind::String) {
+        throw QrEnvelopeError("QR signing request event_template content is required");
+    }
+
+    const std::uint64_t kind_value = parse_unsigned_decimal(kind->second.value, "kind");
+    if (kind_value > static_cast<std::uint64_t>(std::numeric_limits<int>::max())) {
+        throw QrEnvelopeError("QR signing request event_template kind is invalid");
+    }
+
+    return QrEventTemplate{
+        parse_unsigned_decimal(created_at->second.value, "created_at"),
+        static_cast<int>(kind_value),
+        tags->second.value,
+        content->second.value,
+    };
 }
 
 }  // namespace
@@ -376,8 +424,9 @@ QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
     if (event_template == params_values.end() || event_template->second.kind != JsonValueKind::Object) {
         throw QrEnvelopeError("QR signing request event_template object is required");
     }
-    reject_forbidden_event_template_fields(event_template->second.value);
-    return QrSigningRequest{1, request_id->second.value, method->second.value, true, true, event_template->second.value};
+    const QrEventTemplate parsed_event_template = parse_event_template_fields(event_template->second.value);
+    return QrSigningRequest{
+        1, request_id->second.value, method->second.value, true, true, event_template->second.value, parsed_event_template};
 }
 
 }  // namespace nostrseal

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -10,6 +11,13 @@ struct QrEnvelope {
     std::string payload_json;
 };
 
+struct QrEventTemplate {
+    std::uint64_t created_at;
+    int kind;
+    std::string tags_json;
+    std::string content;
+};
+
 struct QrSigningRequest {
     int version;
     std::string request_id;
@@ -17,6 +25,7 @@ struct QrSigningRequest {
     bool has_params;
     bool has_event_template;
     std::string event_template_json;
+    QrEventTemplate event_template;
 };
 
 class QrEnvelopeError final : public std::runtime_error {

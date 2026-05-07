@@ -21,6 +21,8 @@ tests with strict C++ warnings.
   boundary without parsing event-template fields or enabling signing.
 - QR event-template safety tests covering escaped content tolerance and
   rejection of host-supplied `id`, `pubkey`, and `sig` fields.
+- QR event-template field tests covering `created_at`, `kind`, `tags`, and
+  `content` extraction plus missing or wrong-type field rejection.
 - Host test header generation from the shared `NostrSeal/specs` serial and
   review-screen vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`

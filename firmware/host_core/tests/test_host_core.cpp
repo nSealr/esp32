@@ -82,12 +82,24 @@ void test_qr_envelope_extracts_event_template_boundary() {
            std::string::npos);
 }
 
+void test_qr_envelope_parses_event_template_fields() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(envelope);
+
+    assert(request.event_template.created_at == 1710000000U);
+    assert(request.event_template.kind == 1);
+    assert(request.event_template.content == "NostrSeal fixture: basic kind 1 event.");
+    assert(request.event_template.tags_json == "[]");
+}
+
 void test_qr_signing_request_tolerates_escaped_event_content() {
     const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(
         nostrseal::QrEnvelope{"ignored",
                               R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"Quote: \"nostr\"\nNext line"}}})"});
 
     assert(request.has_event_template);
+    assert(request.event_template.content == "Quote: \"nostr\"\nNext line");
     assert(request.event_template_json.find(R"("content":"Quote: \"nostr\"\nNext line")") != std::string::npos);
 }
 
@@ -144,6 +156,26 @@ void test_qr_signing_request_rejections() {
         (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
             "ignored",
             R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"","sig":"00"}}})"});
+    });
+    expect_throw("QR signing request event_template created_at is required", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"kind":1,"tags":[],"content":""}}})"});
+    });
+    expect_throw("QR signing request event_template kind is required", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":"1","tags":[],"content":""}}})"});
+    });
+    expect_throw("QR signing request event_template tags array is required", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":{},"content":""}}})"});
+    });
+    expect_throw("QR signing request event_template content is required", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[]}}})"});
     });
 }
 
@@ -370,6 +402,7 @@ int main() {
     test_qr_envelope_decodes_shared_vector();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();
+    test_qr_envelope_parses_event_template_fields();
     test_qr_signing_request_tolerates_escaped_event_content();
     test_qr_envelope_rejections();
     test_qr_signing_request_rejections();
