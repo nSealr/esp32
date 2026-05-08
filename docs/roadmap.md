@@ -129,6 +129,13 @@ error frames for invalid metadata and 20 serial-wrapped invalid signing-request
 vectors, including `params` misuse on the parameterless `get_capabilities` and
 `get_public_key` methods. Real signing remains disabled.
 
+Hardware note, 2026-05-08: revision `9ae6e7a` was built and flashed to the
+same attached ESP32-S3 DevKitC-1. The expanded hardware smoke verified six
+valid static/dynamic responses plus 27 deterministic `unsupported_request`
+error frames for invalid metadata and 25 serial-wrapped invalid signing-request
+vectors, including structurally invalid `sign_event` `params` and
+`event_template` shapes. Real signing remains disabled.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
