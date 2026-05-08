@@ -1,3 +1,4 @@
+import base64
 import json
 import unittest
 from pathlib import Path
@@ -10,6 +11,12 @@ from scripts.validate_firmware import validate_firmware_project
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def decode_serial_frame_payload(frame: str) -> dict:
+    payload = frame.strip().split(":")[2]
+    padded = payload + ("=" * ((4 - len(payload) % 4) % 4))
+    return json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
 
 
 class FirmwareProjectValidationTests(unittest.TestCase):
@@ -183,6 +190,21 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertIn("response", response_frame)
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
+
+    def test_smoke_script_builds_dynamic_request_id_exchanges(self) -> None:
+        exchanges = smoke_capabilities.load_dynamic_request_id_frames()
+
+        self.assertEqual(len(exchanges), 3)
+        for request_frame, response_frame in exchanges:
+            request = decode_serial_frame_payload(request_frame)
+            response = decode_serial_frame_payload(response_frame)
+
+            self.assertTrue(request["request_id"].startswith("dynamic-smoke-"))
+            self.assertEqual(response["request_id"], request["request_id"])
+
+        sign_response = decode_serial_frame_payload(exchanges[2][1])
+        self.assertFalse(sign_response["ok"])
+        self.assertEqual(sign_response["error"]["code"], "signing_disabled")
 
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
         frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"

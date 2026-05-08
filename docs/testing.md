@@ -80,7 +80,9 @@ tests with strict C++ warnings.
   ESP32-S3 board.
 - Optional hardware capability/public-key/signing-disabled smoke test with
   `make idf-smoke-capabilities` after exporting ESP-IDF and flashing the current
-  firmware.
+  firmware. The smoke sends both shared fixture request frames and dynamic
+  `request_id` variants so parser changes cannot silently fall back to exact
+  fixture matching.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

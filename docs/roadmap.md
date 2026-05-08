@@ -89,6 +89,12 @@ request ids in `get_capabilities`, development `get_public_key`, and disabled
 `sign_event` responses. `sign_event` still returns `signing_disabled`; no
 signing backend, storage, display driver, or GPIO approval path is connected.
 
+Status note, 2026-05-08: `make idf-smoke-capabilities` now sends both the
+shared fixture requests and dynamic `request_id` variants for capabilities,
+development public-key, and disabled `sign_event` handling. This makes the
+hardware smoke catch regressions where the ESP-IDF app only recognizes exact
+fixture payloads.
+
 Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
 `v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem101`,
 and smoke-tested with `make IDF_PORT=/dev/cu.usbmodem101

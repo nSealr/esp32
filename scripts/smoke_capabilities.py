@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import copy
 import hashlib
 import json
 import time
@@ -28,6 +29,11 @@ def default_specs_dir() -> Path:
 
 
 DEFAULT_SPECS = default_specs_dir()
+DYNAMIC_SMOKE_REQUEST_IDS = {
+    "capabilities": "dynamic-smoke-capabilities",
+    "public_key": "dynamic-smoke-public-key",
+    "signing_disabled": "dynamic-smoke-sign-event-disabled",
+}
 
 
 def base64url_json(value: dict) -> str:
@@ -43,20 +49,52 @@ def encode_serial_frame(frame_type: str, payload_base64url: str) -> str:
 
 
 def load_capability_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
-    vector = json.loads(
-        (specs_dir / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
-    )
+    vector = load_capability_vector(specs_dir)
     return vector_frames(vector)
 
 
 def load_signing_disabled_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
-    vector = json.loads((specs_dir / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8"))
+    vector = load_signing_disabled_vector(specs_dir)
     return vector_frames(vector)
 
 
 def load_public_key_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
-    vector = json.loads((specs_dir / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8"))
+    vector = load_public_key_vector(specs_dir)
     return vector_frames(vector)
+
+
+def load_capability_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
+    return json.loads(
+        (specs_dir / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
+    )
+
+
+def load_signing_disabled_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
+    return json.loads(
+        (specs_dir / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8")
+    )
+
+
+def load_public_key_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
+    return json.loads(
+        (specs_dir / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
+    )
+
+
+def vector_with_request_id(vector: dict, request_id: str) -> dict:
+    updated = copy.deepcopy(vector)
+    updated["request"]["request_id"] = request_id
+    updated["response"]["request_id"] = request_id
+    return updated
+
+
+def load_dynamic_request_id_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
+    vectors = [
+        vector_with_request_id(load_capability_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["capabilities"]),
+        vector_with_request_id(load_public_key_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["public_key"]),
+        vector_with_request_id(load_signing_disabled_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["signing_disabled"]),
+    ]
+    return [vector_frames(vector) for vector in vectors]
 
 
 def vector_frames(vector: dict) -> tuple[str, str]:
@@ -101,6 +139,7 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
         load_capability_frames(specs_dir),
         load_public_key_frames(specs_dir),
         load_signing_disabled_frames(specs_dir),
+        *load_dynamic_request_id_frames(specs_dir),
     ]
     responses: list[str] = []
 

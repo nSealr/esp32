@@ -119,6 +119,11 @@ make detect-board
 make idf-smoke-capabilities
 ```
 
+The hardware smoke sends the shared fixture requests and additional dynamic
+`request_id` variants for capabilities, development public-key, and disabled
+`sign_event` handling. Real signing is still expected to return
+`signing_disabled`.
+
 ## License
 
 Firmware and tooling are released under the MIT License unless a file says
