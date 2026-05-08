@@ -86,6 +86,9 @@ board into a separate repository.
   until parser limits, trusted display, physical controls, approval-digest
   binding, key provisioning, secure boot, debug lock, companion verification,
   and an explicit runtime feature flag are all present.
+- Machine-readable ESP32-S3 USB signer security profile that records the
+  current development-only hardening state and production blockers before any
+  persistent-secret or real-signing path can be claimed.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens a deterministic pre-driver rendering
   oracle.
@@ -101,7 +104,8 @@ The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for
 `get_public_key`, returns an explicit `signing_disabled` protocol response for
 valid `sign_event` requests, and keeps real signing disabled until storage,
-trusted review, approval controls, and signing tests are implemented.
+trusted review, approval controls, production hardening, and signing tests are
+implemented.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen
@@ -136,8 +140,10 @@ The hardware smoke sends the shared fixture requests and additional dynamic
 `sign_event` handling. It also sends invalid dynamic metadata requests from
 shared specs vectors plus serial-wrapped invalid signing-request vectors,
 including unknown top-level request fields, and expects deterministic
-`unsupported_request` error frames. Real signing is still expected to return
-`signing_disabled`.
+`unsupported_request` rejections. The default smoke output summarizes expected
+rejections instead of printing raw protocol error frames; use
+`scripts/smoke_capabilities.py --verbose-frames` when raw frames are needed.
+Real signing is still expected to return `signing_disabled`.
 
 ## License
 

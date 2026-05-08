@@ -65,6 +65,47 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("handle_serial_frame", main)
         self.assertIn("Signing is disabled", main)
 
+    def test_esp32_s3_usb_signer_security_profile_is_development_only(self) -> None:
+        profile_path = ROOT / "firmware/esp32_s3_usb_signer/security_profile.json"
+
+        self.assertTrue(profile_path.exists(), "missing ESP32-S3 USB signer security profile")
+        validate_firmware.validate_security_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        self.assertEqual(profile["schema"], "nseal-esp32-security-profile-v0")
+        self.assertFalse(profile["runtime_signing_feature_enabled"])
+        self.assertFalse(profile["production_signing_allowed"])
+        self.assertFalse(profile["secure_boot"]["enabled"])
+        self.assertFalse(profile["flash_encryption"]["enabled"])
+        self.assertFalse(profile["debug_access"]["locked"])
+        self.assertIn("secure_boot", profile["production_blockers"])
+        self.assertIn("debug_lock", profile["production_blockers"])
+        self.assertIn("key_provisioning", profile["production_blockers"])
+
+    def test_security_profile_validator_rejects_production_signing_without_hardening(self) -> None:
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            profile_path.write_text(
+                json.dumps(
+                    {
+                        "schema": "nseal-esp32-security-profile-v0",
+                        "target": "esp32_s3_usb_signer",
+                        "profile": "production",
+                        "runtime_signing_feature_enabled": True,
+                        "production_signing_allowed": True,
+                        "secure_boot": {"enabled": False},
+                        "flash_encryption": {"enabled": False},
+                        "debug_access": {"locked": False},
+                        "key_provisioning": {"status": "development_fixed_key"},
+                        "production_blockers": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "production signing cannot be allowed"):
+                validate_firmware.validate_security_profile(profile_path)
+
     def test_firmware_validator_requires_serial_review_component(self) -> None:
         with TemporaryDirectory() as tmp:
             project = Path(tmp) / "esp32_s3_usb_signer"

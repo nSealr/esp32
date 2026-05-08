@@ -67,6 +67,10 @@
   parser limits, trusted display acceptance, physical controls,
   approval-digest binding, key provisioning, secure boot, debug lock, and
   companion signed-output verification.
+- Machine-readable development security profile for the ESP32-S3 USB signer,
+  explicitly blocking production signing until runtime signing, trusted
+  display, physical controls, key provisioning, secure boot, flash encryption,
+  debug lock, and companion signed-output verification are complete.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -236,6 +240,13 @@ runtime feature, parser limits, trusted display, physical controls,
 approval-digest binding, key provisioning, secure boot, debug lock, and
 companion signed-output verification gates. This compiles into the ESP-IDF
 component but does not enable signing.
+
+Status note, 2026-05-08: the ESP32-S3 USB signer scaffold now includes a
+validated `security_profile.json`. The v0 profile is `development_scaffold`,
+keeps runtime and production signing disabled, records secure boot, flash
+encryption, debug lock, key provisioning, trusted display, physical controls,
+and signed-output verification as production blockers, and is enforced by
+`make ci`.
 
 ## M8.5: ESP32-S3 QR Vault Target
 

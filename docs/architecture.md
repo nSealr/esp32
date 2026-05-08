@@ -183,6 +183,14 @@ and it does not provision keys; it records every condition that must be true
 before a later signing backend can be wired into the USB or QR flows. The
 default readiness state is disabled and reports every missing gate.
 
+`firmware/esp32_s3_usb_signer/security_profile.json` is the matching
+machine-readable security posture for the ESP-IDF scaffold. The v0 profile is
+development-only: runtime signing is disabled, production signing is not
+allowed, secure boot and flash encryption are not enabled, USB/JTAG debug
+access remains unlocked for bring-up, and key provisioning is not implemented.
+The validator requires those blockers to stay explicit until a later production
+profile is designed and tested.
+
 ## ESP-IDF Scaffold
 
 `firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the

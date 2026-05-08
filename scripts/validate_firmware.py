@@ -11,6 +11,7 @@ REQUIRED_PROJECT_FILES = [
     "CMakeLists.txt",
     "main/CMakeLists.txt",
     "main/main.cpp",
+    "security_profile.json",
     "sdkconfig.defaults",
 ]
 
@@ -19,6 +20,17 @@ FORBIDDEN_CLAIMS = [
     "secure by default",
     "real key signing enabled",
 ]
+
+REQUIRED_SECURITY_BLOCKERS = {
+    "runtime_signing_feature",
+    "trusted_review_display",
+    "physical_approval_controls",
+    "key_provisioning",
+    "secure_boot",
+    "flash_encryption",
+    "debug_lock",
+    "companion_signed_output_verification",
+}
 
 
 def validate_firmware_project(project: Path) -> None:
@@ -63,6 +75,45 @@ def validate_firmware_project(project: Path) -> None:
     for claim in FORBIDDEN_CLAIMS:
         if claim in lowered:
             raise ValueError(f"{project}: forbidden unsupported firmware claim: {claim}")
+    validate_security_profile(project / "security_profile.json")
+
+
+def validate_security_profile(path: Path) -> None:
+    profile = json.loads(path.read_text(encoding="utf-8"))
+    if profile.get("schema") != "nseal-esp32-security-profile-v0":
+        raise ValueError(f"{path}: schema must be nseal-esp32-security-profile-v0")
+    if profile.get("target") != "esp32_s3_usb_signer":
+        raise ValueError(f"{path}: target must be esp32_s3_usb_signer")
+    if profile.get("production_signing_allowed") is not False:
+        raise ValueError(f"{path}: production signing cannot be allowed by the v0 security profile")
+    if profile.get("profile") != "development_scaffold":
+        raise ValueError(f"{path}: v0 profile must remain development_scaffold")
+    if profile.get("runtime_signing_feature_enabled") is not False:
+        raise ValueError(f"{path}: runtime signing feature must remain disabled")
+
+    secure_boot = profile.get("secure_boot")
+    if not isinstance(secure_boot, dict) or secure_boot.get("enabled") is not False:
+        raise ValueError(f"{path}: secure_boot.enabled must be false until production hardening")
+    flash_encryption = profile.get("flash_encryption")
+    if not isinstance(flash_encryption, dict) or flash_encryption.get("enabled") is not False:
+        raise ValueError(f"{path}: flash_encryption.enabled must be false until production hardening")
+    debug_access = profile.get("debug_access")
+    if not isinstance(debug_access, dict) or debug_access.get("locked") is not False:
+        raise ValueError(f"{path}: debug_access.locked must be false for the development scaffold")
+
+    key_provisioning = profile.get("key_provisioning")
+    if not isinstance(key_provisioning, dict) or not key_provisioning.get("status"):
+        raise ValueError(f"{path}: key_provisioning.status is required")
+    if key_provisioning.get("persistent_secret_storage") != "not_implemented":
+        raise ValueError(f"{path}: persistent secret storage must remain not_implemented")
+
+    blockers = profile.get("production_blockers")
+    if not isinstance(blockers, list):
+        raise ValueError(f"{path}: production_blockers must be a list")
+    missing_blockers = REQUIRED_SECURITY_BLOCKERS - set(blockers)
+    if missing_blockers:
+        missing = ", ".join(sorted(missing_blockers))
+        raise ValueError(f"{path}: missing production blockers: {missing}")
 
 
 def validate_board_profile(path: Path) -> None:

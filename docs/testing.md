@@ -42,6 +42,10 @@ tests with strict C++ warnings.
   gate is present: runtime feature flag, parser limits, trusted display,
   physical controls, approval-digest binding, key provisioning, secure boot,
   debug lock, and companion signed-output verification.
+- Security-profile validation proving the ESP32-S3 USB signer scaffold remains
+  development-only, with production signing disabled and secure boot, flash
+  encryption, debug lock, key provisioning, trusted display, physical controls,
+  and signed-output verification listed as blockers.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review
@@ -97,7 +101,9 @@ tests with strict C++ warnings.
   fixture matching. It also sends invalid dynamic metadata requests from shared
   `NostrSeal/specs` invalid serial-frame vectors plus serial-wrapped invalid
   signing-request vectors, including unknown top-level request fields,
-  expecting deterministic `unsupported_request` error frames.
+  expecting deterministic `unsupported_request` rejections. By default the
+  smoke prints a clean summary; raw protocol frames are available with
+  `scripts/smoke_capabilities.py --verbose-frames`.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

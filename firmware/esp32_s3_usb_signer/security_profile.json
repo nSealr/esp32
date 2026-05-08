@@ -1,0 +1,41 @@
+{
+  "schema": "nseal-esp32-security-profile-v0",
+  "target": "esp32_s3_usb_signer",
+  "profile": "development_scaffold",
+  "runtime_signing_feature_enabled": false,
+  "production_signing_allowed": false,
+  "secure_boot": {
+    "enabled": false,
+    "required_before_signing": true,
+    "status": "pending_production_policy"
+  },
+  "flash_encryption": {
+    "enabled": false,
+    "required_before_persistent_secret": true,
+    "status": "pending_production_policy"
+  },
+  "debug_access": {
+    "locked": false,
+    "required_before_signing": true,
+    "status": "development_usb_jtag_available"
+  },
+  "key_provisioning": {
+    "status": "not_implemented",
+    "persistent_secret_storage": "not_implemented",
+    "required_before_signing": true
+  },
+  "companion_signed_output_verification": {
+    "ready": false,
+    "required_before_signing": true
+  },
+  "production_blockers": [
+    "runtime_signing_feature",
+    "trusted_review_display",
+    "physical_approval_controls",
+    "key_provisioning",
+    "secure_boot",
+    "flash_encryption",
+    "debug_lock",
+    "companion_signed_output_verification"
+  ]
+}
