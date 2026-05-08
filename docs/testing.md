@@ -83,8 +83,9 @@ tests with strict C++ warnings.
   firmware. The smoke sends both shared fixture request frames and dynamic
   `request_id` variants so parser changes cannot silently fall back to exact
   fixture matching. It also sends invalid dynamic metadata requests from shared
-  `NostrSeal/specs` invalid serial-frame vectors and expects deterministic
-  `unsupported_request` error frames.
+  `NostrSeal/specs` invalid serial-frame vectors and serial-wrapped invalid
+  `sign_event` request vectors, expecting deterministic `unsupported_request`
+  error frames.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

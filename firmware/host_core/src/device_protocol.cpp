@@ -326,7 +326,11 @@ std::string handle_serial_frame(const std::string& line) {
         return encode_serial_frame(response_frame(public_key_response_json(metadata.request_id)));
     }
     if (metadata.method == "sign_event") {
-        (void)parse_qr_signing_request(QrEnvelope{request.payload_base64url, request_json});
+        try {
+            (void)parse_qr_signing_request(QrEnvelope{request.payload_base64url, request_json});
+        } catch (const QrEnvelopeError&) {
+            return encode_serial_frame(unsupported_request_frame());
+        }
         return encode_serial_frame(response_frame(signing_disabled_response_json(metadata.request_id)));
     }
     return encode_serial_frame(unsupported_request_frame());

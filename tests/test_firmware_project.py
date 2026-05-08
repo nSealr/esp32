@@ -237,6 +237,59 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
             self.assertTrue(error_frame.startswith("nseal1f:error:"))
 
+    def test_smoke_script_wraps_invalid_sign_event_request_vectors(self) -> None:
+        with TemporaryDirectory() as temp_root:
+            specs_dir = Path(temp_root)
+            invalid_dir = specs_dir / "vectors" / "invalid"
+            invalid_dir.mkdir(parents=True)
+            invalid_dir.joinpath("request-event-template-pubkey.json").write_text(
+                json.dumps(
+                    {
+                        "name": "request-event-template-pubkey",
+                        "category": "signing-request",
+                        "request": {
+                            "version": 1,
+                            "request_id": "invalid-template-pubkey",
+                            "method": "sign_event",
+                            "params": {
+                                "event_template": {
+                                    "pubkey": "0" * 64,
+                                    "created_at": 1710000000,
+                                    "kind": 1,
+                                    "tags": [],
+                                    "content": "unsafe template",
+                                }
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            invalid_dir.joinpath("request-unknown-top-level-field.json").write_text(
+                json.dumps(
+                    {
+                        "name": "request-unknown-top-level-field",
+                        "category": "signing-request",
+                        "request": {
+                            "version": 1,
+                            "request_id": "invalid-top-level",
+                            "method": "get_public_key",
+                            "unexpected": True,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            exchanges = smoke_capabilities.load_invalid_sign_event_request_frames(specs_dir)
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        self.assertEqual(request["request_id"], "invalid-template-pubkey")
+        self.assertEqual(decode_serial_frame_payload(exchanges[0][1]), {"error": "unsupported_request"})
+        self.assertTrue(exchanges[0][0].startswith("nseal1f:request:"))
+        self.assertTrue(exchanges[0][1].startswith("nseal1f:error:"))
+
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
         frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
 

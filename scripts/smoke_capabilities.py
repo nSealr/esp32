@@ -113,6 +113,20 @@ def load_invalid_metadata_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[
     return frames
 
 
+def load_invalid_sign_event_request_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
+    error_payload = base64url_json(UNSUPPORTED_REQUEST_ERROR)
+    expected_error_frame = encode_serial_frame("error", error_payload)
+    invalid_dir = specs_dir / "vectors" / "invalid"
+    frames: list[tuple[str, str]] = []
+    for vector_path in sorted(invalid_dir.glob("request-*.json")):
+        vector = json.loads(vector_path.read_text(encoding="utf-8"))
+        request = vector.get("request")
+        if not isinstance(request, dict) or request.get("method") != "sign_event":
+            continue
+        frames.append((encode_serial_frame("request", base64url_json(request)), expected_error_frame))
+    return frames
+
+
 def vector_frames(vector: dict) -> tuple[str, str]:
     request_payload = base64url_json(vector["request"])
     response_payload = base64url_json(vector["response"])
@@ -156,7 +170,8 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
         load_public_key_frames(specs_dir),
         load_signing_disabled_frames(specs_dir),
         *load_dynamic_request_id_frames(specs_dir),
-        *load_invalid_metadata_frames(),
+        *load_invalid_metadata_frames(specs_dir),
+        *load_invalid_sign_event_request_frames(specs_dir),
     ]
     responses: list[str] = []
 
