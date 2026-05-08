@@ -811,6 +811,13 @@ void test_device_protocol_rejects_invalid_dynamic_request_metadata() {
            error_frame_for_test(R"({"error":"unsupported_request"})"));
 }
 
+void test_device_protocol_rejects_unknown_top_level_request_fields() {
+    assert(nostrseal::handle_serial_frame(
+               request_frame_for_test(
+                   R"({"version":1,"request_id":"invalid-top-level","method":"get_public_key","unexpected":true})")) ==
+           error_frame_for_test(R"({"error":"unsupported_request"})"));
+}
+
 void test_device_protocol_rejects_invalid_sign_event_request_shape() {
     assert(nostrseal::handle_serial_frame(
                request_frame_for_test(R"({"version":1,"request_id":"invalid-template-pubkey","method":"sign_event","params":{"event_template":{"pubkey":"0000000000000000000000000000000000000000000000000000000000000000","created_at":1710000000,"kind":1,"tags":[],"content":"unsafe template"}}})")) ==
@@ -861,6 +868,7 @@ int main() {
     test_device_protocol_reports_development_public_key();
     test_device_protocol_echoes_dynamic_request_ids();
     test_device_protocol_rejects_invalid_dynamic_request_metadata();
+    test_device_protocol_rejects_unknown_top_level_request_fields();
     test_device_protocol_rejects_invalid_sign_event_request_shape();
     std::cout << "host core tests passed\n";
     return 0;

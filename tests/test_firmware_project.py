@@ -237,7 +237,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
             self.assertTrue(error_frame.startswith("nseal1f:error:"))
 
-    def test_smoke_script_wraps_invalid_sign_event_request_vectors(self) -> None:
+    def test_smoke_script_wraps_invalid_signing_request_vectors(self) -> None:
         with TemporaryDirectory() as temp_root:
             specs_dir = Path(temp_root)
             invalid_dir = specs_dir / "vectors" / "invalid"
@@ -281,14 +281,15 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            exchanges = smoke_capabilities.load_invalid_sign_event_request_frames(specs_dir)
+            exchanges = smoke_capabilities.load_invalid_signing_request_frames(specs_dir)
 
-        self.assertEqual(len(exchanges), 1)
-        request = decode_serial_frame_payload(exchanges[0][0])
-        self.assertEqual(request["request_id"], "invalid-template-pubkey")
-        self.assertEqual(decode_serial_frame_payload(exchanges[0][1]), {"error": "unsupported_request"})
-        self.assertTrue(exchanges[0][0].startswith("nseal1f:request:"))
-        self.assertTrue(exchanges[0][1].startswith("nseal1f:error:"))
+        self.assertEqual(len(exchanges), 2)
+        requests = [decode_serial_frame_payload(exchange[0]) for exchange in exchanges]
+        self.assertEqual([request["request_id"] for request in requests], ["invalid-template-pubkey", "invalid-top-level"])
+        for request_frame, error_frame in exchanges:
+            self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
+            self.assertTrue(request_frame.startswith("nseal1f:request:"))
+            self.assertTrue(error_frame.startswith("nseal1f:error:"))
 
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
         frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"

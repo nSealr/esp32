@@ -101,10 +101,11 @@ unsupported version and invalid `request_id` syntax. The expected device
 behavior is a deterministic `nseal1f:error` frame with `unsupported_request`,
 preserving the signing-disabled boundary.
 
-Status note, 2026-05-08: invalid `sign_event` request vectors from
-`NostrSeal/specs` are now wrapped as serial frames in the hardware smoke. The
-device protocol catches parser rejections inside the request boundary and
-returns deterministic `unsupported_request` frames instead of surfacing parser
+Status note, 2026-05-08: invalid signing-request vectors from `NostrSeal/specs`
+are now wrapped as serial frames in the hardware smoke, including invalid
+`sign_event` request shapes and unknown top-level request fields. The device
+protocol catches parser rejections inside the request boundary and returns
+deterministic `unsupported_request` frames instead of surfacing parser
 exceptions to the ESP-IDF console loop.
 
 Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
