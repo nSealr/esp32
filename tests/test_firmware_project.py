@@ -59,6 +59,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("serial_frame.cpp", cmake)
         self.assertIn("serial_review.cpp", cmake)
         self.assertIn("review_display.cpp", cmake)
+        self.assertIn("signing_policy.cpp", cmake)
         self.assertIn("trusted_review.cpp", cmake)
         self.assertIn("sha256.cpp", cmake)
         self.assertIn("handle_serial_frame", main)

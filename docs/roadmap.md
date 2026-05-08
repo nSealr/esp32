@@ -63,6 +63,10 @@
   vectors.
 - Shared review-display-frame vector consumption for bounded long-content
   display rendering.
+- Host-buildable runtime signing-readiness gate covering runtime feature flag,
+  parser limits, trusted display acceptance, physical controls,
+  approval-digest binding, key provisioning, secure boot, debug lock, and
+  companion signed-output verification.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
@@ -225,6 +229,13 @@ serial `sign_event` JSON is rendered into bounded trusted frames, physical-style
 button input advances the review session, and the resulting frame/button
 transcript is returned for future adapter acceptance tests. No signing backend
 is connected.
+
+Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
+explicit in host-core. The default state remains disabled and reports missing
+runtime feature, parser limits, trusted display, physical controls,
+approval-digest binding, key provisioning, secure boot, debug lock, and
+companion signed-output verification gates. This compiles into the ESP-IDF
+component but does not enable signing.
 
 ## M8.5: ESP32-S3 QR Vault Target
 

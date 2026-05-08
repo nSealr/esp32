@@ -38,6 +38,10 @@ tests with strict C++ warnings.
 - Serial/USB review I/O harness tests proving future USB signer display and
   physical-button adapters can drive the same trusted review session from
   decoded request JSON without adding a signing backend.
+- Signing-policy tests proving runtime signing remains disabled until every M8
+  gate is present: runtime feature flag, parser limits, trusted display,
+  physical controls, approval-digest binding, key provisioning, secure boot,
+  debug lock, and companion signed-output verification.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

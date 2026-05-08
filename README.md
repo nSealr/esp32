@@ -82,6 +82,10 @@ board into a separate repository.
   approval before a request can be signed.
 - Host-buildable review controls, display frames, and trusted review session
   that model the future display/button approval loop without enabling signing.
+- Host-buildable signing-readiness policy that keeps runtime signing disabled
+  until parser limits, trusted display, physical controls, approval-digest
+  binding, key provisioning, secure boot, debug lock, companion verification,
+  and an explicit runtime feature flag are all present.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens a deterministic pre-driver rendering
   oracle.

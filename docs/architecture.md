@@ -61,6 +61,11 @@ The first firmware foundation is host-buildable C++ under
   code, returns the displayed frame/button transcript from that harness, and has
   no signing backend.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
+- `signing_policy`: host-buildable runtime-signing readiness gate. It requires
+  the explicit runtime feature flag, parser limits, trusted display acceptance,
+  physical approval controls, approval-digest binding, key provisioning, secure
+  boot, debug lock, and companion signed-output verification before firmware
+  can be considered ready to connect a signing backend.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
 - `review_controls`: page-by-page review button state machine for future
@@ -172,6 +177,11 @@ The trusted-review session intentionally stops before hardware drivers, key
 storage, or Schnorr signing. It proves the local review loop can only reach
 `can_sign` after the user has traversed the displayed pages and approved the
 request bound to the displayed `approval_digest`.
+
+The signing-policy module is the complementary runtime gate. It does not sign
+and it does not provision keys; it records every condition that must be true
+before a later signing backend can be wired into the USB or QR flows. The
+default readiness state is disabled and reports every missing gate.
 
 ## ESP-IDF Scaffold
 

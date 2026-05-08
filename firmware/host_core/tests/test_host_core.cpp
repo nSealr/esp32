@@ -16,6 +16,7 @@
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "nostrseal/serial_review.hpp"
+#include "nostrseal/signing_policy.hpp"
 #include "nostrseal/trusted_review.hpp"
 #include "transport_vector.hpp"
 
@@ -823,6 +824,49 @@ void test_serial_review_io_flow_drives_request_display_and_buttons_without_signi
     assert(io.frames.back().action_hint == "Approve / Reject");
 }
 
+void test_signing_policy_requires_every_runtime_gate_before_enablement() {
+    const nostrseal::SigningReadiness default_readiness{};
+    const nostrseal::SigningReadinessStatus default_status =
+        nostrseal::evaluate_signing_readiness(default_readiness);
+
+    assert(!default_status.signing_enabled);
+    assert((default_status.missing_gates == std::vector<std::string>{
+                                               "runtime_signing_feature",
+                                               "parser_limits",
+                                               "trusted_review_display",
+                                               "physical_approval_controls",
+                                               "approval_digest_binding",
+                                               "key_provisioning",
+                                               "secure_boot",
+                                               "debug_lock",
+                                               "companion_signed_output_verification",
+                                           }));
+
+    nostrseal::SigningReadiness safety_gates{
+        .runtime_signing_feature_enabled = false,
+        .parser_limits_enforced = true,
+        .trusted_review_display_accepted = true,
+        .physical_approval_controls_accepted = true,
+        .approval_digest_binding_verified = true,
+        .key_provisioning_ready = true,
+        .secure_boot_enabled = true,
+        .debug_locked = true,
+        .companion_signed_output_verification_ready = true,
+    };
+    const nostrseal::SigningReadinessStatus safety_status =
+        nostrseal::evaluate_signing_readiness(safety_gates);
+
+    assert(!safety_status.signing_enabled);
+    assert((safety_status.missing_gates == std::vector<std::string>{"runtime_signing_feature"}));
+
+    safety_gates.runtime_signing_feature_enabled = true;
+    const nostrseal::SigningReadinessStatus ready_status =
+        nostrseal::evaluate_signing_readiness(safety_gates);
+
+    assert(ready_status.signing_enabled);
+    assert(ready_status.missing_gates.empty());
+}
+
 void test_device_protocol_reports_scaffold_capabilities() {
     const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kCapabilityRequestFrame);
 
@@ -946,6 +990,7 @@ int main() {
     test_trusted_review_session_keeps_rejection_terminal();
     test_serial_sign_event_review_matches_shared_review_contract();
     test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
+    test_signing_policy_requires_every_runtime_gate_before_enablement();
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
     test_device_protocol_reports_development_public_key();

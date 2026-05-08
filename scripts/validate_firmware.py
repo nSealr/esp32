@@ -54,6 +54,7 @@ def validate_firmware_project(project: Path) -> None:
         "serial_frame.cpp",
         "serial_review.cpp",
         "sha256.cpp",
+        "signing_policy.cpp",
         "trusted_review.cpp",
     ):
         if required_source not in component_cmake:
