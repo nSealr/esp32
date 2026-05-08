@@ -45,11 +45,15 @@ def validate_firmware_project(project: Path) -> None:
     component_cmake = (project / "main/CMakeLists.txt").read_text(encoding="utf-8")
     for required_source in (
         "approval_gate.cpp",
+        "device_protocol.cpp",
         "qr_envelope.cpp",
         "qr_review.cpp",
         "qr_review_flow.cpp",
         "review_controls.cpp",
         "review_display.cpp",
+        "serial_frame.cpp",
+        "serial_review.cpp",
+        "sha256.cpp",
         "trusted_review.cpp",
     ):
         if required_source not in component_cmake:

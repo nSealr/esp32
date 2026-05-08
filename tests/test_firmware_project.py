@@ -1,5 +1,6 @@
 import base64
 import json
+import shutil
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -56,11 +57,28 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("approval_gate.cpp", cmake)
         self.assertIn("qr_envelope.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
+        self.assertIn("serial_review.cpp", cmake)
         self.assertIn("review_display.cpp", cmake)
         self.assertIn("trusted_review.cpp", cmake)
         self.assertIn("sha256.cpp", cmake)
         self.assertIn("handle_serial_frame", main)
         self.assertIn("Signing is disabled", main)
+
+    def test_firmware_validator_requires_serial_review_component(self) -> None:
+        with TemporaryDirectory() as tmp:
+            project = Path(tmp) / "esp32_s3_usb_signer"
+            shutil.copytree(ROOT / "firmware/esp32_s3_usb_signer", project)
+            cmake_path = project / "main/CMakeLists.txt"
+            cmake_path.write_text(
+                cmake_path.read_text(encoding="utf-8").replace(
+                    '        "../../host_core/src/serial_review.cpp"\n',
+                    "",
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "serial_review.cpp"):
+                validate_firmware_project(project)
 
     def test_lilygo_t_display_s3_pro_ov5640_board_profile_documents_qr_constraints(self) -> None:
         profile_path = ROOT / "boards/lilygo_t_display_s3_pro_ov5640.json"
