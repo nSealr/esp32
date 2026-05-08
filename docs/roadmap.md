@@ -47,6 +47,8 @@
 - QR-derived trusted-review session creation from parsed request data.
 - Serial/USB `sign_event` trusted-review request creation from decoded request
   JSON, using the same review pages and `approval_digest` contract as QR.
+- `SerialReviewIo` host-core adapter harness for future USB signer display and
+  physical-button drivers, without signing.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
   review frames and approval state, without signing.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
@@ -216,6 +218,13 @@ trusted-review request for valid `sign_event` frames and verifies that its
 pages and `approval_digest` match the shared review-screen vectors. The
 dispatcher still returns `signing_disabled`, so this is review-boundary
 alignment only, not signing enablement.
+
+Status note, 2026-05-08: `SerialReviewIo` now gives the USB signer path the
+same host-core display/button adapter harness shape as the QR path. Decoded
+serial `sign_event` JSON is rendered into bounded trusted frames, physical-style
+button input advances the review session, and the resulting frame/button
+transcript is returned for future adapter acceptance tests. No signing backend
+is connected.
 
 ## M8.5: ESP32-S3 QR Vault Target
 

@@ -35,6 +35,9 @@ tests with strict C++ warnings.
 - Serial/USB `sign_event` trusted-review tests proving decoded request JSON
   produces the same review pages and `approval_digest` as the shared QR review
   contract, while the device protocol still returns `signing_disabled`.
+- Serial/USB review I/O harness tests proving future USB signer display and
+  physical-button adapters can drive the same trusted review session from
+  decoded request JSON without adding a signing backend.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

@@ -142,6 +142,31 @@ public:
     std::vector<nostrseal::ReviewDisplayFrame> frames;
 };
 
+class RecordingSerialReviewIo : public nostrseal::SerialReviewIo {
+public:
+    explicit RecordingSerialReviewIo(std::vector<nostrseal::ReviewButton> buttons) : buttons_(std::move(buttons)) {}
+
+    std::string read_request_json() override {
+        return R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"NostrSeal fixture: basic kind 1 event."}}})";
+    }
+
+    void show_review_frame(const nostrseal::ReviewDisplayFrame& frame) override {
+        frames.push_back(frame);
+    }
+
+    nostrseal::ReviewButton read_review_button() override {
+        assert(!buttons_.empty());
+        const nostrseal::ReviewButton button = buttons_.front();
+        buttons_.erase(buttons_.begin());
+        return button;
+    }
+
+    std::vector<nostrseal::ReviewDisplayFrame> frames;
+
+private:
+    std::vector<nostrseal::ReviewButton> buttons_;
+};
+
 void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame frame{
         nostrseal::FrameType::Request,
@@ -774,6 +799,30 @@ void test_serial_sign_event_review_matches_shared_review_contract() {
     assert(!session.can_sign());
 }
 
+void test_serial_review_io_flow_drives_request_display_and_buttons_without_signing() {
+    RecordingSerialReviewIo io{{nostrseal::ReviewButton::Next,
+                                nostrseal::ReviewButton::Next,
+                                nostrseal::ReviewButton::Next,
+                                nostrseal::ReviewButton::Approve}};
+
+    const nostrseal::SerialReviewIoFlowResult result = nostrseal::run_serial_review_io_flow(io);
+
+    assert(result.request_id == "req-kind-1-basic");
+    assert(result.approval_digest == nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
+    assert(result.decision.has_value());
+    assert(result.decision.value());
+    assert(result.approved_for_signing);
+    assert(result.transcript.size() == nostrseal::test_vectors::basic_qr_review_approve_transcript().size());
+    assert(result.transcript.front().frame.title == "Event");
+    assert(result.transcript.front().frame.page_indicator == "Page 1/4");
+    assert(result.transcript.back().frame.title == "Decision");
+    assert(result.transcript.back().decision.has_value());
+    assert(result.transcript.back().decision.value());
+    assert(io.frames.size() == 4);
+    assert(io.frames.front().title == "Event");
+    assert(io.frames.back().action_hint == "Approve / Reject");
+}
+
 void test_device_protocol_reports_scaffold_capabilities() {
     const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kCapabilityRequestFrame);
 
@@ -896,6 +945,7 @@ int main() {
     test_trusted_review_session_binds_display_navigation_and_approval();
     test_trusted_review_session_keeps_rejection_terminal();
     test_serial_sign_event_review_matches_shared_review_contract();
+    test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
     test_device_protocol_reports_development_public_key();

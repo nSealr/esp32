@@ -52,7 +52,9 @@ The first firmware foundation is host-buildable C++ under
 - `serial_review`: converts decoded serial/USB `sign_event` request JSON into
   the same renderer-neutral trusted-review request and `approval_digest` used
   by the QR path. This gives the USB signer path a review boundary before a
-  display driver, GPIO buttons, storage, or signing backend exists.
+  display driver, GPIO buttons, storage, or signing backend exists. It also
+  defines the serial/display/button I/O harness for future USB signer adapter
+  acceptance tests.
 - `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
   envelopes to trusted review frames and approval state. It includes the
   `QrReviewIo` adapter harness for future scanner, display, and GPIO button
@@ -135,6 +137,13 @@ then still returns `signing_disabled`. This is intentional: it proves the USB
 signer path cannot later diverge from the shared trusted-review contract while
 keeping real signing blocked until display/GPIO, custody, and provisioning
 gates pass.
+
+`SerialReviewFlow` and `SerialReviewIo` extend that boundary to future display
+and GPIO drivers for the USB signer. A transport adapter supplies one decoded
+request JSON payload, a display adapter paints each bounded trusted frame, and
+physical controls provide `next`, `approve`, or `reject`. The harness records
+the frame/button transcript and terminal approval state but still has no
+signature-producing function.
 
 `QrReviewFlow` packages that sequence for future scanner/display adapters: raw
 QR envelope decode, request parsing, trusted-review construction, frame
