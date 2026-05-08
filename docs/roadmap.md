@@ -115,6 +115,13 @@ idf-smoke-capabilities`. The device returned capability and deterministic
 development public-key frames, then rejected the shared `sign_event` request
 with `signing_disabled`. Real signing remains disabled.
 
+Hardware note, 2026-05-08: revision `351d693` was built and flashed to the
+same attached ESP32-S3 DevKitC-1. The expanded hardware smoke verified six
+valid static/dynamic responses plus 20 deterministic `unsupported_request`
+error frames for invalid metadata and 18 serial-wrapped invalid signing-request
+vectors, including the shared unknown top-level request-field vector. Real
+signing remains disabled.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
