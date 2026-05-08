@@ -1,0 +1,12 @@
+{
+  "name": "request-get-public-key-params",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "get_public_key must not include params",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-public-key-params",
+    "method": "get_public_key",
+    "params": {}
+  }
+}

@@ -225,6 +225,7 @@ void skip_json_value(const std::string& json, std::size_t& offset) {
 struct RequestMetadata {
     bool version_one = false;
     bool has_unknown_top_level_field = false;
+    bool has_params = false;
     std::string request_id;
     std::string method;
 };
@@ -261,6 +262,7 @@ RequestMetadata parse_request_metadata(const std::string& json) {
             skip_json_value(json, offset);
             metadata.version_one = json.substr(token_start, offset - token_start) == "1";
         } else if (key == "params") {
+            metadata.has_params = true;
             skip_json_value(json, offset);
         } else {
             metadata.has_unknown_top_level_field = true;
@@ -324,9 +326,15 @@ std::string handle_serial_frame(const std::string& line) {
         return encode_serial_frame(unsupported_request_frame());
     }
     if (metadata.method == "get_capabilities") {
+        if (metadata.has_params) {
+            return encode_serial_frame(unsupported_request_frame());
+        }
         return encode_serial_frame(response_frame(capability_response_json(metadata.request_id)));
     }
     if (metadata.method == "get_public_key") {
+        if (metadata.has_params) {
+            return encode_serial_frame(unsupported_request_frame());
+        }
         return encode_serial_frame(response_frame(public_key_response_json(metadata.request_id)));
     }
     if (metadata.method == "sign_event") {

@@ -280,12 +280,30 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            invalid_dir.joinpath("request-get-public-key-params.json").write_text(
+                json.dumps(
+                    {
+                        "name": "request-get-public-key-params",
+                        "category": "signing-request",
+                        "request": {
+                            "version": 1,
+                            "request_id": "invalid-public-key-params",
+                            "method": "get_public_key",
+                            "params": {},
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
 
             exchanges = smoke_capabilities.load_invalid_signing_request_frames(specs_dir)
 
-        self.assertEqual(len(exchanges), 2)
+        self.assertEqual(len(exchanges), 3)
         requests = [decode_serial_frame_payload(exchange[0]) for exchange in exchanges]
-        self.assertEqual([request["request_id"] for request in requests], ["invalid-template-pubkey", "invalid-top-level"])
+        self.assertEqual(
+            [request["request_id"] for request in requests],
+            ["invalid-template-pubkey", "invalid-public-key-params", "invalid-top-level"],
+        )
         for request_frame, error_frame in exchanges:
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
             self.assertTrue(request_frame.startswith("nseal1f:request:"))

@@ -1,0 +1,12 @@
+{
+  "name": "request-get-capabilities-params",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "get_capabilities must not include params",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-capabilities-params",
+    "method": "get_capabilities",
+    "params": {}
+  }
+}
