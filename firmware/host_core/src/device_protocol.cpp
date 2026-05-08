@@ -9,6 +9,7 @@
 #include "nostrseal/limits.hpp"
 #include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "nostrseal/serial_review.hpp"
 
 namespace nostrseal {
 namespace {
@@ -339,7 +340,7 @@ std::string handle_serial_frame(const std::string& line) {
     }
     if (metadata.method == "sign_event") {
         try {
-            (void)parse_qr_signing_request(QrEnvelope{request.payload_base64url, request_json});
+            (void)build_serial_sign_event_trusted_review_request(request_json);
         } catch (const QrEnvelopeError&) {
             return encode_serial_frame(unsupported_request_frame());
         }

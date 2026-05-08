@@ -49,6 +49,10 @@ The first firmware foundation is host-buildable C++ under
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
+- `serial_review`: converts decoded serial/USB `sign_event` request JSON into
+  the same renderer-neutral trusted-review request and `approval_digest` used
+  by the QR path. This gives the USB signer path a review boundary before a
+  display driver, GPIO buttons, storage, or signing backend exists.
 - `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
   envelopes to trusted review frames and approval state. It includes the
   `QrReviewIo` adapter harness for future scanner, display, and GPIO button
@@ -73,7 +77,9 @@ The first firmware foundation is host-buildable C++ under
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
   development public-key, and disabled-signing responses. It parses the serial
   request payload enough to validate v0 request ids and echo dynamic
-  `request_id` values. It does not sign events.
+  `request_id` values. Valid serial/USB `sign_event` requests are also forced
+  through the trusted-review request builder before the dispatcher returns
+  `signing_disabled`. It does not sign events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -121,6 +127,14 @@ from a parsed QR request, so the future QR path can reuse the same bounded
 display frames, final-page traversal, and request/digest-bound approval gate as
 the USB/display signer line. It still stops before hardware display output or
 signing.
+
+The serial review boundary reuses that same request parser, page builder, and
+`approval_digest` computation for decoded USB/serial `sign_event` request JSON.
+The current device protocol calls this boundary for valid `sign_event` frames,
+then still returns `signing_disabled`. This is intentional: it proves the USB
+signer path cannot later diverge from the shared trusted-review contract while
+keeping real signing blocked until display/GPIO, custody, and provisioning
+gates pass.
 
 `QrReviewFlow` packages that sequence for future scanner/display adapters: raw
 QR envelope decode, request parsing, trusted-review construction, frame

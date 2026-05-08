@@ -32,6 +32,9 @@ tests with strict C++ warnings.
   rejected before review/signing.
 - QR trusted-review tests comparing ESP32-generated pages and
   `approval_digest` values with shared basic and tagged review-screen vectors.
+- Serial/USB `sign_event` trusted-review tests proving decoded request JSON
+  produces the same review pages and `approval_digest` as the shared QR review
+  contract, while the device protocol still returns `signing_disabled`.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

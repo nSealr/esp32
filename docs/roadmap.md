@@ -45,6 +45,8 @@
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
 - QR-derived trusted-review session creation from parsed request data.
+- Serial/USB `sign_event` trusted-review request creation from decoded request
+  JSON, using the same review pages and `approval_digest` contract as QR.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
   review frames and approval state, without signing.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
@@ -92,6 +94,13 @@ request payloads, validates the v0 `request_id` profile, and echoes dynamic
 request ids in `get_capabilities`, development `get_public_key`, and disabled
 `sign_event` responses. `sign_event` still returns `signing_disabled`; no
 signing backend, storage, display driver, or GPIO approval path is connected.
+
+Status note, 2026-05-08: valid serial/USB `sign_event` requests now pass
+through a host-core trusted-review boundary before the disabled-signing
+response is returned. The boundary builds the same review pages and
+`approval_digest` as the QR path from decoded request JSON, so the USB signer
+cannot drift from shared review semantics before real display/GPIO drivers or a
+signing backend are connected. Runtime signing remains disabled.
 
 Status note, 2026-05-08: `make idf-smoke-capabilities` now sends both the
 shared fixture requests and dynamic `request_id` variants for capabilities,
@@ -190,6 +199,12 @@ rejection where feasible, display review driver acceptance, physical button
 acceptance, `approval_digest` binding, key provisioning/storage design, secure
 boot/debug policy, and companion verification of signed output are all tested.
 Until then runtime signing remains disabled.
+
+Status note, 2026-05-08: the host-core serial/USB path now builds a
+trusted-review request for valid `sign_event` frames and verifies that its
+pages and `approval_digest` match the shared review-screen vectors. The
+dispatcher still returns `signing_disabled`, so this is review-boundary
+alignment only, not signing enablement.
 
 ## M8.5: ESP32-S3 QR Vault Target
 

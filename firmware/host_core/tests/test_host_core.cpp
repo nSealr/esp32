@@ -15,6 +15,7 @@
 #include "nostrseal/review_controls.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "nostrseal/serial_review.hpp"
 #include "nostrseal/trusted_review.hpp"
 #include "transport_vector.hpp"
 
@@ -757,6 +758,22 @@ void test_trusted_review_session_keeps_rejection_terminal() {
     assert(session.decision() == nostrseal::ApprovalDecision::Rejected);
 }
 
+void test_serial_sign_event_review_matches_shared_review_contract() {
+    const nostrseal::TrustedReviewRequest serial_review =
+        nostrseal::build_serial_sign_event_trusted_review_request(
+            R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"NostrSeal fixture: basic kind 1 event."}}})");
+    const nostrseal::TrustedReviewRequest expected = nostrseal::test_vectors::basic_trusted_review_request();
+
+    assert(serial_review.request_id == expected.request_id);
+    assert(serial_review.approval_digest == expected.approval_digest);
+    assert_trusted_review_pages(serial_review.pages, expected.pages);
+
+    nostrseal::TrustedReviewSession session = nostrseal::begin_serial_sign_event_trusted_review(
+        R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"NostrSeal fixture: basic kind 1 event."}}})");
+    assert(session.current_frame().title == "Event");
+    assert(!session.can_sign());
+}
+
 void test_device_protocol_reports_scaffold_capabilities() {
     const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kCapabilityRequestFrame);
 
@@ -878,6 +895,7 @@ int main() {
     test_review_display_rejects_unsafe_frame_bounds();
     test_trusted_review_session_binds_display_navigation_and_approval();
     test_trusted_review_session_keeps_rejection_terminal();
+    test_serial_sign_event_review_matches_shared_review_contract();
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
     test_device_protocol_reports_development_public_key();

@@ -22,6 +22,7 @@ host-core-test: generate-host-vectors
 		firmware/host_core/src/review_controls.cpp \
 		firmware/host_core/src/review_display.cpp \
 		firmware/host_core/src/serial_frame.cpp \
+		firmware/host_core/src/serial_review.cpp \
 		firmware/host_core/src/sha256.cpp \
 		firmware/host_core/src/trusted_review.cpp \
 		firmware/host_core/tests/test_host_core.cpp \
