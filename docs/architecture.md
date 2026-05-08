@@ -81,9 +81,10 @@ Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion. The same generated header now includes review-screen approval
 digests, trusted review request factories, review-display-frame vectors, QR
-review transcripts, the shared v0 limit profile, and invalid hardening vectors,
-allowing the host-core parser, approval gate, and trusted-review session to
-reject unsafe input before any future signing backend is connected.
+review transcripts, the shared v0 limit profile, invalid serial-frame vectors,
+and invalid QR/signing-request hardening vectors, allowing the host-core
+parser, approval gate, and trusted-review session to reject unsafe input before
+any future signing backend is connected.
 
 The review-control state machine is intentionally separate from
 `approval_gate`: `review_controls` models local user navigation, while
@@ -151,8 +152,9 @@ request bound to the displayed `approval_digest`.
 `firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the
 ESP32-S3 USB signer. It currently boots, uses native USB Serial/JTAG as the
 primary ESP-IDF console, reads newline-terminated `nseal1f:` frames from that
-console, answers the shared `get_capabilities` request, returns the shared
-development public key for `get_public_key`, returns the shared
-`signing_disabled` response for the basic `sign_event` fixture, and logs that
-signing is disabled. It does not yet include storage, production key
-provisioning, display review, button approval, or signing components.
+console with the shared v0 serial-frame byte limit, answers the shared
+`get_capabilities` request, returns the shared development public key for
+`get_public_key`, returns the shared `signing_disabled` response for the basic
+`sign_event` fixture, and logs that signing is disabled. It does not yet
+include storage, production key provisioning, display review, button approval,
+or signing components.

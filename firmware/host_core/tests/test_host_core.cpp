@@ -123,6 +123,18 @@ void test_serial_frame_rejections() {
     });
 }
 
+void test_serial_frame_rejects_shared_invalid_vectors() {
+    expect_throw("serial frame exceeds max_serial_frame_bytes", [] {
+        (void)nostrseal::decode_serial_frame(nostrseal::test_vectors::kInvalidSerialFrameOversized);
+    });
+    expect_throw("serial frame checksum mismatch", [] {
+        (void)nostrseal::decode_serial_frame(nostrseal::test_vectors::kInvalidSerialFrameChecksumMismatch);
+    });
+    expect_throw("serial frame payload", [] {
+        (void)nostrseal::decode_serial_frame(nostrseal::test_vectors::kInvalidSerialFrameMalformedPayload);
+    });
+}
+
 void test_qr_envelope_decodes_shared_vector() {
     const nostrseal::QrEnvelope envelope =
         nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
@@ -212,6 +224,7 @@ void test_qr_limits_match_shared_profile() {
     assert(nostrseal::kMaxRequestIdLength == nostrseal::test_vectors::kMaxRequestIdLength);
     assert(nostrseal::kMaxDecodedRequestJsonBytes == nostrseal::test_vectors::kMaxDecodedRequestJsonBytes);
     assert(nostrseal::kMaxStaticQrDecodedJsonBytes == nostrseal::test_vectors::kMaxStaticQrDecodedJsonBytes);
+    assert(nostrseal::kMaxSerialFrameBytes == nostrseal::test_vectors::kMaxSerialFrameBytes);
     assert(nostrseal::kMaxContentUtf8Bytes == nostrseal::test_vectors::kMaxContentUtf8Bytes);
     assert(nostrseal::kMaxTagCount == nostrseal::test_vectors::kMaxTagCount);
     assert(nostrseal::kMaxTagFieldsPerTag == nostrseal::test_vectors::kMaxTagFieldsPerTag);
@@ -729,6 +742,7 @@ void test_device_protocol_reports_development_public_key() {
 int main() {
     test_serial_frame_round_trip();
     test_serial_frame_rejections();
+    test_serial_frame_rejects_shared_invalid_vectors();
     test_qr_envelope_decodes_shared_vector();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();

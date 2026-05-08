@@ -7,11 +7,11 @@
 #include <string>
 
 #include "nostrseal/device_protocol.hpp"
+#include "nostrseal/limits.hpp"
 #include "nostrseal/serial_frame.hpp"
 
 namespace {
 constexpr const char* kTag = "nostrseal";
-constexpr std::size_t kMaxFrameLineLength = 4096;
 
 void write_transport_error(const char* payload_base64url) {
     const std::string response = nostrseal::encode_serial_frame(
@@ -50,7 +50,7 @@ extern "C" void app_main(void) {
             continue;
         }
         line.push_back(static_cast<char>(ch));
-        if (line.size() > kMaxFrameLineLength) {
+        if (line.size() > nostrseal::kMaxSerialFrameBytes) {
             ESP_LOGW(kTag, "Rejected overlong serial frame");
             line.clear();
             write_transport_error("eyJlcnJvciI6Im92ZXJsb25nX2ZyYW1lIn0");

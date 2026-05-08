@@ -14,6 +14,9 @@ tests with strict C++ warnings.
 - Serial frame round-trip test against the companion-compatible known frame.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
+- Shared invalid serial-frame vector tests for oversized frames, checksum
+  mismatch, and malformed payloads, plus a host-core assertion that
+  `kMaxSerialFrameBytes` matches the shared v0 limit profile.
 - QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
   unpadded base64url rejection, invalid UTF-8 rejection, oversized decoded
   payload rejection, and non-JSON payload rejection.

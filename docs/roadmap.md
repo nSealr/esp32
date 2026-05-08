@@ -13,6 +13,8 @@
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, boot-log smoke test, and
   capability/public-key/signing-disabled protocol smoke test.
+- Shared v0 serial-frame byte limit and invalid serial-frame vector rejection
+  for oversized frames, checksum mismatch, and malformed payloads.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
 - Shared-spec `get_public_key` development response through host-core protocol
   handling.
@@ -71,6 +73,12 @@ deterministic host-side oracle for those adapters and are now checked against
 shared `NostrSeal/specs` vectors. The host-core QR parser also mirrors the
 shared v0 limit profile and rejects applicable invalid QR-envelope and
 signing-request vectors before trusted review can begin.
+
+Status note, 2026-05-08: the host-core serial decoder now mirrors the shared v0
+`max_serial_frame_bytes` limit and rejects the shared invalid serial-frame
+vectors for oversized frames, checksum mismatch, and malformed base64url
+payloads. The ESP-IDF input loop uses the same limit before dispatching a frame
+to host-core.
 
 Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
 `v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem101`,

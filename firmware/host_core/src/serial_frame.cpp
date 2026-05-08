@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 
+#include "nostrseal/limits.hpp"
 #include "nostrseal/sha256.hpp"
 
 namespace nostrseal {
@@ -82,6 +83,9 @@ std::string encode_serial_frame(const SerialFrame& frame) {
 }
 
 SerialFrame decode_serial_frame(const std::string& line) {
+    if (line.size() > kMaxSerialFrameBytes) {
+        throw SerialFrameError("serial frame exceeds max_serial_frame_bytes");
+    }
     std::string normalized = line;
     if (!normalized.empty() && normalized.back() == '\n') {
         normalized.pop_back();
