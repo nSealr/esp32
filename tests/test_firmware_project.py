@@ -206,6 +206,18 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertFalse(sign_response["ok"])
         self.assertEqual(sign_response["error"]["code"], "signing_disabled")
 
+    def test_smoke_script_builds_invalid_metadata_exchanges(self) -> None:
+        exchanges = smoke_capabilities.load_invalid_metadata_frames()
+
+        self.assertEqual(len(exchanges), 2)
+        for request_frame, error_frame in exchanges:
+            request = decode_serial_frame_payload(request_frame)
+            error = decode_serial_frame_payload(error_frame)
+
+            self.assertEqual(error, {"error": "unsupported_request"})
+            self.assertTrue(request["request_id"].startswith("dynamic-smoke-"))
+            self.assertTrue(error_frame.startswith("nseal1f:error:"))
+
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
         frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
 

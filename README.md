@@ -121,8 +121,9 @@ make idf-smoke-capabilities
 
 The hardware smoke sends the shared fixture requests and additional dynamic
 `request_id` variants for capabilities, development public-key, and disabled
-`sign_event` handling. Real signing is still expected to return
-`signing_disabled`.
+`sign_event` handling. It also sends invalid dynamic metadata requests and
+expects deterministic `unsupported_request` error frames. Real signing is still
+expected to return `signing_disabled`.
 
 ## License
 

@@ -82,7 +82,8 @@ tests with strict C++ warnings.
   `make idf-smoke-capabilities` after exporting ESP-IDF and flashing the current
   firmware. The smoke sends both shared fixture request frames and dynamic
   `request_id` variants so parser changes cannot silently fall back to exact
-  fixture matching.
+  fixture matching. It also sends invalid dynamic metadata requests and expects
+  deterministic `unsupported_request` error frames.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

@@ -159,7 +159,9 @@ The smoke command sends the shared `get_capabilities` request frame, the shared
 request frame, and dynamic `request_id` variants for the same three methods. It
 expects the ESP32-S3 scaffold capability response, deterministic development
 public-key response, and explicit `signing_disabled` response in both static
-and dynamic-request cases. On 2026-05-08, revision `dd2d5d1` passed the initial
-static smoke test on `/dev/cu.usbmodem101` after build and flash with ESP-IDF
-`v5.5.4`. Real signing is intentionally disabled until storage, review UI,
-approval controls, and response verification tests are implemented.
+and dynamic-request cases. It also sends invalid dynamic request metadata and
+expects deterministic `unsupported_request` error frames. On 2026-05-08,
+revision `dd2d5d1` passed the initial static smoke test on
+`/dev/cu.usbmodem101` after build and flash with ESP-IDF `v5.5.4`. Real signing
+is intentionally disabled until storage, review UI, approval controls, and
+response verification tests are implemented.

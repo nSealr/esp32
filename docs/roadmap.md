@@ -95,6 +95,11 @@ development public-key, and disabled `sign_event` handling. This makes the
 hardware smoke catch regressions where the ESP-IDF app only recognizes exact
 fixture payloads.
 
+Status note, 2026-05-08: the same hardware smoke now sends invalid dynamic
+request metadata for unsupported version and invalid `request_id` syntax. The
+expected device behavior is a deterministic `nseal1f:error` frame with
+`unsupported_request`, preserving the signing-disabled boundary.
+
 Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
 `v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem101`,
 and smoke-tested with `make IDF_PORT=/dev/cu.usbmodem101
