@@ -207,15 +207,34 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertEqual(sign_response["error"]["code"], "signing_disabled")
 
     def test_smoke_script_builds_invalid_metadata_exchanges(self) -> None:
-        exchanges = smoke_capabilities.load_invalid_metadata_frames()
+        with TemporaryDirectory() as temp_root:
+            specs_dir = Path(temp_root)
+            invalid_dir = specs_dir / "vectors" / "invalid"
+            invalid_dir.mkdir(parents=True)
+            invalid_dir.joinpath("serial-frame-request-invalid-version.json").write_text(
+                json.dumps(
+                    {
+                        "frame": "nseal1f:request:test-version:0000000000000000\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            invalid_dir.joinpath("serial-frame-request-invalid-request-id.json").write_text(
+                json.dumps(
+                    {
+                        "frame": "nseal1f:request:test-request-id:0000000000000000\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            exchanges = smoke_capabilities.load_invalid_metadata_frames(specs_dir)
 
         self.assertEqual(len(exchanges), 2)
-        for request_frame, error_frame in exchanges:
-            request = decode_serial_frame_payload(request_frame)
-            error = decode_serial_frame_payload(error_frame)
-
-            self.assertEqual(error, {"error": "unsupported_request"})
-            self.assertTrue(request["request_id"].startswith("dynamic-smoke-"))
+        self.assertEqual(exchanges[0][0], "nseal1f:request:test-version:0000000000000000\n")
+        self.assertEqual(exchanges[1][0], "nseal1f:request:test-request-id:0000000000000000\n")
+        for _, error_frame in exchanges:
+            self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
             self.assertTrue(error_frame.startswith("nseal1f:error:"))
 
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:

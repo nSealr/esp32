@@ -1,0 +1,7 @@
+{
+  "name": "serial-frame-request-invalid-request-id",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "serial-frame",
+  "expected_error": "request_id",
+  "frame": "nseal1f:request:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoiZHluYW1pYy1zbW9rZS1pbnZhbGlkIGlkIiwibWV0aG9kIjoiZ2V0X3B1YmxpY19rZXkifQ:a4b7a1f708101a5f\n"
+}

@@ -33,9 +33,11 @@ DYNAMIC_SMOKE_REQUEST_IDS = {
     "capabilities": "dynamic-smoke-capabilities",
     "public_key": "dynamic-smoke-public-key",
     "signing_disabled": "dynamic-smoke-sign-event-disabled",
-    "invalid_version": "dynamic-smoke-invalid-version",
-    "invalid_request_id": "dynamic-smoke-invalid id",
 }
+INVALID_METADATA_VECTOR_NAMES = (
+    "serial-frame-request-invalid-version",
+    "serial-frame-request-invalid-request-id",
+)
 UNSUPPORTED_REQUEST_ERROR = {"error": "unsupported_request"}
 
 
@@ -100,25 +102,15 @@ def load_dynamic_request_id_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tupl
     return [vector_frames(vector) for vector in vectors]
 
 
-def load_invalid_metadata_frames() -> list[tuple[str, str]]:
-    requests = [
-        {
-            "version": 10,
-            "request_id": DYNAMIC_SMOKE_REQUEST_IDS["invalid_version"],
-            "method": "get_public_key",
-        },
-        {
-            "version": 1,
-            "request_id": DYNAMIC_SMOKE_REQUEST_IDS["invalid_request_id"],
-            "method": "get_public_key",
-        },
-    ]
+def load_invalid_metadata_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
     error_payload = base64url_json(UNSUPPORTED_REQUEST_ERROR)
     expected_error_frame = encode_serial_frame("error", error_payload)
-    return [
-        (encode_serial_frame("request", base64url_json(request)), expected_error_frame)
-        for request in requests
-    ]
+    invalid_dir = specs_dir / "vectors" / "invalid"
+    frames: list[tuple[str, str]] = []
+    for vector_name in INVALID_METADATA_VECTOR_NAMES:
+        vector = json.loads((invalid_dir / f"{vector_name}.json").read_text(encoding="utf-8"))
+        frames.append((vector["frame"], expected_error_frame))
+    return frames
 
 
 def vector_frames(vector: dict) -> tuple[str, str]:

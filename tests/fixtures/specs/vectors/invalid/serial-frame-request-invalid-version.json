@@ -1,0 +1,7 @@
+{
+  "name": "serial-frame-request-invalid-version",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "serial-frame",
+  "expected_error": "version must be 1",
+  "frame": "nseal1f:request:eyJ2ZXJzaW9uIjoxMCwicmVxdWVzdF9pZCI6ImR5bmFtaWMtc21va2UtaW52YWxpZC12ZXJzaW9uIiwibWV0aG9kIjoiZ2V0X3B1YmxpY19rZXkifQ:54c2eaa943b7931f\n"
+}
