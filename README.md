@@ -64,6 +64,9 @@ board into a separate repository.
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic
   development-only fixture key.
+- ESP32-S3 scaffold request dispatcher that parses valid serial-frame request
+  payloads and echoes dynamic `request_id` values for `get_capabilities`,
+  `get_public_key`, and disabled `sign_event` responses.
 - Primary ESP-IDF console configured on native USB Serial/JTAG so the scaffold
   can receive hardware smoke-test requests over the attached USB-C cable.
 - Portable SHA-256 checksum helper for frame corruption detection.
@@ -85,7 +88,7 @@ board into a separate repository.
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for
 `get_public_key`, returns an explicit `signing_disabled` protocol response for
-the shared `sign_event` fixture, and keeps real signing disabled until storage,
+valid `sign_event` requests, and keeps real signing disabled until storage,
 trusted review, approval controls, and signing tests are implemented.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32

@@ -70,8 +70,9 @@ The first firmware foundation is host-buildable C++ under
   object a future display/button adapter can drive without touching signing
   code.
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
-  development public-key, and disabled-signing responses. It does not sign
-  events.
+  development public-key, and disabled-signing responses. It parses the serial
+  request payload enough to validate v0 request ids and echo dynamic
+  `request_id` values. It does not sign events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -153,8 +154,8 @@ request bound to the displayed `approval_digest`.
 ESP32-S3 USB signer. It currently boots, uses native USB Serial/JTAG as the
 primary ESP-IDF console, reads newline-terminated `nseal1f:` frames from that
 console with the shared v0 serial-frame byte limit, answers the shared
-`get_capabilities` request, returns the shared development public key for
-`get_public_key`, returns the shared `signing_disabled` response for the basic
-`sign_event` fixture, and logs that signing is disabled. It does not yet
-include storage, production key provisioning, display review, button approval,
-or signing components.
+`get_capabilities` request and other valid v0 request ids, returns the shared
+development public key for `get_public_key`, returns `signing_disabled` for
+valid `sign_event` requests, and logs that signing is disabled. It does not
+yet include storage, production key provisioning, display review, button
+approval, or signing components.

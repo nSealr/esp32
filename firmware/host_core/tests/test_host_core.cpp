@@ -1,4 +1,5 @@
 #include <cassert>
+#include <array>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -18,6 +19,49 @@
 #include "transport_vector.hpp"
 
 namespace {
+
+std::string base64url_encode_for_test(const std::string& value) {
+    constexpr std::array<char, 64> alphabet{
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+        'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+        'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+        'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+        'w', 'x', 'y', 'z', '0', '1', '2', '3',
+        '4', '5', '6', '7', '8', '9', '-', '_',
+    };
+    std::string encoded;
+    int accumulator = 0;
+    int bits = 0;
+    for (const unsigned char ch : value) {
+        accumulator = (accumulator << 8) | ch;
+        bits += 8;
+        while (bits >= 6) {
+            bits -= 6;
+            encoded.push_back(alphabet[static_cast<std::size_t>((accumulator >> bits) & 0x3f)]);
+        }
+    }
+    if (bits > 0) {
+        encoded.push_back(alphabet[static_cast<std::size_t>((accumulator << (6 - bits)) & 0x3f)]);
+    }
+    return encoded;
+}
+
+std::string request_frame_for_test(const std::string& request_json) {
+    return nostrseal::encode_serial_frame(
+        nostrseal::SerialFrame{nostrseal::FrameType::Request, base64url_encode_for_test(request_json)});
+}
+
+std::string response_frame_for_test(const std::string& response_json) {
+    return nostrseal::encode_serial_frame(
+        nostrseal::SerialFrame{nostrseal::FrameType::Response, base64url_encode_for_test(response_json)});
+}
+
+std::string error_frame_for_test(const std::string& error_json) {
+    return nostrseal::encode_serial_frame(
+        nostrseal::SerialFrame{nostrseal::FrameType::Error, base64url_encode_for_test(error_json)});
+}
 
 void expect_throw(const std::string& expected, const auto& fn) {
     try {
@@ -737,6 +781,36 @@ void test_device_protocol_reports_development_public_key() {
     assert(decoded.payload_base64url == nostrseal::test_vectors::kPublicKeyResponsePayloadBase64Url);
 }
 
+void test_device_protocol_echoes_dynamic_request_ids() {
+    const std::string capability_response = nostrseal::handle_serial_frame(
+        request_frame_for_test(R"({"version":1,"request_id":"req-alt-capabilities","method":"get_capabilities"})"));
+
+    assert(capability_response == response_frame_for_test(
+        R"({"version":1,"request_id":"req-alt-capabilities","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})"));
+
+    const std::string public_key_response = nostrseal::handle_serial_frame(
+        request_frame_for_test(R"({"version":1,"request_id":"req-alt-pubkey","method":"get_public_key"})"));
+
+    assert(public_key_response == response_frame_for_test(
+        R"({"version":1,"request_id":"req-alt-pubkey","ok":true,"result":{"public_key":"4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"}})"));
+
+    const std::string disabled_response = nostrseal::handle_serial_frame(
+        request_frame_for_test(R"({"version":1,"request_id":"req-alt-sign","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"alt"}}})"));
+
+    assert(disabled_response == response_frame_for_test(
+        R"({"version":1,"request_id":"req-alt-sign","ok":false,"error":{"code":"signing_disabled","message":"Signing is disabled until trusted review and physical approval are implemented.","retryable":false}})"));
+}
+
+void test_device_protocol_rejects_invalid_dynamic_request_metadata() {
+    assert(nostrseal::handle_serial_frame(
+               request_frame_for_test(R"({"version":10,"request_id":"req-version-10","method":"get_public_key"})")) ==
+           error_frame_for_test(R"({"error":"unsupported_request"})"));
+
+    assert(nostrseal::handle_serial_frame(
+               request_frame_for_test(R"({"version":1,"request_id":"bad id","method":"get_public_key"})")) ==
+           error_frame_for_test(R"({"error":"unsupported_request"})"));
+}
+
 }  // namespace
 
 int main() {
@@ -779,6 +853,8 @@ int main() {
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
     test_device_protocol_reports_development_public_key();
+    test_device_protocol_echoes_dynamic_request_ids();
+    test_device_protocol_rejects_invalid_dynamic_request_metadata();
     std::cout << "host core tests passed\n";
     return 0;
 }

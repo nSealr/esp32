@@ -68,6 +68,9 @@ tests with strict C++ warnings.
   request returns the shared deterministic development public key response.
 - Device protocol tests proving the shared `sign_event` fixture returns the
   shared `signing_disabled` scaffold response.
+- Device protocol tests proving valid serial-frame request payloads with
+  non-fixture `request_id` values receive matching dynamic responses for
+  `get_capabilities`, development `get_public_key`, and disabled `sign_event`.
 - ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG

@@ -20,6 +20,9 @@
   handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
+- Dynamic serial request-id echo for valid `get_capabilities`, `get_public_key`,
+  and disabled `sign_event` requests instead of only recognizing exact fixture
+  payloads.
 - Shared-spec QR envelope decode boundary for future ESP32-S3 QR vault camera
   input.
 - QR `sign_event` request metadata parser for decoded envelopes, including the
@@ -79,6 +82,12 @@ Status note, 2026-05-08: the host-core serial decoder now mirrors the shared v0
 vectors for oversized frames, checksum mismatch, and malformed base64url
 payloads. The ESP-IDF input loop uses the same limit before dispatching a frame
 to host-core.
+
+Status note, 2026-05-08: the host-core device protocol now decodes serial-frame
+request payloads, validates the v0 `request_id` profile, and echoes dynamic
+request ids in `get_capabilities`, development `get_public_key`, and disabled
+`sign_event` responses. `sign_event` still returns `signing_disabled`; no
+signing backend, storage, display driver, or GPIO approval path is connected.
 
 Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
 `v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem101`,
