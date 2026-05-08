@@ -26,8 +26,9 @@ before rebuilding.
 
 The attached ESP32-S3 board is visible:
 
-- serial port: `/dev/cu.usbmodem101` in the latest smoke run; earlier sessions
-  used `/dev/cu.usbmodem1101`, so rerun `make detect-board` if the path changes
+- serial port: `/dev/cu.usbmodem1101` in the latest smoke run; earlier sessions
+  also used `/dev/cu.usbmodem101`, so rerun `make detect-board` or
+  `ls -1 /dev/cu.usbmodem*` if the path changes
 - USB vendor: `Espressif`
 - USB product: `USB JTAG_serial debug unit`
 - USB serial number: `EC:DA:3B:95:32:98`
@@ -73,10 +74,10 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x74ab0 bytes after adding the
-host-core approval gate and review controls to the ESP-IDF component
+nostrseal_esp32_s3_usb_signer.bin size: 0x7ab70 bytes after adding the
+host-core QR review I/O transcript helper to the ESP-IDF component
 smallest app partition: 0x100000 bytes
-free app partition space: 0x8b550 bytes, about 54%
+free app partition space: 0x85490 bytes, about 52%
 ```
 
 The firmware defaults set native USB Serial/JTAG as the primary ESP-IDF console:
@@ -162,8 +163,12 @@ public-key response, and explicit `signing_disabled` response in both static
 and dynamic-request cases. It also sends invalid dynamic request metadata and
 serial-wrapped invalid signing-request vectors, including unknown top-level
 request fields, and expects deterministic `unsupported_request` error frames.
-On 2026-05-08, revision `dd2d5d1` passed the initial static smoke test on
-`/dev/cu.usbmodem101` after build and flash with ESP-IDF `v5.5.4`. Later
-smoke-tool revisions expand that check without enabling real signing. Real
-signing is intentionally disabled until storage, review UI, approval controls,
-and response verification tests are implemented.
+On 2026-05-08, revision `b7aa30a` was built with ESP-IDF `v5.5.4`, flashed to
+`/dev/cu.usbmodem1101`, and passed `make IDF_PORT=/dev/cu.usbmodem1101
+idf-smoke-capabilities`. This confirms the QR review I/O transcript helper can
+be compiled into the ESP-IDF component while the attached-device smoke still
+exercises only the USB serial scaffold: capability and development public-key
+requests succeed, `sign_event` returns `signing_disabled`, and invalid requests
+return deterministic `unsupported_request` frames. Real signing is
+intentionally disabled until storage, review UI, approval controls, and
+response verification tests are implemented.

@@ -140,6 +140,17 @@ error frames for invalid metadata and 25 serial-wrapped invalid signing-request
 vectors, including structurally invalid `sign_event` `params` and
 `event_template` shapes. Real signing remains disabled.
 
+Hardware note, 2026-05-08: revision `b7aa30a` was built with local ESP-IDF
+`v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on
+`/dev/cu.usbmodem1101`, and smoke-tested with `make
+IDF_PORT=/dev/cu.usbmodem1101 idf-smoke-capabilities`. This run verifies that
+the firmware still builds, flashes, and preserves the USB serial scaffold
+contract after compiling the QR review I/O transcript helper into host-core:
+capability and development public-key requests succeed, `sign_event` returns
+`signing_disabled`, and invalid requests return deterministic
+`unsupported_request` frames. Real camera, display, GPIO, storage, secure boot,
+debug-lock, and signing acceptance remain pending.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
@@ -148,8 +159,9 @@ vectors, including structurally invalid `sign_event` `params` and
   USB serial smoke tests.
 - Display/button abstraction.
   Status: host-core `QrReviewIo` now defines the scanner/display/button
-  adapter boundary for the QR review loop, while real ESP-IDF drivers remain
-  pending.
+  adapter boundary for the QR review loop, and revision `b7aa30a` confirms that
+  transcript-producing host-core still builds and flashes inside the ESP-IDF
+  component. Real ESP-IDF drivers remain pending.
 - Host-rendered review frame contract for display drivers.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.

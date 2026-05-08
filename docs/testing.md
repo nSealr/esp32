@@ -91,6 +91,11 @@ tests with strict C++ warnings.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.
+- QR review I/O transcript firmware smoke evidence recorded for revision
+  `b7aa30a` on `/dev/cu.usbmodem1101`; this confirms the transcript-producing
+  host-core compiles into the ESP-IDF component while the attached-board smoke
+  still exercises only the USB serial scaffold, development public-key fixture,
+  `signing_disabled` refusal path, and deterministic invalid-request errors.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.
