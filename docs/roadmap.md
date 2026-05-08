@@ -151,6 +151,16 @@ capability and development public-key requests succeed, `sign_event` returns
 `unsupported_request` frames. Real camera, display, GPIO, storage, secure boot,
 debug-lock, and signing acceptance remain pending.
 
+Hardware note, 2026-05-08: revision `f307b41` was rebuilt and reflashed on the
+attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem1101` after a diagnostic
+protocol-smoke timeout exposed repeated bootloader `Checksum failed` and
+`Factory app partition is not bootable` messages. The recovery reflash used
+ESP-IDF `v5.5.4`; esptool verified bootloader, app, and partition-table image
+hashes, and the follow-up `make IDF_PORT=/dev/cu.usbmodem1101
+idf-smoke-capabilities` passed. The result is recorded as a manual
+`NostrSeal/hardware` protocol-smoke report and does not change the disabled
+signing boundary.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
