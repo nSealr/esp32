@@ -38,24 +38,25 @@ public:
     virtual ReviewButton read_review_button() = 0;
 };
 
-struct QrReviewIoFlowResult {
-    std::string request_id;
-    std::string approval_digest;
-    std::optional<bool> decision;
-    bool approved_for_signing;
-};
-
-QrReviewIoFlowResult run_qr_review_io_flow(
-    QrReviewIo& io,
-    ReviewDisplayLimits limits = {},
-    std::size_t max_steps = 32);
-
 struct QrReviewTranscriptStep {
     ReviewDisplayFrame frame;
     ReviewButton button;
     std::optional<bool> decision;
     bool approved_for_signing;
 };
+
+struct QrReviewIoFlowResult {
+    std::string request_id;
+    std::string approval_digest;
+    std::optional<bool> decision;
+    bool approved_for_signing;
+    std::vector<QrReviewTranscriptStep> transcript;
+};
+
+QrReviewIoFlowResult run_qr_review_io_flow(
+    QrReviewIo& io,
+    ReviewDisplayLimits limits = {},
+    std::size_t max_steps = 32);
 
 std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     const std::string& qr_envelope,

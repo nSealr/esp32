@@ -52,7 +52,8 @@ The first firmware foundation is host-buildable C++ under
 - `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
   envelopes to trusted review frames and approval state. It includes the
   `QrReviewIo` adapter harness for future scanner, display, and GPIO button
-  code, and has no signing backend.
+  code, returns the displayed frame/button transcript from that harness, and has
+  no signing backend.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
@@ -131,17 +132,18 @@ signature-producing function in this flow.
 adapter provides one scanned QR envelope, a display adapter paints the bounded
 frame supplied by host-core, and physical controls provide `next`, `approve`,
 or `reject`. The harness shows the current trusted frame before every button
-read, bounds non-terminal button streams, and returns only the terminal
-approval state, keeping camera/display/GPIO bring-up separate from key storage
-and signing.
+read, bounds non-terminal button streams, and returns the terminal approval
+state together with the exact frame/button transcript produced by the adapter
+loop, keeping camera/display/GPIO bring-up separate from key storage and
+signing.
 
-The QR review transcript helper records the frame shown before each physical
-button input, the optional terminal decision, and whether the approval gate has
-been satisfied. This gives display/GPIO adapters a deterministic host-side
-oracle for review-loop tests without introducing a signing backend. ESP32
-host-core tests consume the shared `NostrSeal/specs` QR review-transcript
-vectors so future firmware adapters stay aligned with the cross-repository
-review contract.
+The QR review transcript helper and `QrReviewIo` result both record the frame
+shown before each physical button input, the optional terminal decision, and
+whether the approval gate has been satisfied. This gives display/GPIO adapters a
+deterministic host-side oracle for review-loop tests without introducing a
+signing backend. ESP32 host-core tests consume the shared `NostrSeal/specs` QR
+review-transcript vectors so future firmware adapters stay aligned with the
+cross-repository review contract.
 
 The trusted-review session intentionally stops before hardware drivers, key
 storage, or Schnorr signing. It proves the local review loop can only reach

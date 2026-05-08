@@ -50,9 +50,19 @@ QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits l
 
     QrReviewFlow flow{io.scan_request_qr(), limits};
     std::optional<bool> decision;
+    std::vector<QrReviewTranscriptStep> transcript;
+    transcript.reserve(max_steps);
     for (std::size_t step = 0; step < max_steps && !decision.has_value(); ++step) {
-        io.show_review_frame(flow.current_frame());
-        decision = flow.handle_button(io.read_review_button());
+        ReviewDisplayFrame frame = flow.current_frame();
+        io.show_review_frame(frame);
+        const ReviewButton button = io.read_review_button();
+        decision = flow.handle_button(button);
+        transcript.push_back(QrReviewTranscriptStep{
+            std::move(frame),
+            button,
+            decision,
+            flow.approved_for_signing(),
+        });
     }
     if (!decision.has_value()) {
         throw std::logic_error("QR review IO did not reach a terminal decision");
@@ -62,6 +72,7 @@ QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits l
         flow.approval_digest(),
         decision,
         flow.approved_for_signing(),
+        std::move(transcript),
     };
 }
 

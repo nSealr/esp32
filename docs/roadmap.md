@@ -51,6 +51,9 @@
   physical-button drivers, without signing.
 - Bounded `QrReviewIo` loop that fails on non-terminal button streams instead
   of hanging a future adapter.
+- `QrReviewIo` result transcript covering the exact frame/button sequence shown
+  by the driver-facing harness, checked against shared review-transcript
+  vectors.
 - Deterministic QR review transcript helper for future display/button adapter
   acceptance tests, checked against shared `NostrSeal/specs` transcript
   vectors.
@@ -70,12 +73,13 @@ that same session boundary through a raw-QR review flow. Display frames now
 wrap and truncate body text to configured limits. The host-core now also has a
 scanner/display/button I/O harness that shows every trusted frame before
 reading physical-style input, rejects non-terminal input streams after a bounded
-number of steps, and returns only the terminal approval state. Real camera,
-display, and GPIO drivers remain pending. QR review transcripts provide a
-deterministic host-side oracle for those adapters and are now checked against
-shared `NostrSeal/specs` vectors. The host-core QR parser also mirrors the
-shared v0 limit profile and rejects applicable invalid QR-envelope and
-signing-request vectors before trusted review can begin.
+number of steps, and returns the terminal approval state plus the exact
+displayed frame/button transcript. Real camera, display, and GPIO drivers remain
+pending. QR review transcripts provide a deterministic host-side oracle for
+those adapters and are now checked against shared `NostrSeal/specs` vectors. The
+host-core QR parser also mirrors the shared v0 limit profile and rejects
+applicable invalid QR-envelope and signing-request vectors before trusted review
+can begin.
 
 Status note, 2026-05-08: the host-core serial decoder now mirrors the shared v0
 `max_serial_frame_bytes` limit and rejects the shared invalid serial-frame

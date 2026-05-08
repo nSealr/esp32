@@ -495,6 +495,9 @@ void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing()
     assert(result.decision.has_value());
     assert(result.decision.value());
     assert(result.approved_for_signing);
+    assert_qr_review_transcript(
+        result.transcript,
+        nostrseal::test_vectors::basic_qr_review_approve_transcript());
     assert(io.frames.size() == 4);
     assert(io.frames.front().title == "Event");
     assert(io.frames.front().page_indicator == "Page 1/4");
