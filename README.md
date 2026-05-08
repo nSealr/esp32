@@ -31,8 +31,8 @@ board into a separate repository.
   capture, animated QR reconstruction, and signing remain future work.
 - QR `sign_event` request metadata parsing for decoded envelopes. It extracts
   version, `request_id`, method, `params` presence, and the raw
-  `params.event_template` object boundary. It does not parse event-template
-  fields or enable signing.
+  `params.event_template` object boundary. The minimal field parser is
+  described below; signing remains disabled.
 - QR event-template safety gate rejecting host-supplied `id`, `pubkey`, or
   `sig` fields before any future review/signing path. The parser tolerates
   normal JSON string escapes while keeping full event semantics pending.
@@ -57,6 +57,13 @@ board into a separate repository.
   before reading a button, bounds non-terminal button streams, and returns the
   terminal approval state plus the exact displayed frame/button transcript; it
   still has no signing backend.
+- Serial/USB `sign_event` trusted-review boundary for decoded request JSON.
+  It builds the same review pages and `approval_digest` as the QR path before
+  the runtime dispatcher returns `signing_disabled`.
+- `SerialReviewIo` host-core adapter harness for future USB signer display and
+  physical-button drivers. It reads one decoded serial request, shows each
+  trusted frame before reading a button, and returns a frame/button transcript;
+  it still has no signing backend.
 - Deterministic QR review transcripts for display/button adapter tests. A
   transcript records each displayed frame, input button, decision, and approval
   state without exposing any signing output, and the host-core tests consume the
