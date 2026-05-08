@@ -77,11 +77,17 @@ tests with strict C++ warnings.
 
 - ESP32-S3 QR vault camera/display tests must consume the shared QR envelope,
   review-screen, `approval_digest`, and signing vectors from `NostrSeal/specs`.
+- Pre-signing hardening tests must consume the shared invalid vectors where
+  host-core parsers support the boundary. At minimum, unsafe event-template
+  shapes and resource-limit violations must be rejected before review or
+  signing can be reached.
 - Automated ESP-IDF build smoke tests in CI or a hardware-capable runner.
 - Repeatable flash smoke tests with recorded device port and board identity.
 - Transport frame rejection tests.
 - Companion integration tests for signed responses.
 - Hardware validation reports for every physical board.
 
-No device security claim is valid until firmware build, provisioning, approval,
-and rejection behavior are verified.
+No device security claim is valid until firmware build, provisioning, parser
+limits, trusted review, physical approval, approval-digest binding, companion
+verification, and deterministic rejection behavior are verified. Runtime
+signing remains disabled until those gates pass.

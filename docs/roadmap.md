@@ -89,6 +89,13 @@ shared `NostrSeal/specs` vectors.
 - Approval loop.
 - Companion integration.
 
+Hard blocker before real `sign_event`: the M7.5 pre-signing hardening gate
+must pass. That means host-core parser/resource limits, shared malicious-vector
+rejection where feasible, display review driver acceptance, physical button
+acceptance, `approval_digest` binding, key provisioning/storage design, secure
+boot/debug policy, and companion verification of signed output are all tested.
+Until then runtime signing remains disabled.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
@@ -109,7 +116,9 @@ shared `NostrSeal/specs` vectors.
 - Signed-event QR output verified by the companion.
 
 Status: future target in this repository. It must not be moved into
-`NostrSeal/raspberry`.
+`NostrSeal/raspberry`. It also must not sign real QR requests until the shared
+pre-signing hardening vectors are consumed where feasible and the camera,
+display, GPIO, and review acceptance gates are complete.
 
 ## M9: Security Hardening
 
