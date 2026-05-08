@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <vector>
@@ -44,7 +45,10 @@ struct QrReviewIoFlowResult {
     bool approved_for_signing;
 };
 
-QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits = {});
+QrReviewIoFlowResult run_qr_review_io_flow(
+    QrReviewIo& io,
+    ReviewDisplayLimits limits = {},
+    std::size_t max_steps = 32);
 
 struct QrReviewTranscriptStep {
     ReviewDisplayFrame frame;

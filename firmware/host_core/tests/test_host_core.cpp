@@ -79,6 +79,23 @@ private:
     std::vector<nostrseal::ReviewButton> buttons_;
 };
 
+class NextOnlyQrReviewIo : public nostrseal::QrReviewIo {
+public:
+    std::string scan_request_qr() override {
+        return nostrseal::test_vectors::kQrEnvelopeKind1Basic;
+    }
+
+    void show_review_frame(const nostrseal::ReviewDisplayFrame& frame) override {
+        frames.push_back(frame);
+    }
+
+    nostrseal::ReviewButton read_review_button() override {
+        return nostrseal::ReviewButton::Next;
+    }
+
+    std::vector<nostrseal::ReviewDisplayFrame> frames;
+};
+
 void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame frame{
         nostrseal::FrameType::Request,
@@ -385,6 +402,27 @@ void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing()
     assert(io.frames.back().action_hint == "Approve / Reject");
 }
 
+void test_qr_review_io_flow_rejects_non_terminal_button_stream() {
+    NextOnlyQrReviewIo io;
+
+    expect_throw("QR review IO did not reach a terminal decision", [&] {
+        (void)nostrseal::run_qr_review_io_flow(io, {}, 5);
+    });
+
+    assert(io.frames.size() == 5);
+    assert(io.frames.back().title == "Decision");
+}
+
+void test_qr_review_io_flow_requires_nonzero_step_limit() {
+    RecordingQrReviewIo io{{nostrseal::ReviewButton::Approve}};
+
+    expect_throw("QR review IO max steps must be non-zero", [&] {
+        (void)nostrseal::run_qr_review_io_flow(io, {}, 0);
+    });
+
+    assert(io.frames.empty());
+}
+
 void test_approval_gate_requires_matching_approval() {
     nostrseal::ApprovalGate gate;
     gate.begin_review("req-kind-1-basic", nostrseal::test_vectors::kBasicReviewScreenApprovalDigest);
@@ -665,6 +703,8 @@ int main() {
     test_qr_review_flow_transcript_records_display_and_approval_steps();
     test_qr_review_flow_transcript_records_early_rejection();
     test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing();
+    test_qr_review_io_flow_rejects_non_terminal_button_stream();
+    test_qr_review_io_flow_requires_nonzero_step_limit();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
     test_review_controls_allow_early_rejection();

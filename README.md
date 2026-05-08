@@ -48,8 +48,8 @@ board into a separate repository.
   requests before a future camera/display adapter can display them.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
   physical-button drivers. It scans one QR request, shows each trusted frame
-  before reading a button, and returns only the approval state; it still has no
-  signing backend.
+  before reading a button, bounds non-terminal button streams, and returns only
+  the approval state; it still has no signing backend.
 - Deterministic QR review transcripts for display/button adapter tests. A
   transcript records each displayed frame, input button, decision, and approval
   state without exposing any signing output, and the host-core tests consume the

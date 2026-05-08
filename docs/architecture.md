@@ -126,8 +126,9 @@ signature-producing function in this flow.
 adapter provides one scanned QR envelope, a display adapter paints the bounded
 frame supplied by host-core, and physical controls provide `next`, `approve`,
 or `reject`. The harness shows the current trusted frame before every button
-read and returns only the terminal approval state, keeping camera/display/GPIO
-bring-up separate from key storage and signing.
+read, bounds non-terminal button streams, and returns only the terminal
+approval state, keeping camera/display/GPIO bring-up separate from key storage
+and signing.
 
 The QR review transcript helper records the frame shown before each physical
 button input, the optional terminal decision, and whether the approval gate has

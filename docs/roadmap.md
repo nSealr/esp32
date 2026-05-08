@@ -41,6 +41,8 @@
   review frames and approval state, without signing.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
   physical-button drivers, without signing.
+- Bounded `QrReviewIo` loop that fails on non-terminal button streams instead
+  of hanging a future adapter.
 - Deterministic QR review transcript helper for future display/button adapter
   acceptance tests, checked against shared `NostrSeal/specs` transcript
   vectors.
@@ -59,9 +61,10 @@ approval-digest binding for future adapters, and QR-derived requests can enter
 that same session boundary through a raw-QR review flow. Display frames now
 wrap and truncate body text to configured limits. The host-core now also has a
 scanner/display/button I/O harness that shows every trusted frame before
-reading physical-style input and returns only the terminal approval state. Real
-camera, display, and GPIO drivers remain pending. QR review transcripts provide
-a deterministic host-side oracle for those adapters and are now checked against
+reading physical-style input, rejects non-terminal input streams after a bounded
+number of steps, and returns only the terminal approval state. Real camera,
+display, and GPIO drivers remain pending. QR review transcripts provide a
+deterministic host-side oracle for those adapters and are now checked against
 shared `NostrSeal/specs` vectors.
 
 ## M7: Firmware Foundation

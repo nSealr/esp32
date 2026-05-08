@@ -31,7 +31,8 @@ tests with strict C++ warnings.
   without a signing backend and unsafe QR requests are rejected before display.
 - QR review I/O harness tests proving scanner, display, and physical-button
   adapter boundaries can drive the host-core review loop without adding a
-  signing backend.
+  signing backend, and that non-terminal button streams fail within a bounded
+  number of steps instead of hanging the adapter loop.
 - QR review transcript tests covering full approval traversal and early
   rejection as deterministic frame/button/decision records from shared
   `NostrSeal/specs` review-transcript vectors.

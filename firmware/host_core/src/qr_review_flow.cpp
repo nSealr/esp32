@@ -1,5 +1,6 @@
 #include "nostrseal/qr_review_flow.hpp"
 
+#include <stdexcept>
 #include <utility>
 
 #include "nostrseal/qr_envelope.hpp"
@@ -42,12 +43,19 @@ std::optional<bool> QrReviewFlow::handle_button(ReviewButton button) {
     return session_.handle_button(button);
 }
 
-QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits) {
+QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits, std::size_t max_steps) {
+    if (max_steps == 0) {
+        throw std::invalid_argument("QR review IO max steps must be non-zero");
+    }
+
     QrReviewFlow flow{io.scan_request_qr(), limits};
     std::optional<bool> decision;
-    while (!decision.has_value()) {
+    for (std::size_t step = 0; step < max_steps && !decision.has_value(); ++step) {
         io.show_review_frame(flow.current_frame());
         decision = flow.handle_button(io.read_review_button());
+    }
+    if (!decision.has_value()) {
+        throw std::logic_error("QR review IO did not reach a terminal decision");
     }
     return QrReviewIoFlowResult{
         flow.request_id(),
