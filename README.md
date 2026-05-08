@@ -23,9 +23,9 @@ board into a separate repository.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
 - `nseal1:` QR envelope decode boundary compatible with the shared QR
-  transport vector. It validates envelope framing only; camera capture,
-  animated QR reconstruction, full event parsing, and signing remain future
-  work.
+  transport vector. It rejects malformed, padded, invalid UTF-8, and oversized
+  envelopes before any future camera/display adapter can review them; camera
+  capture, animated QR reconstruction, and signing remain future work.
 - QR `sign_event` request metadata parsing for decoded envelopes. It extracts
   version, `request_id`, method, `params` presence, and the raw
   `params.event_template` object boundary. It does not parse event-template
@@ -36,6 +36,9 @@ board into a separate repository.
 - Minimal QR event-template field parsing for `created_at`, `kind`, `tags`, and
   `content`. This prepares trusted review generation without enabling tag
   semantics, key storage, or signing.
+- Shared NostrSeal v0 implementation limits for constrained firmware parsing,
+  with host-core rejection of applicable invalid QR-envelope and signing-request
+  hardening vectors before review or signing can be reached.
 - QR trusted-review page generation from parsed event templates, checked
   against shared `NostrSeal/specs` review-screen vectors. QR-derived
   `approval_digest` now matches shared basic/tagged vectors, while camera
@@ -69,7 +72,8 @@ board into a separate repository.
   limits, giving small ESP32 screens a deterministic pre-driver rendering
   oracle.
 - Generated host test fixtures from shared serial, review-screen,
-  review-display-frame, and review-transcript vectors in `NostrSeal/specs`.
+  review-display-frame, review-transcript, limits, and invalid hardening
+  vectors in `NostrSeal/specs`.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it

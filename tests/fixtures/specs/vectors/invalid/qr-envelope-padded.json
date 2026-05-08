@@ -1,0 +1,7 @@
+{
+  "name": "qr-envelope-padded",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "qr-envelope",
+  "expected_error": "QR envelope payload must be unpadded base64url",
+  "envelope": "nseal1:eyJ2ZXJzaW9uIjoxfQ=="
+}

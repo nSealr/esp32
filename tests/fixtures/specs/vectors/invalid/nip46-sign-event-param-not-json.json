@@ -1,0 +1,11 @@
+{
+  "name": "nip46-sign-event-param-not-json",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46",
+  "expected_error": "sign_event param must be valid JSON",
+  "request_message": {
+    "id": "nip46-invalid-json",
+    "method": "sign_event",
+    "params": ["not json"]
+  }
+}

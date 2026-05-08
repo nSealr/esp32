@@ -1,0 +1,7 @@
+{
+  "name": "serial-frame-malformed-payload",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "serial-frame",
+  "expected_error": "serial frame payload must be base64url",
+  "frame": "nseal1f:request:not-valid-base64!:0000000000000000\n"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "request-tags-not-array",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template tags must be an array",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-tags-not-array",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": "not-an-array",
+        "content": "invalid tags"
+      }
+    }
+  }
+}

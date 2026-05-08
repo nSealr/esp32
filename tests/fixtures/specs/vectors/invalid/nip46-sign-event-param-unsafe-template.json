@@ -1,0 +1,13 @@
+{
+  "name": "nip46-sign-event-param-unsafe-template",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46",
+  "expected_error": "event_template contains forbidden fields",
+  "request_message": {
+    "id": "nip46-unsafe-template",
+    "method": "sign_event",
+    "params": [
+      "{\"created_at\":1710000000,\"kind\":1,\"tags\":[],\"content\":\"unsafe\",\"pubkey\":\"0000000000000000000000000000000000000000000000000000000000000000\"}"
+    ]
+  }
+}

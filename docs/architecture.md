@@ -37,12 +37,15 @@ The first firmware foundation is host-buildable C++ under
 - `serial_frame`: encodes and decodes newline-terminated `nseal1f:` frames with
   type, base64url JSON payload, and checksum.
 - `qr_envelope`: decodes `nseal1:` QR envelopes, validates unpadded base64url
-  payloads, and requires a decoded JSON container for the future ESP32-S3 QR
-  vault target. It also classifies decoded `sign_event` requests by top-level
-  metadata, extracts the raw `params.event_template` object boundary, and
-  rejects host-supplied `id`, `pubkey`, or `sig` fields before review/signing
-  code exists. It parses only the minimum unsigned event-template fields:
-  `created_at`, `kind`, `tags`, and `content`.
+  payloads, validates UTF-8, applies shared v0 QR/request size limits, and
+  requires a decoded JSON container for the future ESP32-S3 QR vault target.
+  It also classifies decoded `sign_event` requests by top-level metadata,
+  rejects unknown request/template fields where host-core owns the boundary,
+  extracts the raw `params.event_template` object boundary, and rejects
+  host-supplied `id`, `pubkey`, or `sig` fields before review/signing code
+  exists. It parses only the minimum unsigned event-template fields:
+  `created_at`, `kind`, `tags`, and `content`, with constrained tag/content
+  limits mirrored from `NostrSeal/specs`.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
@@ -77,10 +80,10 @@ button, secure storage, and signing components.
 Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion. The same generated header now includes review-screen approval
-digests, trusted review request factories, review-display-frame vectors, and
-QR review transcripts, allowing the host-core approval gate and trusted-review
-session to reject request/review swaps before any future signing backend is
-connected.
+digests, trusted review request factories, review-display-frame vectors, QR
+review transcripts, the shared v0 limit profile, and invalid hardening vectors,
+allowing the host-core parser, approval gate, and trusted-review session to
+reject unsafe input before any future signing backend is connected.
 
 The review-control state machine is intentionally separate from
 `approval_gate`: `review_controls` models local user navigation, while
@@ -97,16 +100,16 @@ semantics.
 
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does
-not perform camera capture, animated QR reconstruction, full event-template
-parsing, review generation, or signing. Its request parser extracts version,
-`request_id`, method, `params` presence, and the raw `params.event_template`
-object boundary before later review code does real request handling. It also
-tolerates normal JSON string escapes and rejects event templates that already
-include `id`, `pubkey`, or `sig`. Those layers must be added behind separate
-tests and must continue to consume shared vectors from `NostrSeal/specs`. The
-current field parser validates only the unsigned event-template primitives that
-future review generation needs; tag semantics, event id computation, key
-storage, and signing remain absent.
+not perform camera capture, animated QR reconstruction, review output on real
+hardware, or signing. Its request parser extracts version, `request_id`,
+method, `params` presence, and the raw `params.event_template` object boundary
+before later review code does real request handling. It also tolerates normal
+JSON string escapes, applies shared resource limits, and rejects event
+templates that already include `id`, `pubkey`, or `sig`. Those layers must be
+added behind separate tests and must continue to consume shared vectors from
+`NostrSeal/specs`. The current field parser validates only the unsigned
+event-template primitives that future review generation needs; tag semantics,
+event id computation, key storage, and signing remain absent.
 
 The QR review builder consumes those parsed primitives and emits the same page
 order, text, and `approval_digest` as `NostrSeal/specs` review-screen vectors

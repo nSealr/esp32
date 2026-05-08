@@ -1,0 +1,11 @@
+{
+  "name": "nip46-connect-invalid-pubkey",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46",
+  "expected_error": "connect remote-signer pubkey must be 32-byte lowercase hex",
+  "request_message": {
+    "id": "nip46-connect-invalid",
+    "method": "connect",
+    "params": ["not-a-pubkey", "", "sign_event:1"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "nip46-permission-malformed",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46",
+  "expected_error": "sign_event permission kind must be numeric",
+  "request_message": {
+    "id": "nip46-permission-malformed",
+    "method": "connect",
+    "params": [
+      "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "",
+      "sign_event:not-a-number"
+    ]
+  }
+}

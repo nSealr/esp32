@@ -1,0 +1,19 @@
+{
+  "name": "request-created-at-unsafe-integer",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template created_at exceeds max_safe_integer",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-created-at-unsafe",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 9007199254740992,
+        "kind": 1,
+        "tags": [],
+        "content": "invalid created_at"
+      }
+    }
+  }
+}

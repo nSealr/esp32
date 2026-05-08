@@ -25,6 +25,8 @@
   `sig` fields before any future review or signing path.
 - Minimal QR event-template field parser for `created_at`, `kind`, `tags`, and
   `content`.
+- Shared v0 parser/resource limits and applicable invalid hardening-vector
+  rejection for QR envelopes and QR signing requests before review/signing.
 - QR trusted-review builder checked against shared review-screen page and
   `approval_digest` vectors.
 - Shared-spec review-screen approval digest binding in the host approval gate.
@@ -65,7 +67,9 @@ reading physical-style input, rejects non-terminal input streams after a bounded
 number of steps, and returns only the terminal approval state. Real camera,
 display, and GPIO drivers remain pending. QR review transcripts provide a
 deterministic host-side oracle for those adapters and are now checked against
-shared `NostrSeal/specs` vectors.
+shared `NostrSeal/specs` vectors. The host-core QR parser also mirrors the
+shared v0 limit profile and rejects applicable invalid QR-envelope and
+signing-request vectors before trusted review can begin.
 
 ## M7: Firmware Foundation
 
@@ -105,8 +109,9 @@ Until then runtime signing remains disabled.
   Status: host-core `nseal1:` envelope decoding, top-level `sign_event`
   metadata parsing, and raw `params.event_template` object boundary extraction
   are implemented. It also rejects host-supplied `id`, `pubkey`, or `sig`
-  fields and parses the minimal unsigned event fields `created_at`, `kind`,
-  `tags`, and `content`. QR review pages now match shared basic/tagged
+  fields, applies shared v0 parser/resource limits, rejects applicable invalid
+  hardening vectors, and parses the minimal unsigned event fields `created_at`,
+  `kind`, `tags`, and `content`. QR review pages now match shared basic/tagged
   review-screen page and `approval_digest` vectors; camera capture,
   animated-frame reconstruction, hardware display output, and signing-vector
   consumption remain pending. Raw QR review flow is available in host-core for

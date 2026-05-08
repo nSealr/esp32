@@ -3,10 +3,14 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <map>
 #include <string_view>
+#include <utility>
 #include <vector>
+
+#include "nostrseal/limits.hpp"
 
 namespace nostrseal {
 namespace {
@@ -35,6 +39,54 @@ bool is_base64url_payload(const std::string& value) {
         return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
                ch == '-';
     });
+}
+
+bool is_valid_utf8(const std::string& value) {
+    std::size_t offset = 0;
+    while (offset < value.size()) {
+        const auto byte = static_cast<unsigned char>(value[offset]);
+        if (byte <= 0x7fU) {
+            ++offset;
+            continue;
+        }
+
+        std::size_t expected_continuations = 0;
+        std::uint32_t codepoint = 0;
+        if ((byte & 0xe0U) == 0xc0U) {
+            expected_continuations = 1;
+            codepoint = byte & 0x1fU;
+            if (codepoint == 0U) {
+                return false;
+            }
+        } else if ((byte & 0xf0U) == 0xe0U) {
+            expected_continuations = 2;
+            codepoint = byte & 0x0fU;
+        } else if ((byte & 0xf8U) == 0xf0U) {
+            expected_continuations = 3;
+            codepoint = byte & 0x07U;
+        } else {
+            return false;
+        }
+
+        if (offset + expected_continuations >= value.size()) {
+            return false;
+        }
+        for (std::size_t index = 0; index < expected_continuations; ++index) {
+            const auto continuation = static_cast<unsigned char>(value[++offset]);
+            if ((continuation & 0xc0U) != 0x80U) {
+                return false;
+            }
+            codepoint = (codepoint << 6U) | (continuation & 0x3fU);
+        }
+        if ((expected_continuations == 2U && codepoint < 0x800U) ||
+            (expected_continuations == 3U && codepoint < 0x10000U) ||
+            codepoint > 0x10ffffU ||
+            (codepoint >= 0xd800U && codepoint <= 0xdfffU)) {
+            return false;
+        }
+        ++offset;
+    }
+    return true;
 }
 
 std::array<char, 256> base64url_decode_table() {
@@ -103,13 +155,30 @@ void require_json_container(const std::string& decoded) {
 }
 
 bool is_request_id(const std::string& value) {
-    if (value.empty() || value.size() > 128U) {
+    if (value.empty() || value.size() > kMaxRequestIdLength) {
         return false;
     }
     return std::all_of(value.begin(), value.end(), [](char ch) {
         return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '.' ||
                ch == '_' || ch == ':' || ch == '-';
     });
+}
+
+bool is_allowed_key(const std::string& key, std::initializer_list<std::string_view> allowed) {
+    return std::any_of(allowed.begin(), allowed.end(), [&](std::string_view candidate) {
+        return key == candidate;
+    });
+}
+
+void require_only_known_fields(
+    const std::map<std::string, JsonTopLevelValue>& values,
+    std::initializer_list<std::string_view> allowed,
+    const char* message) {
+    for (const auto& [key, _] : values) {
+        if (!is_allowed_key(key, allowed)) {
+            throw QrEnvelopeError(message);
+        }
+    }
 }
 
 void skip_ws(const std::string& json, std::size_t& offset) {
@@ -341,6 +410,9 @@ std::uint64_t parse_unsigned_decimal(std::string_view token, const char* field_n
         }
         value = (value * 10U) + digit;
     }
+    if (value > kMaxSafeInteger) {
+        throw QrEnvelopeError(std::string{"QR signing request event_template "} + field_name + " exceeds max_safe_integer");
+    }
     return value;
 }
 
@@ -369,7 +441,12 @@ std::vector<std::vector<std::string>> parse_tags_array(const std::string& tags_j
             } else {
                 while (offset < tags_json.size()) {
                     skip_ws(tags_json, offset);
-                    tag.push_back(parse_simple_json_string(tags_json, offset));
+                    std::string field = parse_simple_json_string(tags_json, offset);
+                    if (field.size() > kMaxTagFieldUtf8Bytes) {
+                        throw QrEnvelopeError(
+                            "QR signing request event_template tag field exceeds max_tag_field_utf8_bytes");
+                    }
+                    tag.push_back(std::move(field));
                     skip_ws(tags_json, offset);
                     if (offset < tags_json.size() && tags_json[offset] == ',') {
                         ++offset;
@@ -382,7 +459,13 @@ std::vector<std::vector<std::string>> parse_tags_array(const std::string& tags_j
                     throw QrEnvelopeError("QR signing request event_template tags must be string arrays");
                 }
             }
+            if (tag.size() > kMaxTagFieldsPerTag) {
+                throw QrEnvelopeError("QR signing request event_template tag exceeds max_tag_fields_per_tag");
+            }
             tags.push_back(tag);
+            if (tags.size() > kMaxTagCount) {
+                throw QrEnvelopeError("QR signing request event_template tags exceed max_tag_count");
+            }
             skip_ws(tags_json, offset);
             if (offset < tags_json.size() && tags_json[offset] == ',') {
                 ++offset;
@@ -399,6 +482,15 @@ std::vector<std::vector<std::string>> parse_tags_array(const std::string& tags_j
     if (offset != tags_json.size()) {
         throw QrEnvelopeError("QR signing request event_template tags array has trailing data");
     }
+    std::size_t total_tag_bytes = 0;
+    for (const auto& tag : tags) {
+        for (const auto& field : tag) {
+            total_tag_bytes += field.size();
+            if (total_tag_bytes > kMaxTotalTagUtf8Bytes) {
+                throw QrEnvelopeError("QR signing request event_template tags exceed max_total_tag_utf8_bytes");
+            }
+        }
+    }
     return tags;
 }
 
@@ -409,6 +501,10 @@ QrEventTemplate parse_event_template_fields(const std::string& event_template_js
             throw QrEnvelopeError(std::string{"QR signing request event_template must not include "} + field);
         }
     }
+    require_only_known_fields(
+        event_template,
+        {"created_at", "kind", "tags", "content"},
+        "QR signing request event_template contains unknown field");
 
     const auto created_at = event_template.find("created_at");
     if (created_at == event_template.end() || created_at->second.kind != JsonValueKind::Number) {
@@ -425,6 +521,9 @@ QrEventTemplate parse_event_template_fields(const std::string& event_template_js
     const auto content = event_template.find("content");
     if (content == event_template.end() || content->second.kind != JsonValueKind::String) {
         throw QrEnvelopeError("QR signing request event_template content is required");
+    }
+    if (content->second.value.size() > kMaxContentUtf8Bytes) {
+        throw QrEnvelopeError("QR signing request event_template content exceeds max_content_utf8_bytes");
     }
 
     const std::uint64_t kind_value = parse_unsigned_decimal(kind->second.value, "kind");
@@ -455,12 +554,25 @@ QrEnvelope decode_qr_envelope(const std::string& envelope) {
         throw QrEnvelopeError("QR envelope payload has invalid base64url length");
     }
     const std::string decoded = decode_base64url(payload);
+    if (decoded.size() > kMaxStaticQrDecodedJsonBytes) {
+        throw QrEnvelopeError("QR decoded JSON exceeds max_static_qr_decoded_json_bytes");
+    }
+    if (!is_valid_utf8(decoded)) {
+        throw QrEnvelopeError("QR envelope payload must be valid UTF-8");
+    }
     require_json_container(decoded);
     return QrEnvelope{payload, decoded};
 }
 
 QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
+    if (envelope.payload_json.size() > kMaxDecodedRequestJsonBytes) {
+        throw QrEnvelopeError("QR signing request decoded JSON exceeds max_decoded_request_json_bytes");
+    }
     const auto values = parse_top_level_object(envelope.payload_json);
+    require_only_known_fields(
+        values,
+        {"version", "request_id", "method", "params"},
+        "QR signing request contains unknown top-level field");
     const auto version = values.find("version");
     if (version == values.end() || version->second.kind != JsonValueKind::Number || version->second.value != "1") {
         throw QrEnvelopeError("QR signing request version must be 1");
@@ -479,6 +591,10 @@ QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
         throw QrEnvelopeError("QR signing request params object is required");
     }
     const auto params_values = parse_top_level_object(params->second.value);
+    require_only_known_fields(
+        params_values,
+        {"event_template"},
+        "QR signing request params contains unknown field");
     const auto event_template = params_values.find("event_template");
     if (event_template == params_values.end() || event_template->second.kind != JsonValueKind::Object) {
         throw QrEnvelopeError("QR signing request event_template object is required");

@@ -1,0 +1,20 @@
+{
+  "name": "request-event-template-id",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template contains forbidden fields",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-template-id",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "unsafe template"
+      }
+    }
+  }
+}

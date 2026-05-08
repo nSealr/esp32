@@ -29,6 +29,10 @@ def base64url_json(value: dict) -> str:
     return encoded.rstrip("=")
 
 
+def compact_json(value: dict) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+
+
 def serial_frame(frame_type: str, payload_base64url: str) -> str:
     checksum = hashlib.sha256(f"{frame_type}:{payload_base64url}".encode("utf-8")).hexdigest()[:16]
     return f"nseal1f:{frame_type}:{payload_base64url}:{checksum}\n"
@@ -156,8 +160,46 @@ def review_display_frame_factory(name: str, frame: dict) -> list[str]:
     ]
 
 
+def limit_constants_factory(limits: dict) -> list[str]:
+    return [
+        f"constexpr std::size_t kMaxRequestIdLength = {limits['max_request_id_length']};",
+        f"constexpr std::size_t kMaxDecodedRequestJsonBytes = {limits['max_decoded_request_json_bytes']};",
+        f"constexpr std::size_t kMaxStaticQrDecodedJsonBytes = {limits['max_static_qr_decoded_json_bytes']};",
+        f"constexpr std::size_t kMaxContentUtf8Bytes = {limits['max_content_utf8_bytes']};",
+        f"constexpr std::size_t kMaxTagCount = {limits['max_tag_count']};",
+        f"constexpr std::size_t kMaxTagFieldsPerTag = {limits['max_tag_fields_per_tag']};",
+        f"constexpr std::size_t kMaxTagFieldUtf8Bytes = {limits['max_tag_field_utf8_bytes']};",
+        f"constexpr std::size_t kMaxTotalTagUtf8Bytes = {limits['max_total_tag_utf8_bytes']};",
+        f"constexpr std::uint64_t kMaxSafeInteger = {limits['max_safe_integer']}ULL;",
+    ]
+
+
+def invalid_signing_request_factory(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct InvalidSigningRequestVector {",
+        "    const char* name;",
+        "    const char* request_json;",
+        "};",
+        "",
+        "inline std::vector<InvalidSigningRequestVector> invalid_signing_request_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        lines.append(
+            f"        InvalidSigningRequestVector{{{cpp_string(vector['name'])}, {cpp_string(compact_json(vector['request']))}}},"
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def main() -> int:
     specs = default_specs_dir()
+    limits = json.loads((specs / "vectors/limits/nseal-v0.json").read_text(encoding="utf-8"))["limits"]
     vector = json.loads(
         (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
@@ -188,6 +230,14 @@ def main() -> int:
             encoding="utf-8"
         )
     )
+    invalid_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/invalid").glob("*.json"))
+    ]
+    invalid_by_name = {vector["name"]: vector for vector in invalid_vectors}
+    invalid_signing_requests = [
+        vector for vector in invalid_vectors if vector.get("category") == "signing-request"
+    ]
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
     sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
@@ -200,13 +250,18 @@ def main() -> int:
             [
                 "#pragma once",
                 "",
+                "#include <cstddef>",
+                "#include <cstdint>",
                 "#include <optional>",
+                "#include <string>",
                 "#include <vector>",
                 "",
                 '#include "nostrseal/qr_review_flow.hpp"',
                 '#include "nostrseal/trusted_review.hpp"',
                 "",
                 "namespace nostrseal::test_vectors {",
+                *limit_constants_factory(limits),
+                "",
                 f"constexpr const char* kSerialFrameType = {cpp_string(vector['type'])};",
                 f"constexpr const char* kSerialFramePayloadBase64Url = {cpp_string(vector['payload_base64url'])};",
                 f"constexpr const char* kSerialFrame = {cpp_string(vector['frame'])};",
@@ -226,6 +281,12 @@ def main() -> int:
                 f"constexpr const char* kPublicKeyResponseFrame = {cpp_string(serial_frame('response', public_key_response_payload))};",
                 f"constexpr const char* kBasicReviewScreenApprovalDigest = {cpp_string(basic_review_screen['screen_review']['approval_digest'])};",
                 f"constexpr const char* kTaggedReviewScreenApprovalDigest = {cpp_string(tagged_review_screen['screen_review']['approval_digest'])};",
+                f"constexpr const char* kInvalidQrEnvelopeMalformed = {cpp_string(invalid_by_name['qr-envelope-malformed']['envelope'])};",
+                f"constexpr const char* kInvalidQrEnvelopeOversized = {cpp_string(invalid_by_name['qr-envelope-oversized']['envelope'])};",
+                f"constexpr const char* kInvalidQrEnvelopePadded = {cpp_string(invalid_by_name['qr-envelope-padded']['envelope'])};",
+                f"constexpr const char* kInvalidQrEnvelopeInvalidUtf8 = {cpp_string(invalid_by_name['qr-envelope-invalid-utf8']['envelope'])};",
+                "",
+                *invalid_signing_request_factory(invalid_signing_requests),
                 "",
                 *review_display_limits_factory(
                     "long_content_display_limits_20x3",

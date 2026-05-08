@@ -7,6 +7,7 @@
 
 #include "nostrseal/approval_gate.hpp"
 #include "nostrseal/device_protocol.hpp"
+#include "nostrseal/limits.hpp"
 #include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/qr_review.hpp"
 #include "nostrseal/qr_review_flow.hpp"
@@ -192,6 +193,33 @@ void test_qr_envelope_rejections() {
     });
 }
 
+void test_qr_envelope_rejects_shared_invalid_qr_vectors() {
+    expect_throw("QR decoded JSON exceeds max_static_qr_decoded_json_bytes", [] {
+        (void)nostrseal::decode_qr_envelope(nostrseal::test_vectors::kInvalidQrEnvelopeOversized);
+    });
+    expect_throw("QR envelope payload must be unpadded base64url", [] {
+        (void)nostrseal::decode_qr_envelope(nostrseal::test_vectors::kInvalidQrEnvelopePadded);
+    });
+    expect_throw("QR envelope must start with nseal1:", [] {
+        (void)nostrseal::decode_qr_envelope(nostrseal::test_vectors::kInvalidQrEnvelopeMalformed);
+    });
+    expect_throw("QR envelope payload must be valid UTF-8", [] {
+        (void)nostrseal::decode_qr_envelope(nostrseal::test_vectors::kInvalidQrEnvelopeInvalidUtf8);
+    });
+}
+
+void test_qr_limits_match_shared_profile() {
+    assert(nostrseal::kMaxRequestIdLength == nostrseal::test_vectors::kMaxRequestIdLength);
+    assert(nostrseal::kMaxDecodedRequestJsonBytes == nostrseal::test_vectors::kMaxDecodedRequestJsonBytes);
+    assert(nostrseal::kMaxStaticQrDecodedJsonBytes == nostrseal::test_vectors::kMaxStaticQrDecodedJsonBytes);
+    assert(nostrseal::kMaxContentUtf8Bytes == nostrseal::test_vectors::kMaxContentUtf8Bytes);
+    assert(nostrseal::kMaxTagCount == nostrseal::test_vectors::kMaxTagCount);
+    assert(nostrseal::kMaxTagFieldsPerTag == nostrseal::test_vectors::kMaxTagFieldsPerTag);
+    assert(nostrseal::kMaxTagFieldUtf8Bytes == nostrseal::test_vectors::kMaxTagFieldUtf8Bytes);
+    assert(nostrseal::kMaxTotalTagUtf8Bytes == nostrseal::test_vectors::kMaxTotalTagUtf8Bytes);
+    assert(nostrseal::kMaxSafeInteger == nostrseal::test_vectors::kMaxSafeInteger);
+}
+
 void test_qr_signing_request_rejections() {
     expect_throw("QR signing request version must be 1", [] {
         (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", R"({"version":2,"request_id":"req-kind-1-basic","method":"sign_event","params":{}})"});
@@ -248,6 +276,21 @@ void test_qr_signing_request_rejections() {
             "ignored",
             R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[]}}})"});
     });
+}
+
+void test_qr_signing_request_rejects_shared_invalid_request_vectors() {
+    for (const auto& vector : nostrseal::test_vectors::invalid_signing_request_vectors()) {
+        bool rejected = false;
+        try {
+            (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", vector.request_json});
+        } catch (const nostrseal::QrEnvelopeError&) {
+            rejected = true;
+        }
+        if (!rejected) {
+            std::cerr << "unexpectedly accepted invalid request vector: " << vector.name << "\n";
+        }
+        assert(rejected);
+    }
 }
 
 void test_qr_review_pages_match_shared_basic_vector() {
@@ -692,7 +735,10 @@ int main() {
     test_qr_envelope_parses_event_template_fields();
     test_qr_signing_request_tolerates_escaped_event_content();
     test_qr_envelope_rejections();
+    test_qr_envelope_rejects_shared_invalid_qr_vectors();
+    test_qr_limits_match_shared_profile();
     test_qr_signing_request_rejections();
+    test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();
     test_qr_trusted_review_request_matches_shared_basic_vector();
     test_qr_review_pages_match_shared_tagged_vector();

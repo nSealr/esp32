@@ -1,0 +1,19 @@
+{
+  "name": "request-kind-unsafe-integer",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template kind exceeds max_safe_integer",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-kind-unsafe",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 9007199254740992,
+        "tags": [],
+        "content": "invalid kind"
+      }
+    }
+  }
+}

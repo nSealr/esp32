@@ -15,7 +15,8 @@ tests with strict C++ warnings.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
 - QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
-  unpadded base64url rejection, and non-JSON payload rejection.
+  unpadded base64url rejection, invalid UTF-8 rejection, oversized decoded
+  payload rejection, and non-JSON payload rejection.
 - QR `sign_event` request metadata tests covering version, `request_id`,
   method, `params` presence, and the raw `params.event_template` object
   boundary without parsing event-template fields or enabling signing.
@@ -23,6 +24,9 @@ tests with strict C++ warnings.
   rejection of host-supplied `id`, `pubkey`, and `sig` fields.
 - QR event-template field tests covering `created_at`, `kind`, `tags`, and
   `content` extraction plus missing or wrong-type field rejection.
+- QR parser hardening tests proving host-core constants mirror the shared v0
+  limit profile and applicable shared invalid signing-request vectors are
+  rejected before review/signing.
 - QR trusted-review tests comparing ESP32-generated pages and
   `approval_digest` values with shared basic and tagged review-screen vectors.
 - QR trusted-review session tests proving parsed QR requests drive bounded
@@ -37,7 +41,8 @@ tests with strict C++ warnings.
   rejection as deterministic frame/button/decision records from shared
   `NostrSeal/specs` review-transcript vectors.
 - Host test header generation from the shared `NostrSeal/specs` serial,
-  review-screen, review-display-frame, and review-transcript vectors.
+  review-screen, review-display-frame, review-transcript, limits, and invalid
+  hardening vectors.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
   is still guarded by `NostrSeal/lab` integration checks.
@@ -77,10 +82,10 @@ tests with strict C++ warnings.
 
 - ESP32-S3 QR vault camera/display tests must consume the shared QR envelope,
   review-screen, `approval_digest`, and signing vectors from `NostrSeal/specs`.
-- Pre-signing hardening tests must consume the shared invalid vectors where
-  host-core parsers support the boundary. At minimum, unsafe event-template
-  shapes and resource-limit violations must be rejected before review or
-  signing can be reached.
+- Expand pre-signing hardening tests as host-core gains more JSON/schema
+  coverage. The current host-core already consumes the shared invalid vectors
+  where the QR parser owns the boundary, but richer schema diagnostics can be
+  added without enabling signing.
 - Automated ESP-IDF build smoke tests in CI or a hardware-capable runner.
 - Repeatable flash smoke tests with recorded device port and board identity.
 - Transport frame rejection tests.

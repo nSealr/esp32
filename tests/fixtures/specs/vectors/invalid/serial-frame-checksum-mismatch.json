@@ -1,0 +1,7 @@
+{
+  "name": "serial-frame-checksum-mismatch",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "serial-frame",
+  "expected_error": "serial checksum mismatch",
+  "frame": "nseal1f:request:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLXNlcmlhbC1tYWxmb3JtZWQiLCJtZXRob2QiOiJzaWduX2V2ZW50IiwicGFyYW1zIjp7ImV2ZW50X3RlbXBsYXRlIjp7ImNyZWF0ZWRfYXQiOjE3MTAwMDAwMDAsImtpbmQiOjEsInRhZ3MiOltdLCJjb250ZW50Ijoib2sifX19:0000000000000000\n"
+}

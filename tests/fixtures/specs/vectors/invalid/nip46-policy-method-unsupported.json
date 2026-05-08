@@ -1,0 +1,14 @@
+{
+  "name": "nip46-policy-method-unsupported",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-policy-file",
+  "expected_error": "permission method is invalid",
+  "policy_file": {
+    "format": "nseal-nip46-policy-v0",
+    "approved_permissions": [
+      {
+        "method": "unknown_method"
+      }
+    ]
+  }
+}

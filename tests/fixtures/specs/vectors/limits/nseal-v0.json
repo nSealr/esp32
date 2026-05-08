@@ -1,0 +1,33 @@
+{
+  "format": "nostrseal-implementation-limits-v0",
+  "name": "nostrseal-v0",
+  "limits": {
+    "max_request_id_length": 128,
+    "max_decoded_request_json_bytes": 704,
+    "max_static_qr_decoded_json_bytes": 704,
+    "max_serial_frame_bytes": 1024,
+    "max_nip46_decrypted_message_json_bytes": 1024,
+    "max_content_utf8_bytes": 512,
+    "max_tag_count": 16,
+    "max_tag_fields_per_tag": 8,
+    "max_tag_field_utf8_bytes": 64,
+    "max_total_tag_utf8_bytes": 4096,
+    "max_safe_integer": 9007199254740991
+  },
+  "integer_policy": {
+    "created_at": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "kind": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "notes": [
+    "These are NostrSeal v0 implementation safety limits for constrained signers, not Nostr protocol limits.",
+    "Changes to these values require updated specs vectors and downstream conformance tests."
+  ]
+}

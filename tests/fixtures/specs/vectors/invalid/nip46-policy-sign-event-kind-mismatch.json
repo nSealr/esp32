@@ -1,0 +1,16 @@
+{
+  "name": "nip46-policy-sign-event-kind-mismatch",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-policy-file",
+  "expected_error": "sign_event permission parameter must match event_kind",
+  "policy_file": {
+    "format": "nseal-nip46-policy-v0",
+    "approved_permissions": [
+      {
+        "method": "sign_event",
+        "parameter": "1",
+        "event_kind": 4
+      }
+    ]
+  }
+}

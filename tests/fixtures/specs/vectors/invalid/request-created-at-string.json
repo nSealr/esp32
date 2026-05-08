@@ -1,0 +1,19 @@
+{
+  "name": "request-created-at-string",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template created_at must be a non-negative safe integer",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-created-at-string",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": "1710000000",
+        "kind": 1,
+        "tags": [],
+        "content": "invalid created_at"
+      }
+    }
+  }
+}

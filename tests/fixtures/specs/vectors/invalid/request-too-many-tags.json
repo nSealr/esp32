@@ -1,0 +1,19 @@
+{
+  "name": "request-too-many-tags",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template tags exceeds max_tag_count",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-too-many-tags",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
+        "content": "too many tags"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "qr-envelope-malformed",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "qr-envelope",
+  "expected_error": "QR envelope requires nseal1 prefix",
+  "envelope": "nostrseal:abc"
+}

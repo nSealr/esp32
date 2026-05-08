@@ -1,0 +1,12 @@
+{
+  "name": "request-unknown-top-level-field",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "unknown top-level fields",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-top-level",
+    "method": "get_public_key",
+    "unexpected": true
+  }
+}
