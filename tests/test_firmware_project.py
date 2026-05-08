@@ -345,6 +345,21 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             "nseal1f:response:payload:checksum\n",
         )
 
+    def test_smoke_script_summarizes_expected_rejections_without_raw_error_frames(self) -> None:
+        summary = smoke_capabilities.format_smoke_summary(
+            [
+                "nseal1f:response:payload:checksum\n",
+                "nseal1f:error:payload:checksum\n",
+                "nseal1f:error:payload:checksum\n",
+            ]
+        )
+
+        self.assertIn("ESP32 hardware smoke passed", summary)
+        self.assertIn("verified exchanges: 3", summary)
+        self.assertIn("response frames: 1", summary)
+        self.assertIn("expected rejection frames: 2", summary)
+        self.assertNotIn("nseal1f:error", summary)
+
 
 if __name__ == "__main__":
     unittest.main()

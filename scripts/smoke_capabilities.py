@@ -162,6 +162,20 @@ def read_expected_frame(device: object, expected_response_frame: str, deadline: 
     raise TimeoutError("no expected protocol response received before timeout")
 
 
+def format_smoke_summary(frames: list[str]) -> str:
+    response_count = sum(1 for frame in frames if frame.startswith(f"{PREFIX}response:"))
+    rejection_count = sum(1 for frame in frames if frame.startswith(f"{PREFIX}error:"))
+    return "\n".join(
+        [
+            "ESP32 hardware smoke passed",
+            f"verified exchanges: {len(frames)}",
+            f"response frames: {response_count}",
+            f"expected rejection frames: {rejection_count}",
+            "",
+        ]
+    )
+
+
 def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAULT_SPECS) -> list[str]:
     try:
         import serial  # type: ignore[import-not-found]
@@ -194,11 +208,19 @@ def main() -> int:
     parser.add_argument("--port", default="/dev/cu.usbmodem1101")
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--baudrate", type=int, default=115200)
+    parser.add_argument(
+        "--verbose-frames",
+        action="store_true",
+        help="print raw protocol response frames instead of the clean smoke summary",
+    )
     args = parser.parse_args()
 
     frames = run_smoke(args.port, args.timeout, args.baudrate)
-    for frame in frames:
-        print(frame, end="")
+    if args.verbose_frames:
+        for frame in frames:
+            print(frame, end="")
+    else:
+        print(format_smoke_summary(frames), end="")
     return 0
 
 
