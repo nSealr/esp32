@@ -99,6 +99,11 @@ tests with strict C++ warnings.
   host-core compiles into the ESP-IDF component while the attached-board smoke
   still exercises only the USB serial scaffold, development public-key fixture,
   `signing_disabled` refusal path, and deterministic invalid-request errors.
+- Serial review-boundary firmware smoke evidence recorded for revision
+  `dfdeec9` on `/dev/cu.usbmodem1101`; this confirms the serial `sign_event`
+  trusted-review boundary compiles into the ESP-IDF component while the
+  attached-board smoke still preserves the USB serial scaffold,
+  `signing_disabled` refusal path, and deterministic invalid-request errors.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.

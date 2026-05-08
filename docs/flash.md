@@ -172,3 +172,11 @@ requests succeed, `sign_event` returns `signing_disabled`, and invalid requests
 return deterministic `unsupported_request` frames. Real signing is
 intentionally disabled until storage, review UI, approval controls, and
 response verification tests are implemented.
+
+On 2026-05-08, revision `dfdeec9` was built with ESP-IDF `v5.5.4`, flashed to
+`/dev/cu.usbmodem1101`, and passed `make IDF_PORT=/dev/cu.usbmodem1101
+idf-smoke-capabilities`. This confirms the serial `sign_event` trusted-review
+boundary compiles into the ESP-IDF component while runtime protocol behavior
+stays conservative: capability and development public-key requests succeed,
+`sign_event` returns `signing_disabled`, and invalid requests return
+deterministic `unsupported_request` frames.

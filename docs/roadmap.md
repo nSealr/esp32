@@ -170,6 +170,17 @@ idf-smoke-capabilities` passed. The result is recorded as a manual
 `NostrSeal/hardware` protocol-smoke report and does not change the disabled
 signing boundary.
 
+Hardware note, 2026-05-08: revision `dfdeec9` was built with local ESP-IDF
+`v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on
+`/dev/cu.usbmodem1101`, and smoke-tested with `make
+IDF_PORT=/dev/cu.usbmodem1101 idf-smoke-capabilities`. This run verifies that
+the serial `sign_event` trusted-review boundary compiles into the ESP-IDF
+component while the USB serial scaffold still answers capability and
+development public-key requests, returns `signing_disabled` for `sign_event`,
+and rejects invalid requests with deterministic `unsupported_request` frames.
+Real display, GPIO, camera, storage, secure boot, debug lock, and signing
+acceptance remain pending.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
