@@ -1,0 +1,12 @@
+{
+  "name": "request-event-template-missing",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "event_template must be an object",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-template-missing",
+    "method": "sign_event",
+    "params": {}
+  }
+}

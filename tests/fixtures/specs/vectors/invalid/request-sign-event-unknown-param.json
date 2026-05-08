@@ -1,0 +1,20 @@
+{
+  "name": "request-sign-event-unknown-param",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "sign_event params contain unknown fields",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-sign-event-unknown-param",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000000,
+        "kind": 1,
+        "tags": [],
+        "content": "valid event template"
+      },
+      "policy_hint": "unsafe host-supplied hint"
+    }
+  }
+}

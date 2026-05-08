@@ -1,0 +1,11 @@
+{
+  "name": "request-sign-event-missing-params",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "signing-request",
+  "expected_error": "sign_event requires params",
+  "request": {
+    "version": 1,
+    "request_id": "invalid-sign-event-missing-params",
+    "method": "sign_event"
+  }
+}
