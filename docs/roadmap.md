@@ -11,7 +11,8 @@
 - LILYGO T-Display S3 Pro OV5640 board profile for the future ESP32-S3 QR
   vault target.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
-- Local ESP-IDF `v5.5.4` build, flash, and boot-log smoke test.
+- Local ESP-IDF `v5.5.4` build, flash, boot-log smoke test, and
+  capability/public-key/signing-disabled protocol smoke test.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
 - Shared-spec `get_public_key` development response through host-core protocol
   handling.
@@ -70,6 +71,13 @@ deterministic host-side oracle for those adapters and are now checked against
 shared `NostrSeal/specs` vectors. The host-core QR parser also mirrors the
 shared v0 limit profile and rejects applicable invalid QR-envelope and
 signing-request vectors before trusted review can begin.
+
+Hardware note, 2026-05-08: revision `dd2d5d1` was built with local ESP-IDF
+`v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on `/dev/cu.usbmodem101`,
+and smoke-tested with `make IDF_PORT=/dev/cu.usbmodem101
+idf-smoke-capabilities`. The device returned capability and deterministic
+development public-key frames, then rejected the shared `sign_event` request
+with `signing_disabled`. Real signing remains disabled.
 
 ## M7: Firmware Foundation
 

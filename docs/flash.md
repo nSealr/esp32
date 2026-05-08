@@ -26,7 +26,8 @@ before rebuilding.
 
 The attached ESP32-S3 board is visible:
 
-- serial port: `/dev/cu.usbmodem1101`
+- serial port: `/dev/cu.usbmodem101` in the latest smoke run; earlier sessions
+  used `/dev/cu.usbmodem1101`, so rerun `make detect-board` if the path changes
 - USB vendor: `Espressif`
 - USB product: `USB JTAG_serial debug unit`
 - USB serial number: `EC:DA:3B:95:32:98`
@@ -157,7 +158,7 @@ The smoke command sends the shared `get_capabilities` request frame, the shared
 `get_public_key` development request frame, and the shared basic `sign_event`
 request frame. It expects the ESP32-S3 scaffold capability response,
 deterministic development public-key response, and explicit `signing_disabled`
-response. On the attached board this smoke test passed on
-`/dev/cu.usbmodem1101` after configuring native USB Serial/JTAG as the primary
-console. Real signing is intentionally disabled until storage, review UI,
-approval controls, and response verification tests are implemented.
+response. On 2026-05-08, revision `dd2d5d1` passed this smoke test on
+`/dev/cu.usbmodem101` after build and flash with ESP-IDF `v5.5.4`. Real signing
+is intentionally disabled until storage, review UI, approval controls, and
+response verification tests are implemented.

@@ -19,7 +19,8 @@ board into a separate repository.
 - Host-buildable C++ firmware core foundation.
 - ESP-IDF scaffold for the ESP32-S3 USB signer target.
 - Host-side ESP32-S3 detection gate for native USB/JTAG serial boards.
-- Local ESP-IDF `v5.5.4` build and flash smoke test on an attached ESP32-S3.
+- Local ESP-IDF `v5.5.4` build, flash, and capability/public-key/signing-disabled
+  smoke test on an attached ESP32-S3.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft.
 - `nseal1:` QR envelope decode boundary compatible with the shared QR

@@ -69,11 +69,15 @@ tests with strict C++ warnings.
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
   report parsing, and missing-toolchain reporting.
-- Manual ESP-IDF `v5.5.4` build, flash, and boot-log smoke test on the attached
+- Manual ESP-IDF `v5.5.4` build, flash, boot-log smoke test, and
+  capability/public-key/signing-disabled protocol smoke test on the attached
   ESP32-S3 board.
 - Optional hardware capability/public-key/signing-disabled smoke test with
   `make idf-smoke-capabilities` after exporting ESP-IDF and flashing the current
   firmware.
+- Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
+  `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
+  expected `signing_disabled` refusal path.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.
