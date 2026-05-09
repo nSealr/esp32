@@ -46,6 +46,8 @@
 - Host-buildable trusted review session combining display frames, button
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
+- T-Display S3 onboard button polling for manual review navigation on live
+  request-derived pages while signing remains disabled.
 - QR-derived trusted-review session creation from parsed request data.
 - Serial/USB `sign_event` trusted-review request creation from decoded request
   JSON, using the same review pages and `approval_digest` contract as QR.
@@ -81,9 +83,11 @@ ESP32-S3 DevKitC-1 development reference, the no-camera LILYGO T-Display S3
 USB/display signer candidate, and the LILYGO T-Display S3 Pro OV5640 QR vault
 candidate. The ESP-IDF scaffold now compiles a T-Display S3 board-configuration
 boundary that pins display dimensions, ST7789, GPIO38 backlight, GPIO15
-display power, no camera, and touch-not-approval, and now initializes the
-ST7789/i80 display path far enough to draw a boot/self-test frame. Trusted
-review-frame output on the physical display and GPIO approval remain pending.
+display power, GPIO0/GPIO14 onboard controls, no camera, and
+touch-not-approval, and now initializes the ST7789/i80 display path far enough
+to draw a Ready/No request frame. Live request-derived review pages can be
+manually navigated with onboard physical buttons while the runtime still
+returns `signing_disabled`.
 The QR envelope decoder, QR request metadata parser,
 event-template object boundary extraction, review button state machine,
 host-supplied signed-field rejection, review page generation, and display frame
@@ -281,6 +285,14 @@ that returning to prior pages never enables `can_sign`. The live T-Display S3
 runtime still paints only the first request-derived review page and returns
 `signing_disabled`; physical button mapping and an interactive GPIO/display
 loop remain M8 blockers.
+
+Status note, 2026-05-09: the T-Display S3 runtime now maps the vendor-documented
+onboard buttons into the manual review loop: short GPIO14 is Next, short GPIO0
+is Back, long GPIO14 is Approve, and long GPIO0 is Reject. A reboot intentionally
+clears the RAM-only active review session and shows a Ready/No request frame;
+only a new live `sign_event` request starts the multi-page review again.
+`sign_event` still returns `signing_disabled`, so button approval is display UX
+validation only and not signing enablement.
 
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing

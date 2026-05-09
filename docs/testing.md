@@ -56,6 +56,10 @@ tests with strict C++ warnings.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
   compiles an ST7789/i80 adapter and boot-frame path while keeping physical
   GPIO approval and signing disabled.
+- Firmware button-driver tests proving the T-Display S3 scaffold maps vendor
+  documented GPIO0/GPIO14 physical controls to Back/Next short presses and
+  Reject/Approve long presses, while keeping touch disallowed for approval and
+  signing disabled.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

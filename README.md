@@ -100,14 +100,17 @@ board into a separate repository.
   vectors in `NostrSeal/specs`.
 - Board profile for the no-camera LILYGO T-Display S3 as an ESP32-S3
   USB/display signer candidate. The profile documents integrated ST7789
-  display constraints, touch-not-approval, physical approve/reject
-  requirements, wireless policy, debug-lock policy, and disabled production
-  signing.
+  display constraints, GPIO0/GPIO14 onboard button mapping, touch-not-approval,
+  wireless policy, debug-lock policy, and disabled production signing.
 - Initial T-Display S3 ST7789/i80 ESP-IDF display bring-up for the USB/display
   signer scaffold. It pins the display dimensions, bus pins, GPIO38 backlight,
   GPIO15 display-power line, no-camera status, and touch-not-approval rule,
-  then draws a boot/self-test frame while keeping trusted-review display
-  adapter work, physical GPIO approval, storage, and signing disabled.
+  then draws a Ready/No request frame while keeping storage and signing
+  disabled.
+- T-Display S3 onboard button polling for manual review navigation after a live
+  `sign_event` request. Short GPIO14 moves Next, short GPIO0 moves Back, long
+  GPIO14 maps Approve, and long GPIO0 maps Reject. The runtime still returns
+  `signing_disabled` and never signs.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
@@ -117,9 +120,10 @@ The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for
 `get_public_key`, returns an explicit `signing_disabled` protocol response for
 valid `sign_event` requests, initializes the T-Display S3 display only far
-enough to draw a boot/self-test frame, and keeps real signing disabled until
-storage, trusted review, approval controls, production hardening, and signing
-tests are implemented.
+enough to draw a Ready/No request frame and live trusted-review pages, polls the
+two onboard physical buttons for local review navigation, and keeps real
+signing disabled until storage, production hardening, and signing tests are
+implemented.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen

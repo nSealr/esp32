@@ -4,12 +4,14 @@
 #include <string>
 
 #include "nostrseal/review_display.hpp"
+#include "nostrseal/trusted_review.hpp"
 
 namespace nostrseal {
 
 struct SerialFrameHandlingResult {
     std::string response_frame;
-    std::optional<ReviewDisplayFrame> review_frame;
+    std::optional<ReviewDisplayFrame> review_frame = std::nullopt;
+    std::optional<TrustedReviewSession> review_session = std::nullopt;
 };
 
 std::string handle_serial_frame(const std::string& line);

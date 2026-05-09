@@ -351,15 +351,18 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
     }
     if (metadata.method == "sign_event") {
         std::optional<ReviewDisplayFrame> review_frame;
+        std::optional<TrustedReviewSession> review_session;
         try {
             TrustedReviewSession session = begin_serial_sign_event_trusted_review(request_json, limits);
             review_frame = session.current_frame();
+            review_session = std::move(session);
         } catch (const QrEnvelopeError&) {
             return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
         }
         return SerialFrameHandlingResult{
             encode_serial_frame(response_frame(signing_disabled_response_json(metadata.request_id))),
-            std::move(review_frame)};
+            std::move(review_frame),
+            std::move(review_session)};
     }
     return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
 }

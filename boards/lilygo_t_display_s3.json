@@ -39,13 +39,33 @@
   "approval_inputs": [
     {
       "name": "approve",
-      "connection": "separate_physical_control_required",
-      "notes": "Map to a physical onboard or external control after exact board revision validation; do not accept touch-only approval."
+      "connection": "onboard_physical_button",
+      "gpio": 14,
+      "press": "long",
+      "notes": "Long press on the vendor-documented KEY button. Touch-only approval remains disallowed."
     },
     {
       "name": "reject",
-      "connection": "separate_physical_control_required",
-      "notes": "Map to a different physical onboard or external control after exact board revision validation."
+      "connection": "onboard_physical_button",
+      "gpio": 0,
+      "press": "long",
+      "notes": "Long press on the vendor-documented BOOT button. This is a development mapping and must be revalidated for production enclosure work."
+    }
+  ],
+  "navigation_inputs": [
+    {
+      "name": "back",
+      "connection": "onboard_physical_button",
+      "gpio": 0,
+      "press": "short",
+      "notes": "Short press on the vendor-documented BOOT button."
+    },
+    {
+      "name": "next",
+      "connection": "onboard_physical_button",
+      "gpio": 14,
+      "press": "short",
+      "notes": "Short press on the vendor-documented KEY button."
     }
   ],
   "wireless_policy": "Wireless must not participate in signing approval or request transport for the USB/display signer MVP.",

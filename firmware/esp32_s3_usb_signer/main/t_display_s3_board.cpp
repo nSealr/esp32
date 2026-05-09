@@ -10,6 +10,8 @@ constexpr TDisplayS3BoardProfile kProfile{
     .display_height = kTDisplayS3DisplayHeight,
     .backlight_gpio = kTDisplayS3BacklightGpio,
     .display_power_gpio = kTDisplayS3DisplayPowerGpio,
+    .button1_gpio = kTDisplayS3Button1Gpio,
+    .button2_gpio = kTDisplayS3Button2Gpio,
     .touch_approval_allowed = false,
     .camera_present = false,
 };

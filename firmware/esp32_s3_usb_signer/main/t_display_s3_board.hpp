@@ -19,6 +19,8 @@ constexpr int kTDisplayS3DisplayData4Gpio = 45;
 constexpr int kTDisplayS3DisplayData5Gpio = 46;
 constexpr int kTDisplayS3DisplayData6Gpio = 47;
 constexpr int kTDisplayS3DisplayData7Gpio = 48;
+constexpr int kTDisplayS3Button1Gpio = 0;
+constexpr int kTDisplayS3Button2Gpio = 14;
 constexpr int kTDisplayS3DisplayXGap = 35;
 constexpr int kTDisplayS3DisplayYGap = 0;
 constexpr int kTDisplayS3LogicalDisplayWidth = 320;
@@ -33,6 +35,8 @@ struct TDisplayS3BoardProfile {
     int display_height;
     int backlight_gpio;
     int display_power_gpio;
+    int button1_gpio;
+    int button2_gpio;
     bool touch_approval_allowed;
     bool camera_present;
 };

@@ -276,10 +276,68 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("handle_serial_frame_with_review_preview", main)
         self.assertIn("display_sign_event_review_preview", main)
         self.assertIn("review_frame", main)
-        self.assertIn("render_review_page", main)
         self.assertIn("t_display_s3_review_limits", main)
         self.assertIn("draw_t_display_s3_review_frame", main)
+        self.assertIn("build_display_ready_frame", main)
+        self.assertIn('frame.page_indicator = "No request"', main)
+        self.assertIn('frame.action_hint = "Waiting"', main)
+        self.assertNotIn("Content: display test", main)
         self.assertIn("Signing is disabled", main)
+
+    def test_t_display_s3_firmware_maps_onboard_buttons_without_touch_approval(self) -> None:
+        profile = json.loads((ROOT / "boards/lilygo_t_display_s3.json").read_text(encoding="utf-8"))
+        board_header = (ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_board.hpp").read_text(
+            encoding="utf-8"
+        )
+        board_source = (ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_board.cpp").read_text(
+            encoding="utf-8"
+        )
+        buttons_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_buttons.hpp"
+        buttons_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_buttons.cpp"
+        cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertFalse(profile["display"]["touch"]["approval_allowed"])
+        self.assertEqual(
+            {(entry["name"], entry["gpio"], entry["press"]) for entry in profile["navigation_inputs"]},
+            {("back", 0, "short"), ("next", 14, "short")},
+        )
+        self.assertEqual(
+            {(entry["name"], entry["gpio"], entry["press"]) for entry in profile["approval_inputs"]},
+            {("reject", 0, "long"), ("approve", 14, "long")},
+        )
+
+        self.assertTrue(buttons_header_path.exists(), "missing T-Display S3 button driver header")
+        self.assertTrue(buttons_source_path.exists(), "missing T-Display S3 button driver source")
+        self.assertIn("t_display_s3_buttons.cpp", cmake)
+        self.assertIn("esp_timer", cmake)
+        self.assertIn("kTDisplayS3Button1Gpio = 0", board_header)
+        self.assertIn("kTDisplayS3Button2Gpio = 14", board_header)
+        self.assertIn("button1_gpio", board_header)
+        self.assertIn("button2_gpio", board_header)
+        self.assertIn(".button1_gpio = kTDisplayS3Button1Gpio", board_source)
+        self.assertIn(".button2_gpio = kTDisplayS3Button2Gpio", board_source)
+
+        buttons_header = buttons_header_path.read_text(encoding="utf-8")
+        buttons_source = buttons_source_path.read_text(encoding="utf-8")
+        self.assertIn("TDisplayS3ButtonEvent", buttons_header)
+        self.assertIn("initialize_t_display_s3_buttons", buttons_header)
+        self.assertIn("poll_t_display_s3_review_button", buttons_header)
+        self.assertIn("kTDisplayS3ButtonLongPressMs", buttons_source)
+        self.assertIn("ReviewButton::Back", buttons_source)
+        self.assertIn("ReviewButton::Next", buttons_source)
+        self.assertIn("ReviewButton::Reject", buttons_source)
+        self.assertIn("ReviewButton::Approve", buttons_source)
+        self.assertIn("GPIO_PULLUP_ENABLE", buttons_source)
+        self.assertIn("gpio_get_level", buttons_source)
+
+        self.assertIn("t_display_s3_buttons.hpp", main)
+        self.assertIn("initialize_t_display_s3_buttons", main)
+        self.assertIn("poll_t_display_s3_review_button", main)
+        self.assertIn("active_review_session", main)
+        self.assertIn("Signing remains disabled", main)
 
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)

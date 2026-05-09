@@ -4,15 +4,18 @@
 
 #include <cstdio>
 #include <exception>
+#include <optional>
 #include <string>
-#include <string_view>
+#include <utility>
 #include <vector>
 
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/limits.hpp"
 #include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "nostrseal/trusted_review.hpp"
 #include "t_display_s3_board.hpp"
+#include "t_display_s3_buttons.hpp"
 #include "t_display_s3_display.hpp"
 
 namespace {
@@ -25,26 +28,69 @@ void write_transport_error(const char* payload_base64url) {
     std::fflush(stdout);
 }
 
-void display_sign_event_review_preview(
+void display_review_frame(
     nostrseal_esp32::TDisplayS3Display& display,
-    const nostrseal::SerialFrameHandlingResult& result) {
-    if (!result.review_frame.has_value()) {
-        return;
-    }
-    const esp_err_t display_status = nostrseal_esp32::draw_t_display_s3_review_frame(
-        display,
-        result.review_frame.value());
+    const nostrseal::ReviewDisplayFrame& frame) {
+    const esp_err_t display_status = nostrseal_esp32::draw_t_display_s3_review_frame(display, frame);
     if (display_status != ESP_OK) {
         ESP_LOGW(kTag, "T-Display S3 request review preview unavailable: %s", esp_err_to_name(display_status));
     }
 }
 
-void process_frame_line(const std::string& line, nostrseal_esp32::TDisplayS3Display& display) {
+void display_sign_event_review_preview(
+    nostrseal_esp32::TDisplayS3Display& display,
+    nostrseal::SerialFrameHandlingResult& result,
+    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    if (result.review_session.has_value()) {
+        active_review_session = std::move(result.review_session);
+        display_review_frame(display, active_review_session->current_frame());
+        return;
+    }
+    if (result.review_frame.has_value()) {
+        display_review_frame(display, result.review_frame.value());
+    }
+}
+
+void process_review_button(
+    nostrseal_esp32::TDisplayS3Display& display,
+    std::optional<nostrseal::TrustedReviewSession>& active_review_session,
+    nostrseal::ReviewButton button) {
+    if (!active_review_session.has_value()) {
+        return;
+    }
     try {
-        const nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
+        const std::optional<bool> decision = active_review_session->handle_button(button);
+        display_review_frame(display, active_review_session->current_frame());
+        if (decision.has_value()) {
+            ESP_LOGW(kTag, "Review decision recorded. Signing remains disabled in this scaffold.");
+            active_review_session.reset();
+        }
+    } catch (const std::exception& exc) {
+        ESP_LOGW(kTag, "Rejected review button input: %s", exc.what());
+        display_review_frame(display, active_review_session->current_frame());
+    }
+}
+
+void poll_review_buttons(
+    nostrseal_esp32::TDisplayS3Display& display,
+    nostrseal_esp32::TDisplayS3Buttons& buttons,
+    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    const std::optional<nostrseal::ReviewButton> button =
+        nostrseal_esp32::poll_t_display_s3_review_button(buttons);
+    if (button.has_value()) {
+        process_review_button(display, active_review_session, button.value());
+    }
+}
+
+void process_frame_line(
+    const std::string& line,
+    nostrseal_esp32::TDisplayS3Display& display,
+    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    try {
+        nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
             line,
             nostrseal_esp32::t_display_s3_review_limits());
-        display_sign_event_review_preview(display, result);
+        display_sign_event_review_preview(display, result, active_review_session);
         std::printf("%s", result.response_frame.c_str());
         std::fflush(stdout);
     } catch (const std::exception& exc) {
@@ -53,22 +99,17 @@ void process_frame_line(const std::string& line, nostrseal_esp32::TDisplayS3Disp
     }
 }
 
-nostrseal::ReviewDisplayFrame build_display_smoke_review_frame() {
-    nostrseal::ReviewPage page;
-    page.title = "Event review";
-    page.lines = std::vector<std::string_view>{
-        "Kind 1",
-        "Short text note",
-        "Created 1710000000",
-        "Content: display test",
+nostrseal::ReviewDisplayFrame build_display_ready_frame() {
+    nostrseal::ReviewDisplayFrame frame;
+    frame.title = "Ready";
+    frame.page_indicator = "No request";
+    frame.body_lines = std::vector<std::string>{
+        "USB signer",
+        "Send sign_event",
+        "Signing disabled",
     };
-    page.action = nostrseal::ReviewPageAction::Next;
-
-    return nostrseal::render_review_page(
-        page,
-        0,
-        3,
-        nostrseal_esp32::t_display_s3_review_limits());
+    frame.action_hint = "Waiting";
+    return frame;
 }
 }
 
@@ -91,16 +132,23 @@ extern "C" void app_main(void) {
         vTaskDelay(pdMS_TO_TICKS(250));
         display_status = nostrseal_esp32::draw_t_display_s3_review_frame(
             display,
-            build_display_smoke_review_frame());
+            build_display_ready_frame());
     }
     if (display_status != ESP_OK) {
         ESP_LOGW(kTag, "T-Display S3 display review frame unavailable: %s", esp_err_to_name(display_status));
     }
+    nostrseal_esp32::TDisplayS3Buttons buttons;
+    const esp_err_t button_status = nostrseal_esp32::initialize_t_display_s3_buttons(buttons);
+    if (button_status != ESP_OK) {
+        ESP_LOGW(kTag, "T-Display S3 button input unavailable: %s", esp_err_to_name(button_status));
+    }
 
     std::string line;
     line.reserve(512);
+    std::optional<nostrseal::TrustedReviewSession> active_review_session;
 
     while (true) {
+        poll_review_buttons(display, buttons, active_review_session);
         const int ch = std::getchar();
         if (ch == EOF) {
             vTaskDelay(pdMS_TO_TICKS(10));
@@ -117,7 +165,7 @@ extern "C" void app_main(void) {
             continue;
         }
         if (ch == '\n') {
-            process_frame_line(line, display);
+            process_frame_line(line, display, active_review_session);
             line.clear();
         }
     }
