@@ -8,6 +8,8 @@
 - Host test binary with strict warnings.
 - ESP-IDF project scaffold.
 - ESP32-S3 DevKitC-1 board profile.
+- LILYGO T-Display S3 no-camera board profile for the ESP32-S3 USB/display
+  signer line.
 - LILYGO T-Display S3 Pro OV5640 board profile for the future ESP32-S3 QR
   vault target.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
@@ -74,8 +76,11 @@
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local
-hardware smoke-test foundation. The QR envelope decoder, QR request metadata
-parser, event-template object boundary extraction, review button state machine,
+hardware smoke-test foundation. Board profile validation now covers the
+ESP32-S3 DevKitC-1 development reference, the no-camera LILYGO T-Display S3
+USB/display signer candidate, and the LILYGO T-Display S3 Pro OV5640 QR vault
+candidate. The QR envelope decoder, QR request metadata parser,
+event-template object boundary extraction, review button state machine,
 host-supplied signed-field rejection, review page generation, and display frame
 renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The

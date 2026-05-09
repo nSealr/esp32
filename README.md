@@ -8,6 +8,8 @@ board into a separate repository.
 ## Planned Targets
 
 - ESP32 USB/NIP-46 signer with ESP32-S3 as the primary display/button target.
+  The no-camera LILYGO T-Display S3 is tracked as an integrated display-board
+  candidate for this line.
 - ESP32 stateless QR vault with T-Display S3 Pro OV5640 as the primary
   camera/display target.
 - Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.
@@ -96,6 +98,11 @@ board into a separate repository.
 - Generated host test fixtures from shared serial, review-screen,
   review-display-frame, review-transcript, limits, and invalid hardening
   vectors in `NostrSeal/specs`.
+- Board profile for the no-camera LILYGO T-Display S3 as an ESP32-S3
+  USB/display signer candidate. The profile documents integrated ST7789
+  display constraints, touch-not-approval, physical approve/reject
+  requirements, wireless policy, debug-lock policy, and disabled production
+  signing; it does not add real display/GPIO drivers.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it

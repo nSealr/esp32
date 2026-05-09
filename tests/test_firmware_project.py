@@ -141,6 +141,27 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             {"approve", "reject"},
         )
 
+    def test_lilygo_t_display_s3_board_profile_documents_usb_display_constraints(self) -> None:
+        profile_path = ROOT / "boards/lilygo_t_display_s3.json"
+
+        self.assertTrue(profile_path.exists(), "missing T-Display S3 board profile")
+        validate_firmware.validate_board_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        self.assertEqual(profile["target"], "esp32s3")
+        self.assertEqual(profile["status"], "usb_display_signer_candidate")
+        self.assertEqual(profile["display"]["driver"], "ST7789")
+        self.assertEqual(profile["display"]["connection"], "integrated_8_bit_parallel_tft")
+        self.assertEqual(profile["display"]["resolution"]["short_edge"], 170)
+        self.assertEqual(profile["display"]["resolution"]["long_edge"], 320)
+        self.assertEqual(profile["display"]["backlight"]["gpio"], 38)
+        self.assertEqual(profile["display"]["display_power"]["gpio"], 15)
+        self.assertNotIn("camera", profile)
+        self.assertEqual(
+            {approval_input["name"] for approval_input in profile["approval_inputs"]},
+            {"approve", "reject"},
+        )
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 

@@ -48,6 +48,9 @@ tests with strict C++ warnings.
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, trusted display, physical controls,
   and signed-output verification listed as blockers.
+- Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
+  signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
+  vault camera target.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

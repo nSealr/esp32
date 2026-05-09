@@ -1,0 +1,54 @@
+{
+  "name": "LILYGO T-Display S3",
+  "target": "esp32s3",
+  "native_usb": true,
+  "status": "usb_display_signer_candidate",
+  "variant": "no_camera_display_board",
+  "source": "https://github.com/Xinyuan-LilyGO/T-Display-S3",
+  "product_source": "https://lilygo.cc/products/t-display-s3",
+  "firmware_targets": [
+    "esp32_s3_usb_signer"
+  ],
+  "memory": {
+    "flash": "16MB",
+    "psram": "8MB OPI"
+  },
+  "display": {
+    "required_for_signing": true,
+    "driver": "ST7789",
+    "connection": "integrated_8_bit_parallel_tft",
+    "resolution": {
+      "short_edge": 170,
+      "long_edge": 320
+    },
+    "touch": {
+      "status": "variant_dependent",
+      "approval_allowed": false,
+      "notes": "Touch, when present, may be used for navigation experiments but not final approve/reject signing consent."
+    },
+    "backlight": {
+      "gpio": 38,
+      "notes": "LILYGO TFT_eSPI setup defines TFT_BL on GPIO38."
+    },
+    "display_power": {
+      "gpio": 15,
+      "notes": "Official FAQ says GPIO15 must be driven high for display power when running from battery."
+    },
+    "notes": "This no-camera board is a practical ESP32-S3 USB/display signer candidate and is not the primary QR vault camera target."
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a physical onboard or external control after exact board revision validation; do not accept touch-only approval."
+    },
+    {
+      "name": "reject",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a different physical onboard or external control after exact board revision validation."
+    }
+  ],
+  "wireless_policy": "Wireless must not participate in signing approval or request transport for the USB/display signer MVP.",
+  "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
+  "production_signing": "disabled until display, physical controls, storage, provisioning, and signing tests pass"
+}
