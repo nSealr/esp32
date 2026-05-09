@@ -899,7 +899,8 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertEqual(event_template["tags"][0][0], "p")
         self.assertEqual(event_template["tags"][1], ["t", "nostrseal"])
-        self.assertIn("Confirm the Tags pages show 2 tags without ellipses", checklist)
+        self.assertIn("Confirm the Tags body uses compact label/value rows", checklist)
+        self.assertIn("Confirm this fixture shows 2 tags on one compact Tags screen", checklist)
         self.assertIn("Confirm the p tag shows the full 64-character pubkey", checklist)
         self.assertNotIn("Warnings", checklist)
 
@@ -921,8 +922,9 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertGreater(len(event_template["content"]), 280)
         self.assertEqual(len(event_template["tags"]), 9)
-        self.assertIn("Confirm the Content pages show the full long content without ellipses", checklist)
-        self.assertIn("Confirm every tag field is readable without ellipses", checklist)
+        self.assertIn("Confirm the Content body uses compact text", checklist)
+        self.assertIn("shown as Page 3/4 or Page 3/4 N/M", checklist)
+        self.assertIn("compact label/value rows", checklist)
         self.assertNotIn("Warnings", checklist)
 
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:

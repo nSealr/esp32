@@ -8,11 +8,16 @@ The ESP32 trusted-review display must let the user inspect the complete event be
 
 ## UX Rule
 
-- Short KEY/GPIO14 advances through review pages.
-- Short BOOT/GPIO0 goes back through review pages.
+- Short KEY/GPIO14 advances through review screens.
+- Short BOOT/GPIO0 goes back through review screens.
 - Long KEY/GPIO14 can approve only on the final decision page.
 - Long BOOT/GPIO0 can reject at any point.
-- Content and tags may span multiple pages.
+- Event, Content, Tags, and Decision are the stable logical pages.
+- Content and Tags may span internal sub-screens when they do not fit.
+- The header keeps the logical page stable, for example `Page 3/4` or
+  `Page 3/4 1/2` for the first Tags sub-screen.
+- The body may use compact text and label/value styles so long content and tags
+  are readable without turning every wrapped line into a separate logical page.
 - The final page uses neutral decision/check language, not subjective warnings.
 
 ## Safety Rule
@@ -26,6 +31,8 @@ This pass updates ESP32 display pagination only. Real signing remains disabled. 
 ## Acceptance
 
 - Host-core tests prove detailed pages contain the complete content and tag field values without `...`.
+- Host-core tests prove logical page indicators and body styles survive through
+  rendering.
 - Serial/manual review sessions use the detailed pages.
 - Existing shared review vectors still pass.
 - Manual T-Display S3 smoke can exercise tagged and long-content events while signing remains disabled.

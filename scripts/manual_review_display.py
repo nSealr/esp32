@@ -158,22 +158,23 @@ def build_manual_observation_checklist(scenario: str) -> str:
         ]
     elif scenario == "show-tags":
         lines = [
-            "Confirm the display starts on Event / Page 1/N.",
+            "Confirm the display starts on Event / Page 1/4.",
             "Confirm real signing remains disabled in the serial response.",
-            "Press short KEY/GPIO14 until the Tags pages are shown.",
-            "Confirm the Tags pages show 2 tags without ellipses.",
-            "Confirm the p tag shows the full 64-character pubkey across pages.",
-            "Confirm the p tag marker mention and t tag nostrseal are visible.",
+            "Press short KEY/GPIO14 until the Tags section is shown as Page 3/4.",
+            "Confirm the Tags body uses compact label/value rows, not uniform large text.",
+            "Confirm this fixture shows 2 tags on one compact Tags screen without ellipses.",
+            "Confirm the p tag shows the full 64-character pubkey.",
+            "Confirm marker mention and topic nostrseal are visible.",
             "Continue with short KEY/GPIO14 until the final Decision page.",
         ]
     elif scenario == "show-long-content":
         lines = [
-            "Confirm the display starts on Event / Page 1/N.",
+            "Confirm the display starts on Event / Page 1/4.",
             "Confirm real signing remains disabled in the serial response.",
-            "Press short KEY/GPIO14 until the Content pages are shown.",
-            "Confirm the Content pages show the full long content without ellipses.",
-            "Continue with short KEY/GPIO14 through the Tags pages.",
-            "Confirm every tag field is readable without ellipses.",
+            "Press short KEY/GPIO14 until the Content section is shown as Page 2/4.",
+            "Confirm the Content body uses compact text and shows the full long content without ellipses.",
+            "Continue with short KEY/GPIO14 through the Tags section, shown as Page 3/4 or Page 3/4 N/M.",
+            "Confirm every tag field is readable without ellipses and uses compact label/value rows.",
             "Continue with short KEY/GPIO14 until the final Decision page.",
         ]
     elif scenario == "show-request-error":
@@ -239,7 +240,7 @@ def main() -> int:
         help=(
             "show-review leaves a valid sign_event review on the display; "
             "show-tags shows a tagged event with unabridged tag review; "
-            "show-long-content shows paginated full content plus many tags; "
+            "show-long-content shows compact full content plus many tags; "
             "show-request-error first shows that review and then sends an invalid request; "
             "button-approve and button-reject print physical-control acceptance steps"
         ),

@@ -15,6 +15,8 @@ struct TrustedReviewPage {
     std::string title;
     std::vector<std::string> lines;
     ReviewPageAction action;
+    std::string page_indicator{};
+    std::vector<ReviewBodyLineStyle> body_line_styles{};
 };
 
 struct TrustedReviewRequest {

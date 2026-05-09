@@ -13,6 +13,8 @@ namespace {
 constexpr std::size_t kTDisplayS3ReviewTitleChars = 18;
 constexpr std::size_t kTDisplayS3ReviewBodyLines = 5;
 constexpr std::size_t kTDisplayS3ReviewLineChars = 26;
+constexpr std::size_t kTDisplayS3ReviewCompactBodyLines = 9;
+constexpr std::size_t kTDisplayS3ReviewCompactLineChars = 48;
 constexpr int kGlyphWidth = 5;
 constexpr int kGlyphHeight = 7;
 constexpr int kGlyphSpacing = 1;
@@ -22,6 +24,7 @@ constexpr int kFooterY = 148;
 constexpr int kFooterActionScale = 2;
 constexpr int kBodyY = 42;
 constexpr int kBodyLineHeight = 20;
+constexpr int kCompactBodyLineHeight = 11;
 
 std::array<uint8_t, kGlyphHeight> glyph_rows_for(char ch) {
     if (ch >= 'a' && ch <= 'z') {
@@ -111,6 +114,39 @@ int right_aligned_text_x(std::string_view text, int scale, int right_margin) {
     return std::max(0, kTDisplayS3LogicalDisplayWidth - right_margin - text_width_px(text, scale));
 }
 
+nostrseal::ReviewBodyLineStyle body_line_style_for(
+    const nostrseal::ReviewDisplayFrame& frame,
+    std::size_t index) {
+    if (index < frame.body_line_styles.size()) {
+        return frame.body_line_styles[index];
+    }
+    return nostrseal::ReviewBodyLineStyle::Normal;
+}
+
+int body_line_scale(nostrseal::ReviewBodyLineStyle style) {
+    if (style == nostrseal::ReviewBodyLineStyle::Normal) {
+        return 2;
+    }
+    return 1;
+}
+
+int body_line_height(nostrseal::ReviewBodyLineStyle style) {
+    if (style == nostrseal::ReviewBodyLineStyle::Normal) {
+        return kBodyLineHeight;
+    }
+    return kCompactBodyLineHeight;
+}
+
+uint16_t body_line_color(nostrseal::ReviewBodyLineStyle style) {
+    if (style == nostrseal::ReviewBodyLineStyle::Meta) {
+        return kTDisplayS3ColorGreen;
+    }
+    if (style == nostrseal::ReviewBodyLineStyle::Label) {
+        return kTDisplayS3ColorAmber;
+    }
+    return kTDisplayS3ColorWhite;
+}
+
 }  // namespace
 
 uint16_t t_display_s3_boot_frame_color_for(int x, int y) {
@@ -132,6 +168,8 @@ nostrseal::ReviewDisplayLimits t_display_s3_review_limits() {
         .max_title_chars = kTDisplayS3ReviewTitleChars,
         .max_body_lines = kTDisplayS3ReviewBodyLines,
         .max_line_chars = kTDisplayS3ReviewLineChars,
+        .max_compact_body_lines = kTDisplayS3ReviewCompactBodyLines,
+        .max_compact_line_chars = kTDisplayS3ReviewCompactLineChars,
     };
 }
 
@@ -152,13 +190,16 @@ uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame
         return kTDisplayS3ColorDarkBlue;
     }
 
+    int line_y = kBodyY;
     for (std::size_t line = 0; line < frame.body_lines.size(); ++line) {
-        if (line >= kTDisplayS3ReviewBodyLines) {
+        if (line >= kTDisplayS3ReviewCompactBodyLines) {
             break;
         }
-        if (text_pixel_active(frame.body_lines[line], 10, kBodyY + (static_cast<int>(line) * kBodyLineHeight), 2, x, y)) {
-            return kTDisplayS3ColorWhite;
+        const nostrseal::ReviewBodyLineStyle style = body_line_style_for(frame, line);
+        if (text_pixel_active(frame.body_lines[line], 10, line_y, body_line_scale(style), x, y)) {
+            return body_line_color(style);
         }
+        line_y += body_line_height(style);
     }
 
     if (y >= kFooterY) {

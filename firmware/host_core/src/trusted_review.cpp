@@ -28,6 +28,8 @@ ReviewPage as_review_page(const TrustedReviewPage& page) {
         page.title,
         std::move(lines),
         page.action,
+        page.page_indicator,
+        page.body_line_styles,
     };
 }
 

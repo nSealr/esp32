@@ -471,18 +471,42 @@ void test_qr_display_review_pages_show_full_tag_values_without_ellipsis() {
         "ignored",
         R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})"});
 
-    const std::vector<nostrseal::TrustedReviewPage> pages = nostrseal::build_qr_display_review_pages(
-        request,
-        nostrseal::ReviewDisplayLimits{.max_title_chars = 18, .max_body_lines = 3, .max_line_chars = 20});
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
     const std::string tag_text = joined_lines_for_title(pages, "Tags");
 
-    assert(page_count_with_title(pages, "Tags") > 1);
+    assert(page_count_with_title(pages, "Tags") == 1);
     assert(tag_text.find("...") == std::string::npos);
     assert(tag_text.find(pubkey) != std::string::npos);
     assert(tag_text.find("nostrseal") != std::string::npos);
     assert(pages.back().title == "Decision");
     assert(!lines_contain(pages.back().lines, "warning"));
     assert(!lines_contain(pages.back().lines, "Warning"));
+}
+
+void test_qr_display_review_pages_group_logical_sections_with_compact_styles() {
+    const std::string pubkey = "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+        "ignored",
+        R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})"});
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+
+    assert(pages.size() == 4);
+    assert(pages[0].title == "Event");
+    assert(pages[0].page_indicator == "Page 1/4");
+    assert(pages[1].title == "Content");
+    assert(pages[1].page_indicator == "Page 2/4");
+    assert(pages[2].title == "Tags");
+    assert(pages[2].page_indicator == "Page 3/4");
+    assert(pages[3].title == "Decision");
+    assert(pages[3].page_indicator == "Page 4/4");
+    assert(pages[2].body_line_styles.size() == pages[2].lines.size());
+    assert(pages[2].body_line_styles.front() == nostrseal::ReviewBodyLineStyle::Meta);
+    assert(lines_contain(pages[2].lines, "Tag 1/2 p"));
+    assert(lines_contain(pages[2].lines, "pubkey:"));
+    assert(joined_lines_for_title(pages, "Tags").find(pubkey) != std::string::npos);
 }
 
 void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
@@ -503,13 +527,12 @@ void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
         },
     };
 
-    const std::vector<nostrseal::TrustedReviewPage> pages = nostrseal::build_qr_display_review_pages(
-        request,
-        nostrseal::ReviewDisplayLimits{.max_title_chars = 18, .max_body_lines = 3, .max_line_chars = 20});
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
     const std::string content_text = joined_lines_for_title(pages, "Content");
 
-    assert(page_count_with_title(pages, "Content") > 1);
-    assert(content_text == long_content);
+    assert(page_count_with_title(pages, "Content") == 1);
+    assert(content_text.find(long_content) != std::string::npos);
     assert(content_text.find("...") == std::string::npos);
     assert(pages.back().title == "Decision");
     assert(!lines_contain(pages.back().lines, "Long content"));
@@ -758,6 +781,37 @@ void test_review_display_renders_navigation_frame() {
     assert(frame.title == "Event");
     assert(frame.page_indicator == "Page 1/4");
     assert((frame.body_lines == std::vector<std::string>{"Kind 1", "Short Text Note", "Created 1710000000"}));
+    assert(frame.action_hint == "Next");
+}
+
+void test_review_display_preserves_logical_page_indicator_and_body_styles() {
+    const nostrseal::ReviewPage page{
+        "Content",
+        {"bytes: 281", "abcdef"},
+        nostrseal::ReviewPageAction::Next,
+        "Page 2/4",
+        {nostrseal::ReviewBodyLineStyle::Meta, nostrseal::ReviewBodyLineStyle::Value},
+    };
+
+    const nostrseal::ReviewDisplayFrame frame = nostrseal::render_review_page(
+        page,
+        4,
+        12,
+        nostrseal::ReviewDisplayLimits{
+            .max_title_chars = 18,
+            .max_body_lines = 5,
+            .max_line_chars = 26,
+            .max_compact_body_lines = 9,
+            .max_compact_line_chars = 48,
+        });
+
+    assert(frame.title == "Content");
+    assert(frame.page_indicator == "Page 2/4");
+    assert((frame.body_lines == std::vector<std::string>{"bytes: 281", "abcdef"}));
+    assert((frame.body_line_styles == std::vector<nostrseal::ReviewBodyLineStyle>{
+                                          nostrseal::ReviewBodyLineStyle::Meta,
+                                          nostrseal::ReviewBodyLineStyle::Value,
+                                      }));
     assert(frame.action_hint == "Next");
 }
 
@@ -1202,12 +1256,27 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     assert(t_display_s3_review_limits().max_title_chars == 18);
     assert(t_display_s3_review_limits().max_body_lines == 5);
     assert(t_display_s3_review_limits().max_line_chars == 26);
+    assert(t_display_s3_review_limits().max_compact_body_lines == 9);
+    assert(t_display_s3_review_limits().max_compact_line_chars == 48);
     assert(t_display_s3_review_frame_color_for(frame, 0, 0) == kTDisplayS3ColorDarkBlue);
     assert(t_display_s3_review_frame_color_for(frame, 10, 7) == kTDisplayS3ColorWhite);
     assert(t_display_s3_review_frame_color_for(frame, 262, 9) == kTDisplayS3ColorGreen);
     assert(t_display_s3_review_frame_color_for(frame, 10, 42) == kTDisplayS3ColorWhite);
     assert(t_display_s3_review_frame_color_for(frame, 0, 160) == kTDisplayS3ColorAmber);
     assert(t_display_s3_review_frame_color_for(frame, 10, 152) == kTDisplayS3ColorBlack);
+
+    nostrseal::ReviewDisplayFrame compact_frame;
+    compact_frame.title = "Content";
+    compact_frame.page_indicator = "Page 2/4";
+    compact_frame.body_lines = std::vector<std::string>{"bytes: 281", "abcdef"};
+    compact_frame.action_hint = "Next";
+    compact_frame.body_line_styles = std::vector<nostrseal::ReviewBodyLineStyle>{
+        nostrseal::ReviewBodyLineStyle::Meta,
+        nostrseal::ReviewBodyLineStyle::Value,
+    };
+
+    assert(t_display_s3_review_frame_color_for(compact_frame, 10, 42) == kTDisplayS3ColorGreen);
+    assert(t_display_s3_review_frame_color_for(compact_frame, 11, 53) == kTDisplayS3ColorWhite);
 }
 
 void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses() {
@@ -1376,6 +1445,7 @@ int main() {
     test_qr_review_pages_match_shared_tagged_vector();
     test_qr_trusted_review_request_matches_shared_tagged_vector();
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
+    test_qr_display_review_pages_group_logical_sections_with_compact_styles();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
@@ -1391,6 +1461,7 @@ int main() {
     test_review_controls_allow_early_rejection();
     test_review_controls_are_terminal_after_decision();
     test_review_display_renders_navigation_frame();
+    test_review_display_preserves_logical_page_indicator_and_body_styles();
     test_review_display_renders_decision_frame();
     test_review_display_wraps_and_truncates_long_body_lines();
     test_review_display_matches_shared_long_content_frame_vector();

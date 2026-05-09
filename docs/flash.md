@@ -191,13 +191,13 @@ can be sent to the device for human inspection:
 python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
 ```
 
-To inspect unabridged tagged-event review pages, send:
+To inspect the compact unabridged tagged-event review section, send:
 
 ```sh
 python3 scripts/manual_review_display.py show-tags --port /dev/cu.<device>
 ```
 
-To inspect paginated full-content and many-tag review behavior, send:
+To inspect compact full-content and many-tag review behavior, send:
 
 ```sh
 python3 scripts/manual_review_display.py show-long-content --port /dev/cu.<device>
