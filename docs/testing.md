@@ -101,6 +101,9 @@ tests with strict C++ warnings.
 - Firmware scaffold tests requiring stale active T-Display S3 review sessions
   to expire after a bounded inactivity window, clear RAM-only review state, and
   show `Review Timeout` / `Expired` / `Not signed` without enabling signing.
+- Host-compiled T-Display S3 review-state helper tests proving timeout math,
+  activity refresh, clear behavior, and unsigned tick wraparound outside the
+  ESP-IDF runtime loop.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

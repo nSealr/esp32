@@ -1,6 +1,7 @@
 import base64
 import json
 import shutil
+import subprocess
 import time
 import unittest
 from pathlib import Path
@@ -341,6 +342,72 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("poll_t_display_s3_review_button", main)
         self.assertIn("ActiveReviewState active_review", main)
         self.assertIn("Signing remains disabled", main)
+
+    def test_t_display_s3_review_state_helper_expires_activity(self) -> None:
+        main_dir = ROOT / "firmware/esp32_s3_usb_signer/main"
+        header_path = main_dir / "t_display_s3_review_state.hpp"
+        source_path = main_dir / "t_display_s3_review_state.cpp"
+        cmake = (main_dir / "CMakeLists.txt").read_text(encoding="utf-8")
+
+        self.assertTrue(header_path.exists(), "missing T-Display S3 review-state helper header")
+        self.assertTrue(source_path.exists(), "missing T-Display S3 review-state helper source")
+        self.assertIn("t_display_s3_review_state.cpp", cmake)
+
+        with TemporaryDirectory() as tmp:
+            program_path = Path(tmp) / "test_review_state.cpp"
+            binary_path = Path(tmp) / "test_review_state"
+            program_path.write_text(
+                """
+                #include "t_display_s3_review_state.hpp"
+
+                #include <cassert>
+                #include <cstdint>
+                #include <limits>
+
+                int main() {
+                    nostrseal_esp32::TDisplayS3ReviewActivity activity;
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_active(activity));
+
+                    nostrseal_esp32::start_t_display_s3_review_activity(activity, 100);
+                    assert(nostrseal_esp32::t_display_s3_review_activity_active(activity));
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 159, 60));
+                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 160, 60));
+
+                    nostrseal_esp32::record_t_display_s3_review_activity(activity, 170);
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 229, 60));
+                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 230, 60));
+
+                    nostrseal_esp32::start_t_display_s3_review_activity(
+                        activity,
+                        std::numeric_limits<std::uint32_t>::max() - 5
+                    );
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 3, 10));
+                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 5, 10));
+
+                    nostrseal_esp32::clear_t_display_s3_review_activity(activity);
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_active(activity));
+                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 1000, 60));
+                    return 0;
+                }
+                """,
+                encoding="utf-8",
+            )
+            subprocess.run(
+                [
+                    "c++",
+                    "-std=c++20",
+                    "-Wall",
+                    "-Wextra",
+                    "-Werror",
+                    f"-I{main_dir}",
+                    str(source_path),
+                    str(program_path),
+                    "-o",
+                    str(binary_path),
+                ],
+                check=True,
+            )
+            subprocess.run([str(binary_path)], check=True)
 
     def test_t_display_s3_firmware_displays_terminal_review_decisions_without_signing(self) -> None:
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")

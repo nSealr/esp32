@@ -17,6 +17,7 @@
 #include "t_display_s3_board.hpp"
 #include "t_display_s3_buttons.hpp"
 #include "t_display_s3_display.hpp"
+#include "t_display_s3_review_state.hpp"
 
 namespace {
 constexpr const char* kTag = "nostrseal";
@@ -24,7 +25,7 @@ constexpr TickType_t kActiveReviewSessionTimeoutTicks = pdMS_TO_TICKS(5 * 60 * 1
 
 struct ActiveReviewState {
     std::optional<nostrseal::TrustedReviewSession> session;
-    TickType_t last_activity_tick = 0;
+    nostrseal_esp32::TDisplayS3ReviewActivity activity;
 };
 
 void write_transport_error(const char* payload_base64url) {
@@ -49,7 +50,9 @@ void display_sign_event_review_preview(
     ActiveReviewState& active_review) {
     if (result.review_session.has_value()) {
         active_review.session = std::move(result.review_session);
-        active_review.last_activity_tick = xTaskGetTickCount();
+        nostrseal_esp32::start_t_display_s3_review_activity(
+            active_review.activity,
+            static_cast<std::uint32_t>(xTaskGetTickCount()));
         display_review_frame(display, active_review.session->current_frame());
         return;
     }
@@ -103,12 +106,15 @@ bool response_frame_is_error(const std::string& response_frame) {
 
 void clear_active_review(ActiveReviewState& active_review) {
     active_review.session.reset();
-    active_review.last_activity_tick = 0;
+    nostrseal_esp32::clear_t_display_s3_review_activity(active_review.activity);
 }
 
 bool active_review_expired(const ActiveReviewState& active_review, TickType_t now_tick) {
     return active_review.session.has_value() &&
-           (now_tick - active_review.last_activity_tick) >= kActiveReviewSessionTimeoutTicks;
+           nostrseal_esp32::t_display_s3_review_activity_expired(
+               active_review.activity,
+               static_cast<std::uint32_t>(now_tick),
+               static_cast<std::uint32_t>(kActiveReviewSessionTimeoutTicks));
 }
 
 void expire_active_review_if_needed(
@@ -117,8 +123,7 @@ void expire_active_review_if_needed(
     if (!active_review_expired(active_review, xTaskGetTickCount())) {
         return;
     }
-    active_review.session.reset();
-    active_review.last_activity_tick = 0;
+    clear_active_review(active_review);
     display_review_frame(display, build_review_timeout_frame());
 }
 
@@ -129,7 +134,9 @@ void process_review_button(
     if (!active_review.session.has_value()) {
         return;
     }
-    active_review.last_activity_tick = xTaskGetTickCount();
+    nostrseal_esp32::record_t_display_s3_review_activity(
+        active_review.activity,
+        static_cast<std::uint32_t>(xTaskGetTickCount()));
     try {
         const std::optional<bool> decision = active_review.session->handle_button(button);
         if (decision.has_value()) {
