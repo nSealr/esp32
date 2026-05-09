@@ -280,8 +280,10 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("draw_t_display_s3_review_frame", main)
         self.assertIn("build_display_ready_frame", main)
         self.assertIn('frame.page_indicator = "No request"', main)
+        self.assertIn('"Send sign_event"', main)
         self.assertIn('frame.action_hint = "Waiting"', main)
         self.assertNotIn("Content: display test", main)
+        self.assertIn("case '_'", display_source)
         self.assertIn("Signing is disabled", main)
 
     def test_t_display_s3_firmware_maps_onboard_buttons_without_touch_approval(self) -> None:
