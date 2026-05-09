@@ -81,8 +81,9 @@ The first firmware foundation is host-buildable C++ under
   rejection as terminal.
 - `review_display`: renderer-neutral trusted display frame builder for future
   ESP32-S3 display drivers. It turns a review page into bounded title, page
-  indicator, body lines, and action hint fields. Body lines are wrapped and
-  truncated to configured limits before any graphical display driver exists.
+  indicator, body lines, and action hint fields. Generic frames are bounded at
+  the renderer boundary, while sign-event display sessions pre-paginate content
+  and tag fields so physical review can avoid ellipses for valid input.
 - `trusted_review`: host-buildable review session boundary that combines owned
   review pages, `review_display` frames, `review_controls` button navigation,
   and `approval_gate` request/digest binding. It is the first firmware-core
@@ -93,7 +94,9 @@ The first firmware foundation is host-buildable C++ under
   request payload enough to validate v0 request ids and echo dynamic
   `request_id` values. Valid serial/USB `sign_event` requests are also forced
   through the trusted-review request builder before the dispatcher returns
-  `signing_disabled`. It does not sign events.
+  `signing_disabled`; the live display session uses paginated full-detail
+  review pages so content and tags can be inspected without abbreviated warning
+  heuristics. It does not sign events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -116,10 +119,11 @@ real signing backend can be connected.
 
 The review-display renderer is also intentionally hardware-neutral. It does not
 drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded
-frame, wraps/truncates body text to the configured limits, and keeps unsafe
-title or limit settings out of the driver boundary. A later ESP-IDF display
-adapter can paint that frame without changing review, approval, or signing
-semantics.
+frame and keeps unsafe title or limit settings out of the driver boundary. For
+real sign-event review sessions, content and tag fields are split into enough
+bounded pages before rendering so the physical display does not need to shorten
+valid event data with ellipses. A later ESP-IDF display adapter can paint those
+frames without changing review, approval, or signing semantics.
 
 The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share

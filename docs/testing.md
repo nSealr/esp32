@@ -34,9 +34,13 @@ tests with strict C++ warnings.
   rejected before review/signing.
 - QR trusted-review tests comparing ESP32-generated pages and
   `approval_digest` values with shared basic and tagged review-screen vectors.
+- ESP32 display-review pagination tests proving physical review pages can show
+  long content and full tag field values without ellipses while the shared
+  approval-digest contract remains unchanged and signing stays disabled.
 - Serial/USB `sign_event` trusted-review tests proving decoded request JSON
-  produces the same review pages and `approval_digest` as the shared QR review
-  contract, while the device protocol still returns `signing_disabled`.
+  produces the same shared review contract and `approval_digest` as QR, while
+  physical review sessions can use paginated full-detail display pages and the
+  device protocol still returns `signing_disabled`.
 - Serial/USB review I/O harness tests proving future USB signer display and
   physical-button adapters can drive the same trusted review session from
   decoded request JSON without adding a signing backend.
@@ -153,11 +157,13 @@ tests with strict C++ warnings.
   `scripts/smoke_capabilities.py --verbose-frames`.
 - Manual T-Display S3 display exerciser tests proving
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
-  exchanges, composes the request-error scenario from shared invalid vectors,
-  prints physical-control checklists for approve/reject acceptance scenarios,
-  includes the terminal `Send new request` prompt in request-error and closed
-  decision expectations, and runs exchanges through a fake serial device
-  without opening hardware.
+  exchanges, composes tagged-event and long-content review scenarios from
+  shared specs vectors, expects content/tag inspection without ellipses,
+  composes the request-error scenario from shared invalid vectors, prints
+  physical-control checklists for approve/reject acceptance scenarios, includes
+  the terminal `Send new request` prompt in request-error and closed decision
+  expectations, and runs exchanges through a fake serial device without
+  opening hardware.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

@@ -89,6 +89,42 @@ void assert_trusted_review_pages(
     }
 }
 
+std::size_t page_count_with_title(
+    const std::vector<nostrseal::TrustedReviewPage>& pages,
+    const std::string& title) {
+    std::size_t count = 0;
+    for (const nostrseal::TrustedReviewPage& page : pages) {
+        if (page.title == title) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+std::string joined_lines_for_title(
+    const std::vector<nostrseal::TrustedReviewPage>& pages,
+    const std::string& title) {
+    std::string joined;
+    for (const nostrseal::TrustedReviewPage& page : pages) {
+        if (page.title != title) {
+            continue;
+        }
+        for (const std::string& line : page.lines) {
+            joined += line;
+        }
+    }
+    return joined;
+}
+
+bool lines_contain(const std::vector<std::string>& lines, const std::string& needle) {
+    for (const std::string& line : lines) {
+        if (line.find(needle) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void assert_qr_review_transcript(
     const std::vector<nostrseal::QrReviewTranscriptStep>& actual,
     const std::vector<nostrseal::QrReviewTranscriptStep>& expected) {
@@ -427,6 +463,57 @@ void test_qr_trusted_review_request_matches_shared_tagged_vector() {
     assert(review_request.request_id == expected.request_id);
     assert(review_request.approval_digest == expected.approval_digest);
     assert_trusted_review_pages(review_request.pages, expected.pages);
+}
+
+void test_qr_display_review_pages_show_full_tag_values_without_ellipsis() {
+    const std::string pubkey = "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+        "ignored",
+        R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})"});
+
+    const std::vector<nostrseal::TrustedReviewPage> pages = nostrseal::build_qr_display_review_pages(
+        request,
+        nostrseal::ReviewDisplayLimits{.max_title_chars = 18, .max_body_lines = 3, .max_line_chars = 20});
+    const std::string tag_text = joined_lines_for_title(pages, "Tags");
+
+    assert(page_count_with_title(pages, "Tags") > 1);
+    assert(tag_text.find("...") == std::string::npos);
+    assert(tag_text.find(pubkey) != std::string::npos);
+    assert(tag_text.find("nostrseal") != std::string::npos);
+    assert(pages.back().title == "Decision");
+    assert(!lines_contain(pages.back().lines, "warning"));
+    assert(!lines_contain(pages.back().lines, "Warning"));
+}
+
+void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
+    const std::string long_content(281, 'x');
+    const nostrseal::QrSigningRequest request{
+        .version = 1,
+        .request_id = "req-long-display",
+        .method = "sign_event",
+        .has_params = true,
+        .has_event_template = true,
+        .event_template_json = "",
+        .event_template = nostrseal::QrEventTemplate{
+            .created_at = 1710000120,
+            .kind = 1,
+            .tags_json = "[]",
+            .tags = {},
+            .content = long_content,
+        },
+    };
+
+    const std::vector<nostrseal::TrustedReviewPage> pages = nostrseal::build_qr_display_review_pages(
+        request,
+        nostrseal::ReviewDisplayLimits{.max_title_chars = 18, .max_body_lines = 3, .max_line_chars = 20});
+    const std::string content_text = joined_lines_for_title(pages, "Content");
+
+    assert(page_count_with_title(pages, "Content") > 1);
+    assert(content_text == long_content);
+    assert(content_text.find("...") == std::string::npos);
+    assert(pages.back().title == "Decision");
+    assert(!lines_contain(pages.back().lines, "Long content"));
+    assert(!lines_contain(pages.back().lines, "Many tags"));
 }
 
 void test_qr_trusted_review_session_binds_qr_digest_and_navigation() {
@@ -854,6 +941,38 @@ void test_serial_sign_event_review_matches_shared_review_contract() {
     assert(!session.can_sign());
 }
 
+void test_serial_review_session_uses_full_detail_display_pages() {
+    const std::string pubkey = "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
+    nostrseal::TrustedReviewSession session = nostrseal::begin_serial_sign_event_trusted_review(
+        R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})",
+        nostrseal::ReviewDisplayLimits{.max_title_chars = 18, .max_body_lines = 3, .max_line_chars = 20});
+
+    std::string tag_text;
+    bool saw_tags = false;
+    bool saw_warnings = false;
+    for (std::size_t step = 0; step < 16U && session.current_frame().title != "Decision"; ++step) {
+        const nostrseal::ReviewDisplayFrame frame = session.current_frame();
+        if (frame.title == "Tags") {
+            saw_tags = true;
+            for (const std::string& line : frame.body_lines) {
+                tag_text += line;
+            }
+        }
+        if (frame.title == "Warnings") {
+            saw_warnings = true;
+        }
+        assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    }
+
+    assert(session.current_frame().title == "Decision");
+    assert(saw_tags);
+    assert(!saw_warnings);
+    assert(tag_text.find("...") == std::string::npos);
+    assert(tag_text.find(pubkey) != std::string::npos);
+    assert(tag_text.find("mention") != std::string::npos);
+    assert(tag_text.find("nostrseal") != std::string::npos);
+}
+
 void test_serial_review_io_flow_drives_request_display_and_buttons_without_signing() {
     RecordingSerialReviewIo io{{nostrseal::ReviewButton::Next,
                                 nostrseal::ReviewButton::Next,
@@ -1256,6 +1375,8 @@ int main() {
     test_qr_trusted_review_request_matches_shared_basic_vector();
     test_qr_review_pages_match_shared_tagged_vector();
     test_qr_trusted_review_request_matches_shared_tagged_vector();
+    test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
+    test_qr_display_review_pages_split_full_long_content_without_ellipsis();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
     test_qr_review_flow_rejects_unsafe_scanned_qr();
@@ -1278,6 +1399,7 @@ int main() {
     test_trusted_review_session_keeps_rejection_terminal();
     test_trusted_review_session_allows_backward_review_before_approval();
     test_serial_sign_event_review_matches_shared_review_contract();
+    test_serial_review_session_uses_full_detail_display_pages();
     test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
     test_signing_policy_requires_every_runtime_gate_before_enablement();
     test_device_protocol_reports_scaffold_capabilities();

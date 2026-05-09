@@ -2,7 +2,10 @@
 
 #include "nostrseal/sha256.hpp"
 
+#include <algorithm>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -118,6 +121,114 @@ std::vector<std::string> tag_lines(const QrReviewData& review) {
         review.tag_count == 1U ? "1 tag" : std::to_string(review.tag_count) + " tags"};
     lines.insert(lines.end(), review.tag_summary.begin(), review.tag_summary.end());
     return lines;
+}
+
+void validate_display_page_limits(ReviewDisplayLimits limits) {
+    if (limits.max_title_chars == 0U || limits.max_body_lines == 0U || limits.max_line_chars == 0U) {
+        throw std::invalid_argument("review display limits must be non-zero");
+    }
+}
+
+std::vector<std::string> split_exact_display_lines(std::string_view text, std::size_t width) {
+    if (text.empty()) {
+        return {""};
+    }
+    std::vector<std::string> lines;
+    std::size_t position = 0;
+    while (position < text.size()) {
+        const std::size_t count = std::min(width, text.size() - position);
+        lines.emplace_back(text.substr(position, count));
+        position += count;
+    }
+    return lines;
+}
+
+void append_field_lines(
+    std::vector<std::string>& lines,
+    const std::string& prefix,
+    const std::string& value,
+    std::size_t width) {
+    if (prefix.size() >= width) {
+        lines.push_back(prefix.substr(0, width));
+        std::vector<std::string> value_lines = split_exact_display_lines(value, width);
+        lines.insert(lines.end(), value_lines.begin(), value_lines.end());
+        return;
+    }
+
+    const std::size_t first_width = width - prefix.size();
+    if (value.empty()) {
+        lines.push_back(prefix);
+        return;
+    }
+
+    std::size_t position = 0;
+    const std::size_t first_count = std::min(first_width, value.size());
+    lines.push_back(prefix + value.substr(0, first_count));
+    position += first_count;
+    while (position < value.size()) {
+        const std::size_t count = std::min(width, value.size() - position);
+        lines.push_back(value.substr(position, count));
+        position += count;
+    }
+}
+
+std::vector<std::string> detailed_content_lines(const std::string& content, ReviewDisplayLimits limits) {
+    if (content.empty()) {
+        return {"(empty content)"};
+    }
+    return split_exact_display_lines(content, limits.max_line_chars);
+}
+
+std::vector<std::string> detailed_tag_lines(
+    const std::vector<std::vector<std::string>>& tags,
+    ReviewDisplayLimits limits) {
+    if (tags.empty()) {
+        return {"No tags"};
+    }
+
+    std::vector<std::string> lines;
+    lines.push_back(tags.size() == 1U ? "1 tag" : std::to_string(tags.size()) + " tags");
+    for (std::size_t tag_index = 0; tag_index < tags.size(); ++tag_index) {
+        const std::vector<std::string>& tag = tags[tag_index];
+        lines.push_back("Tag " + std::to_string(tag_index + 1U) + "/" + std::to_string(tags.size()));
+        if (tag.empty()) {
+            lines.push_back("(empty tag)");
+            continue;
+        }
+        for (std::size_t field_index = 0; field_index < tag.size(); ++field_index) {
+            append_field_lines(
+                lines,
+                std::to_string(field_index) + ": ",
+                tag[field_index],
+                limits.max_line_chars);
+        }
+    }
+    return lines;
+}
+
+void append_display_pages(
+    std::vector<TrustedReviewPage>& pages,
+    const std::string& title,
+    const std::vector<std::string>& lines,
+    ReviewDisplayLimits limits) {
+    std::size_t position = 0;
+    const std::size_t total = lines.empty() ? 1U : lines.size();
+    while (position < total) {
+        std::vector<std::string> body;
+        for (std::size_t line = 0; line < limits.max_body_lines && position < lines.size(); ++line) {
+            body.push_back(lines[position]);
+            ++position;
+        }
+        if (body.empty()) {
+            body.push_back("");
+            position = total;
+        }
+        pages.push_back(TrustedReviewPage{
+            title,
+            std::move(body),
+            ReviewPageAction::Next,
+        });
+    }
 }
 
 std::vector<TrustedReviewPage> review_pages_for(const QrReviewData& review) {
@@ -298,6 +409,36 @@ std::vector<TrustedReviewPage> build_qr_review_pages(const QrSigningRequest& req
     return review_pages_for(review_data_for(request.event_template));
 }
 
+std::vector<TrustedReviewPage> build_qr_display_review_pages(
+    const QrSigningRequest& request,
+    ReviewDisplayLimits limits) {
+    validate_display_page_limits(limits);
+
+    const QrEventTemplate& event_template = request.event_template;
+    std::vector<TrustedReviewPage> pages{
+        TrustedReviewPage{
+            "Event",
+            {
+                "Kind " + std::to_string(event_template.kind),
+                kind_name(event_template.kind),
+                "Created " + std::to_string(event_template.created_at),
+            },
+            ReviewPageAction::Next,
+        },
+    };
+
+    append_display_pages(pages, "Content", detailed_content_lines(event_template.content, limits), limits);
+    append_display_pages(pages, "Tags", detailed_tag_lines(event_template.tags, limits), limits);
+    pages.push_back(TrustedReviewPage{
+        "Decision",
+        {
+            "Approve signing only if all pages match.",
+        },
+        ReviewPageAction::ApproveOrReject,
+    });
+    return pages;
+}
+
 TrustedReviewRequest build_qr_trusted_review_request(const QrSigningRequest& request) {
     const QrReviewData review = review_data_for(request.event_template);
     std::vector<TrustedReviewPage> pages = review_pages_for(review);
@@ -309,8 +450,16 @@ TrustedReviewRequest build_qr_trusted_review_request(const QrSigningRequest& req
     };
 }
 
+TrustedReviewRequest build_qr_display_review_request(
+    const QrSigningRequest& request,
+    ReviewDisplayLimits limits) {
+    TrustedReviewRequest review_request = build_qr_trusted_review_request(request);
+    review_request.pages = build_qr_display_review_pages(request, limits);
+    return review_request;
+}
+
 TrustedReviewSession begin_qr_trusted_review(const QrSigningRequest& request, ReviewDisplayLimits limits) {
-    return TrustedReviewSession{build_qr_trusted_review_request(request), limits};
+    return TrustedReviewSession{build_qr_display_review_request(request, limits), limits};
 }
 
 }  // namespace nostrseal

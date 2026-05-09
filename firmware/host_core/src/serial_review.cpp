@@ -7,6 +7,16 @@
 #include "nostrseal/qr_review.hpp"
 
 namespace nostrseal {
+namespace {
+
+TrustedReviewRequest build_serial_display_review_request(
+    const std::string& request_json,
+    ReviewDisplayLimits limits) {
+    const QrSigningRequest request = parse_qr_signing_request(QrEnvelope{"serial", request_json});
+    return build_qr_display_review_request(request, limits);
+}
+
+}  // namespace
 
 TrustedReviewRequest build_serial_sign_event_trusted_review_request(const std::string& request_json) {
     const QrSigningRequest request = parse_qr_signing_request(QrEnvelope{"serial", request_json});
@@ -16,11 +26,11 @@ TrustedReviewRequest build_serial_sign_event_trusted_review_request(const std::s
 TrustedReviewSession begin_serial_sign_event_trusted_review(
     const std::string& request_json,
     ReviewDisplayLimits limits) {
-    return TrustedReviewSession{build_serial_sign_event_trusted_review_request(request_json), limits};
+    return TrustedReviewSession{build_serial_display_review_request(request_json, limits), limits};
 }
 
 SerialReviewFlow::SerialReviewFlow(const std::string& request_json, ReviewDisplayLimits limits)
-    : review_request_(build_serial_sign_event_trusted_review_request(request_json)),
+    : review_request_(build_serial_display_review_request(request_json, limits)),
       session_(TrustedReviewRequest{review_request_}, limits) {}
 
 const std::string& SerialReviewFlow::request_id() const {

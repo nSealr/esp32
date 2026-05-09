@@ -191,6 +191,18 @@ can be sent to the device for human inspection:
 python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
 ```
 
+To inspect unabridged tagged-event review pages, send:
+
+```sh
+python3 scripts/manual_review_display.py show-tags --port /dev/cu.<device>
+```
+
+To inspect paginated full-content and many-tag review behavior, send:
+
+```sh
+python3 scripts/manual_review_display.py show-long-content --port /dev/cu.<device>
+```
+
 To exercise the request-error display state, send a valid review request
 followed by an invalid signing-request vector:
 

@@ -46,6 +46,9 @@
 - Host-buildable trusted display frame renderer with bounded title, body-line,
   page-indicator, and action-hint fields.
 - Host-buildable body-line wrapping/truncation for trusted display frames.
+- ESP32 display-review pagination for valid `sign_event` content and tag
+  fields, avoiding ellipses in the physical review flow while signing remains
+  disabled.
 - Host-buildable trusted review session combining display frames, button
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
@@ -53,7 +56,8 @@
   request-derived pages while signing remains disabled.
 - QR-derived trusted-review session creation from parsed request data.
 - Serial/USB `sign_event` trusted-review request creation from decoded request
-  JSON, using the same review pages and `approval_digest` contract as QR.
+  JSON, using the same shared `approval_digest` contract as QR while live
+  display sessions can use paginated full-detail pages.
 - `SerialReviewIo` host-core adapter harness for future USB signer display and
   physical-button drivers, without signing.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
@@ -98,8 +102,10 @@ renderer are implemented in host-core only. The QR path also validates the
 minimal unsigned event-template fields needed by future review generation. The
 trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
-that same session boundary through a raw-QR review flow. Display frames now
-wrap and truncate body text to configured limits. The host-core now also has a
+that same session boundary through a raw-QR review flow. Display frames remain
+bounded to configured limits, and sign-event display sessions now split content
+and tag fields into enough pages to avoid shortening valid review data with
+ellipses. The host-core now also has a
 scanner/display/button I/O harness that shows every trusted frame before
 reading physical-style input, rejects non-terminal input streams after a bounded
 number of steps, and returns the terminal approval state plus the exact
@@ -131,10 +137,9 @@ signing backend, storage, display driver, or GPIO approval path is connected.
 
 Status note, 2026-05-08: valid serial/USB `sign_event` requests now pass
 through a host-core trusted-review boundary before the disabled-signing
-response is returned. The boundary builds the same review pages and
-`approval_digest` as the QR path from decoded request JSON, so the USB signer
-cannot drift from shared review semantics before real display/GPIO drivers or a
-signing backend are connected. Runtime signing remains disabled.
+response is returned. The boundary builds the same shared `approval_digest` as
+the QR path from decoded request JSON, and live display sessions use paginated
+full-detail pages for physical review. Runtime signing remains disabled.
 
 Status note, 2026-05-08: `make idf-smoke-capabilities` now sends both the
 shared fixture requests and dynamic `request_id` variants for capabilities,
@@ -283,6 +288,12 @@ long BOOT/GPIO0 reject. The terminal checklist now also includes the expected
 `Send new request` prompt shown after `Signing disabled`. This makes manual
 display/button acceptance runs more repeatable, but it still does not turn
 physical input into signing authorization.
+
+Status note, 2026-05-10: the manual T-Display S3 review exerciser now includes
+tagged-event and long-content scenarios built from shared `NostrSeal/specs`
+vectors. These scenarios let a human inspect unabridged tag fields, full
+long-content pagination, and many-tag pages on the physical display while the
+serial response still returns `signing_disabled`.
 
 ## M7: Firmware Foundation
 

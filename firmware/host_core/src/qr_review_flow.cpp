@@ -8,16 +8,16 @@
 namespace nostrseal {
 namespace {
 
-TrustedReviewRequest review_request_from_qr(const std::string& qr_envelope) {
+TrustedReviewRequest review_request_from_qr(const std::string& qr_envelope, ReviewDisplayLimits limits) {
     const QrEnvelope envelope = decode_qr_envelope(qr_envelope);
     const QrSigningRequest request = parse_qr_signing_request(envelope);
-    return build_qr_trusted_review_request(request);
+    return build_qr_display_review_request(request, limits);
 }
 
 }  // namespace
 
 QrReviewFlow::QrReviewFlow(const std::string& qr_envelope, ReviewDisplayLimits limits)
-    : review_request_(review_request_from_qr(qr_envelope)), session_(TrustedReviewRequest{review_request_}, limits) {}
+    : review_request_(review_request_from_qr(qr_envelope, limits)), session_(TrustedReviewRequest{review_request_}, limits) {}
 
 const std::string& QrReviewFlow::request_id() const {
     return review_request_.request_id;

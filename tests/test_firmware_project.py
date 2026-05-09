@@ -881,6 +881,50 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
             checklist,
         )
 
+    def test_manual_review_display_builds_tagged_event_review_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-tags",
+            request_id="manual-tags-test",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-tags")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-tags-test")
+        self.assertEqual(response["request_id"], "manual-tags-test")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertEqual(event_template["tags"][0][0], "p")
+        self.assertEqual(event_template["tags"][1], ["t", "nostrseal"])
+        self.assertIn("Confirm the Tags pages show 2 tags without ellipses", checklist)
+        self.assertIn("Confirm the p tag shows the full 64-character pubkey", checklist)
+        self.assertNotIn("Warnings", checklist)
+
+    def test_manual_review_display_builds_long_content_review_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-long-content",
+            request_id="manual-long-content-test",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-long-content")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-long-content-test")
+        self.assertEqual(response["request_id"], "manual-long-content-test")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertGreater(len(event_template["content"]), 280)
+        self.assertEqual(len(event_template["tags"]), 9)
+        self.assertIn("Confirm the Content pages show the full long content without ellipses", checklist)
+        self.assertIn("Confirm every tag field is readable without ellipses", checklist)
+        self.assertNotIn("Warnings", checklist)
+
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
             scenario="button-approve",
