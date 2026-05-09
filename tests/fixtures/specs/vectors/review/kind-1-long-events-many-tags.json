@@ -1,0 +1,79 @@
+{
+  "name": "kind-1-long-events-many-tags",
+  "request": {
+    "version": 1,
+    "request_id": "req-kind-1-long-events-many-tags",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000120,
+        "kind": 1,
+        "tags": [
+          [
+            "e",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "",
+            "root"
+          ],
+          [
+            "t",
+            "nostrseal"
+          ],
+          [
+            "t",
+            "hardware"
+          ],
+          [
+            "t",
+            "review"
+          ],
+          [
+            "t",
+            "security"
+          ],
+          [
+            "t",
+            "qr"
+          ],
+          [
+            "t",
+            "vault"
+          ],
+          [
+            "t",
+            "companion"
+          ],
+          [
+            "t",
+            "test"
+          ]
+        ],
+        "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  },
+  "review": {
+    "kind": 1,
+    "kind_name": "Short Text Note",
+    "created_at": 1710000120,
+    "content_preview": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...",
+    "content_length": 281,
+    "tag_count": 9,
+    "tag_summary": [
+      "e: aaaaaaaa...",
+      "t: nostrseal",
+      "t: hardware",
+      "t: review",
+      "t: security",
+      "t: qr",
+      "t: vault",
+      "t: companion",
+      "t: test"
+    ],
+    "warnings": [
+      "Long content.",
+      "Event references other events.",
+      "Many tags."
+    ]
+  }
+}
