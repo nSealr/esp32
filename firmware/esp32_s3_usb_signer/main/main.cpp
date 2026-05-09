@@ -7,7 +7,6 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/limits.hpp"
@@ -18,6 +17,7 @@
 #include "t_display_s3_buttons.hpp"
 #include "t_display_s3_display.hpp"
 #include "t_display_s3_review_state.hpp"
+#include "t_display_s3_status_frames.hpp"
 
 namespace {
 constexpr const char* kTag = "nostrseal";
@@ -61,45 +61,6 @@ void display_sign_event_review_preview(
     }
 }
 
-nostrseal::ReviewDisplayFrame build_review_decision_frame(bool approved) {
-    nostrseal::ReviewDisplayFrame frame;
-    frame.title = approved ? "Review OK" : "Rejected";
-    frame.page_indicator = "Closed";
-    frame.body_lines = std::vector<std::string>{
-        "Not signed",
-        "Signing disabled",
-        "Send new request",
-    };
-    frame.action_hint = "Waiting";
-    return frame;
-}
-
-nostrseal::ReviewDisplayFrame build_review_timeout_frame() {
-    nostrseal::ReviewDisplayFrame frame;
-    frame.title = "Review Timeout";
-    frame.page_indicator = "Expired";
-    frame.body_lines = std::vector<std::string>{
-        "Not signed",
-        "Signing disabled",
-        "Send new request",
-    };
-    frame.action_hint = "Waiting";
-    return frame;
-}
-
-nostrseal::ReviewDisplayFrame build_request_error_frame() {
-    nostrseal::ReviewDisplayFrame frame;
-    frame.title = "Request Error";
-    frame.page_indicator = "Rejected";
-    frame.body_lines = std::vector<std::string>{
-        "Not signed",
-        "Signing disabled",
-        "Send new request",
-    };
-    frame.action_hint = "Waiting";
-    return frame;
-}
-
 bool response_frame_is_error(const std::string& response_frame) {
     return nostrseal::decode_serial_frame(response_frame).type == nostrseal::FrameType::Error;
 }
@@ -124,7 +85,7 @@ void expire_active_review_if_needed(
         return;
     }
     clear_active_review(active_review);
-    display_review_frame(display, build_review_timeout_frame());
+    display_review_frame(display, nostrseal_esp32::build_t_display_s3_review_timeout_frame());
 }
 
 void process_review_button(
@@ -140,7 +101,7 @@ void process_review_button(
     try {
         const std::optional<bool> decision = active_review.session->handle_button(button);
         if (decision.has_value()) {
-            display_review_frame(display, build_review_decision_frame(decision.value()));
+            display_review_frame(display, nostrseal_esp32::build_t_display_s3_review_decision_frame(decision.value()));
             ESP_LOGW(kTag, "Review decision recorded. Signing remains disabled in this scaffold.");
             clear_active_review(active_review);
             return;
@@ -174,29 +135,16 @@ void process_frame_line(
         display_sign_event_review_preview(display, result, active_review);
         if (response_frame_is_error(result.response_frame)) {
             clear_active_review(active_review);
-            display_review_frame(display, build_request_error_frame());
+            display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame());
         }
         std::printf("%s", result.response_frame.c_str());
         std::fflush(stdout);
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected serial frame: %s", exc.what());
         clear_active_review(active_review);
-        display_review_frame(display, build_request_error_frame());
+        display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame());
         write_transport_error("eyJlcnJvciI6Im1hbGZvcm1lZF9mcmFtZSJ9");
     }
-}
-
-nostrseal::ReviewDisplayFrame build_display_ready_frame() {
-    nostrseal::ReviewDisplayFrame frame;
-    frame.title = "Ready";
-    frame.page_indicator = "No request";
-    frame.body_lines = std::vector<std::string>{
-        "USB signer",
-        "Send sign_event",
-        "Signing disabled",
-    };
-    frame.action_hint = "Waiting";
-    return frame;
 }
 }
 
@@ -219,7 +167,7 @@ extern "C" void app_main(void) {
         vTaskDelay(pdMS_TO_TICKS(250));
         display_status = nostrseal_esp32::draw_t_display_s3_review_frame(
             display,
-            build_display_ready_frame());
+            nostrseal_esp32::build_t_display_s3_ready_frame());
     }
     if (display_status != ESP_OK) {
         ESP_LOGW(kTag, "T-Display S3 display review frame unavailable: %s", esp_err_to_name(display_status));
@@ -250,7 +198,7 @@ extern "C" void app_main(void) {
             ESP_LOGW(kTag, "Rejected overlong serial frame");
             line.clear();
             clear_active_review(active_review);
-            display_review_frame(display, build_request_error_frame());
+            display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame());
             write_transport_error("eyJlcnJvciI6Im92ZXJsb25nX2ZyYW1lIn0");
             continue;
         }

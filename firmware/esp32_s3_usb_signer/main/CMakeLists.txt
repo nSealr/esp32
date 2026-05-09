@@ -7,6 +7,7 @@ idf_component_register(
         "t_display_s3_display.cpp"
         "t_display_s3_raster.cpp"
         "t_display_s3_review_state.cpp"
+        "t_display_s3_status_frames.cpp"
         "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/qr_envelope.cpp"

@@ -268,6 +268,13 @@ press mapping, GPIO14 Next/Approve, and GPIO0 Back/Reject behavior. This
 hardens the physical-review UX boundary without treating button input as
 production signing authorization.
 
+Status note, 2026-05-09: the T-Display S3 Ready, approve/reject, timeout, and
+request-error frames are now built by a host-buildable status-frame helper used
+by the ESP-IDF runtime. Host-core tests pin the non-signing copy for
+`Not signed`, `Signing disabled`, and `Send new request`, so display safety
+states can be reviewed before flashing. This changes only UI construction;
+runtime signing remains disabled.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

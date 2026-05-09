@@ -69,6 +69,9 @@ tests with strict C++ warnings.
   exact-threshold short press handling, long press handling, and GPIO-specific
   review-button mapping before the ESP-IDF GPIO polling wrapper reads physical
   pins.
+- Host-buildable T-Display S3 status-frame tests proving Ready,
+  approve/reject closed, timeout, and request-error display frames keep stable
+  non-signing copy before the ESP-IDF runtime paints them.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

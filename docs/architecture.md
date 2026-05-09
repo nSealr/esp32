@@ -132,6 +132,12 @@ classification, and emitted review-button events live in a host-buildable state
 machine. This keeps the GPIO0/GPIO14 mapping testable without hardware and
 keeps touch input outside the approval path.
 
+The T-Display S3 runtime status frames are also host-buildable. Ready,
+approved/rejected, timeout, and request-error frames are constructed by a small
+helper used by `main.cpp` and host-core tests, so non-signing safety copy such
+as `Signing disabled` and `Not signed` is not buried in untested ESP-IDF loop
+branches.
+
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does
 not perform camera capture, animated QR reconstruction, review output on real

@@ -63,6 +63,7 @@ def validate_firmware_project(project: Path) -> None:
         "t_display_s3_display.cpp",
         "t_display_s3_raster.cpp",
         "t_display_s3_review_state.cpp",
+        "t_display_s3_status_frames.cpp",
         "approval_gate.cpp",
         "device_protocol.cpp",
         "qr_envelope.cpp",

@@ -253,12 +253,16 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         display_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.cpp"
         raster_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.hpp"
         raster_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp"
+        status_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.hpp"
+        status_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp"
         main_path = ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp"
 
         display_header = display_header_path.read_text(encoding="utf-8")
         display_source = display_source_path.read_text(encoding="utf-8")
         raster_header = raster_header_path.read_text(encoding="utf-8")
         raster_source = raster_source_path.read_text(encoding="utf-8")
+        status_header = status_header_path.read_text(encoding="utf-8")
+        status_source = status_source_path.read_text(encoding="utf-8")
         main = main_path.read_text(encoding="utf-8")
 
         self.assertIn("t_display_s3_raster.hpp", display_header)
@@ -290,10 +294,12 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("review_frame", main)
         self.assertIn("t_display_s3_review_limits", main)
         self.assertIn("draw_t_display_s3_review_frame", main)
-        self.assertIn("build_display_ready_frame", main)
-        self.assertIn('frame.page_indicator = "No request"', main)
-        self.assertIn('"Send sign_event"', main)
-        self.assertIn('frame.action_hint = "Waiting"', main)
+        self.assertIn("t_display_s3_status_frames.hpp", main)
+        self.assertIn("build_t_display_s3_ready_frame", main)
+        self.assertIn("build_t_display_s3_ready_frame", status_header)
+        self.assertIn('frame.page_indicator = "No request"', status_source)
+        self.assertIn('"Send sign_event"', status_source)
+        self.assertIn('frame.action_hint = "Waiting"', status_source)
         self.assertNotIn("Content: display test", main)
         self.assertIn("case '_'", raster_source)
         self.assertIn("Signing is disabled", main)
@@ -434,40 +440,49 @@ class FirmwareProjectValidationTests(unittest.TestCase):
 
     def test_t_display_s3_firmware_displays_terminal_review_decisions_without_signing(self) -> None:
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+        status_source = (
+            ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("build_review_decision_frame", main)
-        self.assertIn('frame.title = approved ? "Review OK" : "Rejected"', main)
-        self.assertIn('frame.page_indicator = "Closed"', main)
-        self.assertIn('"Not signed"', main)
-        self.assertIn('"Signing disabled"', main)
-        self.assertIn('"Send new request"', main)
-        self.assertIn("build_review_decision_frame(decision.value())", main)
+        self.assertIn("build_t_display_s3_review_decision_frame", main)
+        self.assertIn('frame.title = approved ? "Review OK" : "Rejected"', status_source)
+        self.assertIn('frame.page_indicator = "Closed"', status_source)
+        self.assertIn('"Not signed"', status_source)
+        self.assertIn('"Signing disabled"', status_source)
+        self.assertIn('"Send new request"', status_source)
+        self.assertIn("build_t_display_s3_review_decision_frame(decision.value())", main)
         self.assertIn("clear_active_review(active_review)", main)
 
     def test_t_display_s3_firmware_closes_review_on_rejected_serial_requests(self) -> None:
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+        status_source = (
+            ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("build_request_error_frame", main)
-        self.assertIn('frame.title = "Request Error"', main)
-        self.assertIn('frame.page_indicator = "Rejected"', main)
+        self.assertIn("build_t_display_s3_request_error_frame", main)
+        self.assertIn('frame.title = "Request Error"', status_source)
+        self.assertIn('frame.page_indicator = "Rejected"', status_source)
         self.assertIn("response_frame_is_error", main)
         self.assertIn("decode_serial_frame(response_frame)", main)
-        self.assertIn("display_review_frame(display, build_request_error_frame())", main)
+        self.assertIn("display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame())", main)
         self.assertIn("clear_active_review(active_review)", main)
 
     def test_t_display_s3_firmware_expires_stale_review_sessions_without_signing(self) -> None:
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+        status_source = (
+            ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp"
+        ).read_text(encoding="utf-8")
 
         self.assertIn("kActiveReviewSessionTimeoutTicks", main)
         self.assertIn("ActiveReviewState", main)
-        self.assertIn("build_review_timeout_frame", main)
-        self.assertIn('frame.title = "Review Timeout"', main)
-        self.assertIn('frame.page_indicator = "Expired"', main)
+        self.assertIn("build_t_display_s3_review_timeout_frame", main)
+        self.assertIn('frame.title = "Review Timeout"', status_source)
+        self.assertIn('frame.page_indicator = "Expired"', status_source)
         self.assertIn("expire_active_review_if_needed", main)
         self.assertIn("active_review_expired", main)
         self.assertIn("xTaskGetTickCount()", main)
         self.assertIn("active_review.session.reset()", main)
-        self.assertIn("Signing disabled", main)
+        self.assertIn("Signing disabled", status_source)
 
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)

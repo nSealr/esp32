@@ -20,6 +20,7 @@
 #include "nostrseal/trusted_review.hpp"
 #include "t_display_s3_button_logic.hpp"
 #include "t_display_s3_raster.hpp"
+#include "t_display_s3_status_frames.hpp"
 #include "transport_vector.hpp"
 
 namespace {
@@ -1151,6 +1152,48 @@ void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses(
     assert(long_press->long_press);
 }
 
+void test_t_display_s3_status_frames_keep_non_signing_copy_stable() {
+    const nostrseal::ReviewDisplayFrame ready = nostrseal_esp32::build_t_display_s3_ready_frame();
+    assert(ready.title == "Ready");
+    assert(ready.page_indicator == "No request");
+    assert(ready.body_lines == std::vector<std::string>({
+                                   "USB signer",
+                                   "Send sign_event",
+                                   "Signing disabled",
+                               }));
+    assert(ready.action_hint == "Waiting");
+
+    const nostrseal::ReviewDisplayFrame approved =
+        nostrseal_esp32::build_t_display_s3_review_decision_frame(true);
+    assert(approved.title == "Review OK");
+    assert(approved.page_indicator == "Closed");
+    assert(approved.body_lines == std::vector<std::string>({
+                                      "Not signed",
+                                      "Signing disabled",
+                                      "Send new request",
+                                  }));
+    assert(approved.action_hint == "Waiting");
+
+    const nostrseal::ReviewDisplayFrame rejected =
+        nostrseal_esp32::build_t_display_s3_review_decision_frame(false);
+    assert(rejected.title == "Rejected");
+    assert(rejected.page_indicator == "Closed");
+    assert(rejected.body_lines == approved.body_lines);
+    assert(rejected.action_hint == "Waiting");
+
+    const nostrseal::ReviewDisplayFrame timeout = nostrseal_esp32::build_t_display_s3_review_timeout_frame();
+    assert(timeout.title == "Review Timeout");
+    assert(timeout.page_indicator == "Expired");
+    assert(timeout.body_lines == approved.body_lines);
+    assert(timeout.action_hint == "Waiting");
+
+    const nostrseal::ReviewDisplayFrame error = nostrseal_esp32::build_t_display_s3_request_error_frame();
+    assert(error.title == "Request Error");
+    assert(error.page_indicator == "Rejected");
+    assert(error.body_lines == approved.body_lines);
+    assert(error.action_hint == "Waiting");
+}
+
 }  // namespace
 
 int main() {
@@ -1208,6 +1251,7 @@ int main() {
     test_device_protocol_rejects_invalid_sign_event_request_shape();
     test_t_display_s3_raster_has_stable_boot_and_review_pixels();
     test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses();
+    test_t_display_s3_status_frames_keep_non_signing_copy_stable();
     std::cout << "host core tests passed\n";
     return 0;
 }

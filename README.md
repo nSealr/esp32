@@ -119,6 +119,10 @@ board into a separate repository.
 - Host-buildable T-Display S3 button logic tests cover debounce filtering,
   short-press classification, long-press classification, and the GPIO0/GPIO14
   review-button mapping used by the ESP-IDF GPIO polling adapter.
+- Host-buildable T-Display S3 status-frame tests cover the non-signing Ready,
+  approve/reject-closed, timeout, and request-error frames shown by the runtime
+  display loop, keeping user-visible safety copy out of untested `main.cpp`
+  branches.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
