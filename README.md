@@ -87,8 +87,8 @@ board into a separate repository.
   that model the future display/button approval loop without enabling signing.
 - Host-buildable signing-readiness policy that keeps runtime signing disabled
   until parser limits, trusted display, physical controls, approval-digest
-  binding, key provisioning, secure boot, debug lock, companion verification,
-  and an explicit runtime feature flag are all present.
+  binding, key provisioning, secure boot, flash encryption, debug lock,
+  companion verification, and an explicit runtime feature flag are all present.
 - Machine-readable ESP32-S3 USB signer security profile that records the
   current development-only hardening state and production blockers before any
   persistent-secret or real-signing path can be claimed.

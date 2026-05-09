@@ -43,7 +43,7 @@ tests with strict C++ warnings.
 - Signing-policy tests proving runtime signing remains disabled until every M8
   gate is present: runtime feature flag, parser limits, trusted display,
   physical controls, approval-digest binding, key provisioning, secure boot,
-  debug lock, and companion signed-output verification.
+  flash encryption, debug lock, and companion signed-output verification.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, trusted display, physical controls,

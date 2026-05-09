@@ -889,6 +889,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
                                                "approval_digest_binding",
                                                "key_provisioning",
                                                "secure_boot",
+                                               "flash_encryption",
                                                "debug_lock",
                                                "companion_signed_output_verification",
                                            }));
@@ -901,6 +902,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
         .approval_digest_binding_verified = true,
         .key_provisioning_ready = true,
         .secure_boot_enabled = true,
+        .flash_encryption_enabled = true,
         .debug_locked = true,
         .companion_signed_output_verification_ready = true,
     };

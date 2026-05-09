@@ -25,6 +25,9 @@ SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readin
     if (!readiness.secure_boot_enabled) {
         status.missing_gates.push_back("secure_boot");
     }
+    if (!readiness.flash_encryption_enabled) {
+        status.missing_gates.push_back("flash_encryption");
+    }
     if (!readiness.debug_locked) {
         status.missing_gates.push_back("debug_lock");
     }

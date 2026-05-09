@@ -69,8 +69,8 @@ The first firmware foundation is host-buildable C++ under
 - `signing_policy`: host-buildable runtime-signing readiness gate. It requires
   the explicit runtime feature flag, parser limits, trusted display acceptance,
   physical approval controls, approval-digest binding, key provisioning, secure
-  boot, debug lock, and companion signed-output verification before firmware
-  can be considered ready to connect a signing backend.
+  boot, flash encryption, debug lock, and companion signed-output verification
+  before firmware can be considered ready to connect a signing backend.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
 - `review_controls`: page-by-page review button state machine for future

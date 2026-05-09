@@ -13,6 +13,7 @@ struct SigningReadiness {
     bool approval_digest_binding_verified = false;
     bool key_provisioning_ready = false;
     bool secure_boot_enabled = false;
+    bool flash_encryption_enabled = false;
     bool debug_locked = false;
     bool companion_signed_output_verification_ready = false;
 };

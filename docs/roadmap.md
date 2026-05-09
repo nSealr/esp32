@@ -69,8 +69,8 @@
   display rendering.
 - Host-buildable runtime signing-readiness gate covering runtime feature flag,
   parser limits, trusted display acceptance, physical controls,
-  approval-digest binding, key provisioning, secure boot, debug lock, and
-  companion signed-output verification.
+  approval-digest binding, key provisioning, secure boot, flash encryption,
+  debug lock, and companion signed-output verification.
 - Machine-readable development security profile for the ESP32-S3 USB signer,
   explicitly blocking production signing until runtime signing, trusted
   display, physical controls, key provisioning, secure boot, flash encryption,
@@ -317,9 +317,9 @@ content. This does not alter protocol responses and does not enable signing.
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing
 runtime feature, parser limits, trusted display, physical controls,
-approval-digest binding, key provisioning, secure boot, debug lock, and
-companion signed-output verification gates. This compiles into the ESP-IDF
-component but does not enable signing.
+approval-digest binding, key provisioning, secure boot, flash encryption, debug
+lock, and companion signed-output verification gates. This compiles into the
+ESP-IDF component but does not enable signing.
 
 Status note, 2026-05-08: the ESP32-S3 USB signer scaffold now includes a
 validated `security_profile.json`. The v0 profile is `development_scaffold`,
