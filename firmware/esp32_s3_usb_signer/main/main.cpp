@@ -20,6 +20,12 @@
 
 namespace {
 constexpr const char* kTag = "nostrseal";
+constexpr TickType_t kActiveReviewSessionTimeoutTicks = pdMS_TO_TICKS(5 * 60 * 1000);
+
+struct ActiveReviewState {
+    std::optional<nostrseal::TrustedReviewSession> session;
+    TickType_t last_activity_tick = 0;
+};
 
 void write_transport_error(const char* payload_base64url) {
     const std::string response = nostrseal::encode_serial_frame(
@@ -40,10 +46,11 @@ void display_review_frame(
 void display_sign_event_review_preview(
     nostrseal_esp32::TDisplayS3Display& display,
     nostrseal::SerialFrameHandlingResult& result,
-    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    ActiveReviewState& active_review) {
     if (result.review_session.has_value()) {
-        active_review_session = std::move(result.review_session);
-        display_review_frame(display, active_review_session->current_frame());
+        active_review.session = std::move(result.review_session);
+        active_review.last_activity_tick = xTaskGetTickCount();
+        display_review_frame(display, active_review.session->current_frame());
         return;
     }
     if (result.review_frame.has_value()) {
@@ -55,6 +62,19 @@ nostrseal::ReviewDisplayFrame build_review_decision_frame(bool approved) {
     nostrseal::ReviewDisplayFrame frame;
     frame.title = approved ? "Review OK" : "Rejected";
     frame.page_indicator = "Closed";
+    frame.body_lines = std::vector<std::string>{
+        "Not signed",
+        "Signing disabled",
+        "Send new request",
+    };
+    frame.action_hint = "Waiting";
+    return frame;
+}
+
+nostrseal::ReviewDisplayFrame build_review_timeout_frame() {
+    nostrseal::ReviewDisplayFrame frame;
+    frame.title = "Review Timeout";
+    frame.page_indicator = "Expired";
     frame.body_lines = std::vector<std::string>{
         "Not signed",
         "Signing disabled",
@@ -81,57 +101,79 @@ bool response_frame_is_error(const std::string& response_frame) {
     return nostrseal::decode_serial_frame(response_frame).type == nostrseal::FrameType::Error;
 }
 
-void process_review_button(
+void clear_active_review(ActiveReviewState& active_review) {
+    active_review.session.reset();
+    active_review.last_activity_tick = 0;
+}
+
+bool active_review_expired(const ActiveReviewState& active_review, TickType_t now_tick) {
+    return active_review.session.has_value() &&
+           (now_tick - active_review.last_activity_tick) >= kActiveReviewSessionTimeoutTicks;
+}
+
+void expire_active_review_if_needed(
     nostrseal_esp32::TDisplayS3Display& display,
-    std::optional<nostrseal::TrustedReviewSession>& active_review_session,
-    nostrseal::ReviewButton button) {
-    if (!active_review_session.has_value()) {
+    ActiveReviewState& active_review) {
+    if (!active_review_expired(active_review, xTaskGetTickCount())) {
         return;
     }
+    active_review.session.reset();
+    active_review.last_activity_tick = 0;
+    display_review_frame(display, build_review_timeout_frame());
+}
+
+void process_review_button(
+    nostrseal_esp32::TDisplayS3Display& display,
+    ActiveReviewState& active_review,
+    nostrseal::ReviewButton button) {
+    if (!active_review.session.has_value()) {
+        return;
+    }
+    active_review.last_activity_tick = xTaskGetTickCount();
     try {
-        const std::optional<bool> decision = active_review_session->handle_button(button);
+        const std::optional<bool> decision = active_review.session->handle_button(button);
         if (decision.has_value()) {
             display_review_frame(display, build_review_decision_frame(decision.value()));
             ESP_LOGW(kTag, "Review decision recorded. Signing remains disabled in this scaffold.");
-            active_review_session.reset();
+            clear_active_review(active_review);
             return;
         }
-        display_review_frame(display, active_review_session->current_frame());
+        display_review_frame(display, active_review.session->current_frame());
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected review button input: %s", exc.what());
-        display_review_frame(display, active_review_session->current_frame());
+        display_review_frame(display, active_review.session->current_frame());
     }
 }
 
 void poll_review_buttons(
     nostrseal_esp32::TDisplayS3Display& display,
     nostrseal_esp32::TDisplayS3Buttons& buttons,
-    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    ActiveReviewState& active_review) {
     const std::optional<nostrseal::ReviewButton> button =
         nostrseal_esp32::poll_t_display_s3_review_button(buttons);
     if (button.has_value()) {
-        process_review_button(display, active_review_session, button.value());
+        process_review_button(display, active_review, button.value());
     }
 }
 
 void process_frame_line(
     const std::string& line,
     nostrseal_esp32::TDisplayS3Display& display,
-    std::optional<nostrseal::TrustedReviewSession>& active_review_session) {
+    ActiveReviewState& active_review) {
     try {
         nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
             line,
             nostrseal_esp32::t_display_s3_review_limits());
-        display_sign_event_review_preview(display, result, active_review_session);
+        display_sign_event_review_preview(display, result, active_review);
         if (response_frame_is_error(result.response_frame)) {
-            active_review_session.reset();
+            clear_active_review(active_review);
             display_review_frame(display, build_request_error_frame());
         }
         std::printf("%s", result.response_frame.c_str());
         std::fflush(stdout);
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected serial frame: %s", exc.what());
-        active_review_session.reset();
+        clear_active_review(active_review);
         display_review_frame(display, build_request_error_frame());
         write_transport_error("eyJlcnJvciI6Im1hbGZvcm1lZF9mcmFtZSJ9");
     }
@@ -183,10 +225,11 @@ extern "C" void app_main(void) {
 
     std::string line;
     line.reserve(512);
-    std::optional<nostrseal::TrustedReviewSession> active_review_session;
+    ActiveReviewState active_review;
 
     while (true) {
-        poll_review_buttons(display, buttons, active_review_session);
+        expire_active_review_if_needed(display, active_review);
+        poll_review_buttons(display, buttons, active_review);
         const int ch = std::getchar();
         if (ch == EOF) {
             vTaskDelay(pdMS_TO_TICKS(10));
@@ -199,13 +242,13 @@ extern "C" void app_main(void) {
         if (line.size() > nostrseal::kMaxSerialFrameBytes) {
             ESP_LOGW(kTag, "Rejected overlong serial frame");
             line.clear();
-            active_review_session.reset();
+            clear_active_review(active_review);
             display_review_frame(display, build_request_error_frame());
             write_transport_error("eyJlcnJvciI6Im92ZXJsb25nX2ZyYW1lIn0");
             continue;
         }
         if (ch == '\n') {
-            process_frame_line(line, display, active_review_session);
+            process_frame_line(line, display, active_review);
             line.clear();
         }
     }

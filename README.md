@@ -111,7 +111,8 @@ board into a separate repository.
   `sign_event` request. Short GPIO14 moves Next, short GPIO0 moves Back, long
   GPIO14 maps Approve, and long GPIO0 maps Reject. The runtime still returns
   `signing_disabled`, shows a terminal non-signing review screen after
-  approve/reject, and never signs.
+  approve/reject, expires stale active review sessions into a terminal
+  non-signing timeout frame, and never signs.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
@@ -126,6 +127,9 @@ two onboard physical buttons for local review navigation, shows closed review
 decisions as `Not signed`, clears active review state on rejected serial
 requests, and keeps real signing disabled until storage, production hardening,
 and signing tests are implemented.
+An active T-Display S3 review session is RAM-only and expires after five
+minutes of inactivity; expiry clears the session and shows `Review Timeout` /
+`Expired` / `Not signed` rather than leaving stale event content on screen.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen

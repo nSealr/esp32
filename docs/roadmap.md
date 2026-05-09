@@ -308,6 +308,12 @@ remaining on screen after malformed, oversized, or unsupported host input. The
 serial protocol still returns deterministic error frames and signing remains
 disabled.
 
+Status note, 2026-05-09: active T-Display S3 review sessions now have a
+five-minute inactivity timeout. Expiry clears the RAM-only review state and
+renders `Review Timeout` / `Expired` / `Not signed` / `Signing disabled`, so a
+forgotten review cannot remain indefinitely as actionable-looking event
+content. This does not alter protocol responses and does not enable signing.
+
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing
 runtime feature, parser limits, trusted display, physical controls,

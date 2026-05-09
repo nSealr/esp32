@@ -339,7 +339,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("t_display_s3_buttons.hpp", main)
         self.assertIn("initialize_t_display_s3_buttons", main)
         self.assertIn("poll_t_display_s3_review_button", main)
-        self.assertIn("active_review_session", main)
+        self.assertIn("ActiveReviewState active_review", main)
         self.assertIn("Signing remains disabled", main)
 
     def test_t_display_s3_firmware_displays_terminal_review_decisions_without_signing(self) -> None:
@@ -352,7 +352,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn('"Signing disabled"', main)
         self.assertIn('"Send new request"', main)
         self.assertIn("build_review_decision_frame(decision.value())", main)
-        self.assertIn("active_review_session.reset()", main)
+        self.assertIn("clear_active_review(active_review)", main)
 
     def test_t_display_s3_firmware_closes_review_on_rejected_serial_requests(self) -> None:
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
@@ -363,7 +363,21 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("response_frame_is_error", main)
         self.assertIn("decode_serial_frame(response_frame)", main)
         self.assertIn("display_review_frame(display, build_request_error_frame())", main)
-        self.assertIn("active_review_session.reset()", main)
+        self.assertIn("clear_active_review(active_review)", main)
+
+    def test_t_display_s3_firmware_expires_stale_review_sessions_without_signing(self) -> None:
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("kActiveReviewSessionTimeoutTicks", main)
+        self.assertIn("ActiveReviewState", main)
+        self.assertIn("build_review_timeout_frame", main)
+        self.assertIn('frame.title = "Review Timeout"', main)
+        self.assertIn('frame.page_indicator = "Expired"', main)
+        self.assertIn("expire_active_review_if_needed", main)
+        self.assertIn("active_review_expired", main)
+        self.assertIn("xTaskGetTickCount()", main)
+        self.assertIn("active_review.session.reset()", main)
+        self.assertIn("Signing disabled", main)
 
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
