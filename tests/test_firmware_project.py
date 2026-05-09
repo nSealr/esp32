@@ -275,6 +275,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("nostrseal/review_display.hpp", main)
         self.assertIn("handle_serial_frame_with_review_preview", main)
         self.assertIn("display_sign_event_review_preview", main)
+        self.assertIn("review_frame", main)
         self.assertIn("render_review_page", main)
         self.assertIn("t_display_s3_review_limits", main)
         self.assertIn("draw_t_display_s3_review_frame", main)

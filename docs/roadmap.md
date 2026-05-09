@@ -274,6 +274,14 @@ button input advances the review session, and the resulting frame/button
 transcript is returned for future adapter acceptance tests. No signing backend
 is connected.
 
+Status note, 2026-05-09: the review-control state machine now supports explicit
+backward navigation before a terminal decision. Host-core tests cover `Next`,
+`Back`, early `Reject`, and final-page `Approve` behavior, including the rule
+that returning to prior pages never enables `can_sign`. The live T-Display S3
+runtime still paints only the first request-derived review page and returns
+`signing_disabled`; physical button mapping and an interactive GPIO/display
+loop remain M8 blockers.
+
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing
 runtime feature, parser limits, trusted display, physical controls,

@@ -78,16 +78,16 @@ tests with strict C++ warnings.
 - Approval gate tests requiring request-id and shared review-screen
   approval-digest matched approval before signing is permitted.
 - Review button state-machine tests requiring traversal to the final review page
-  before approval, allowing early rejection, and rejecting additional input after
-  a terminal decision.
+  before approval, allowing backward navigation during review, allowing early
+  rejection, and rejecting additional input after a terminal decision.
 - Review display-frame tests requiring deterministic title, page indicator,
   body lines, action hints, body-line wrapping/truncation, and rejection of
   unsafe display bounds.
-- Trusted review-session tests requiring display navigation, final-page
-  approval, request/digest-bound `can_sign`, and rejection as a terminal
-  non-signing decision. These tests consume generated trusted review requests
-  from the shared review-screen vectors instead of duplicating page content by
-  hand.
+- Trusted review-session tests requiring display navigation, backward review,
+  final-page approval, request/digest-bound `can_sign`, and rejection as a
+  terminal non-signing decision. These tests consume generated trusted review
+  requests from the shared review-screen vectors instead of duplicating page
+  content by hand.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

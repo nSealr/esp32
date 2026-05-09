@@ -38,6 +38,13 @@ std::optional<bool> ReviewControlSession::handle_button(ReviewButton button) {
         return std::nullopt;
     }
 
+    if (button == ReviewButton::Back) {
+        if (current_page_index_ > 0) {
+            --current_page_index_;
+        }
+        return std::nullopt;
+    }
+
     if (button == ReviewButton::Reject) {
         rejected_ = true;
         return false;

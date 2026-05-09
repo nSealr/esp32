@@ -605,6 +605,30 @@ void test_review_controls_require_page_traversal_before_approval() {
     assert(!session.rejected());
 }
 
+void test_review_controls_allow_backward_navigation_before_terminal_decision() {
+    nostrseal::ReviewControlSession session{4};
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_page_index() == 2);
+    assert(!session.can_approve());
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
+    assert(session.current_page_index() == 1);
+    assert(!session.can_approve());
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
+    assert(session.current_page_index() == 0);
+    assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
+    assert(session.current_page_index() == 0);
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_page_index() == 3);
+    assert(session.can_approve());
+}
+
 void test_review_controls_allow_early_rejection() {
     nostrseal::ReviewControlSession session{4};
 
@@ -787,6 +811,28 @@ void test_trusted_review_session_keeps_rejection_terminal() {
     assert(!rejection.value());
     assert(!session.can_sign());
     assert(session.decision() == nostrseal::ApprovalDecision::Rejected);
+}
+
+void test_trusted_review_session_allows_backward_review_before_approval() {
+    nostrseal::TrustedReviewSession session{nostrseal::test_vectors::basic_trusted_review_request()};
+
+    assert(session.current_frame().title == "Event");
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Content");
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Tags");
+    assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
+    assert(session.current_frame().title == "Content");
+    assert(!session.can_sign());
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Decision");
+
+    const auto approval = session.handle_button(nostrseal::ReviewButton::Approve);
+    assert(approval.has_value());
+    assert(approval.value());
+    assert(session.can_sign());
 }
 
 void test_serial_sign_event_review_matches_shared_review_contract() {
@@ -1002,6 +1048,7 @@ int main() {
     test_qr_review_io_flow_requires_nonzero_step_limit();
     test_approval_gate_requires_matching_approval();
     test_review_controls_require_page_traversal_before_approval();
+    test_review_controls_allow_backward_navigation_before_terminal_decision();
     test_review_controls_allow_early_rejection();
     test_review_controls_are_terminal_after_decision();
     test_review_display_renders_navigation_frame();
@@ -1011,6 +1058,7 @@ int main() {
     test_review_display_rejects_unsafe_frame_bounds();
     test_trusted_review_session_binds_display_navigation_and_approval();
     test_trusted_review_session_keeps_rejection_terminal();
+    test_trusted_review_session_allows_backward_review_before_approval();
     test_serial_sign_event_review_matches_shared_review_contract();
     test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
     test_signing_policy_requires_every_runtime_gate_before_enablement();

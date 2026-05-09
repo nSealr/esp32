@@ -7,6 +7,7 @@ namespace nostrseal {
 
 enum class ReviewButton {
     Next,
+    Back,
     Approve,
     Reject,
 };
