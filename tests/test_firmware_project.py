@@ -834,6 +834,41 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("pubkey", invalid_request["params"]["event_template"])
         self.assertEqual(invalid_response, {"error": "unsupported_request"})
 
+    def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="button-approve",
+            request_id="manual-approve-test",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("button-approve")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-approve-test")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertIn("short KEY/GPIO14 three times to reach the final page", checklist)
+        self.assertIn("long KEY/GPIO14 to approve", checklist)
+        self.assertIn("Review OK / Closed / Not signed / Signing disabled", checklist)
+
+    def test_manual_review_display_builds_button_rejection_acceptance_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="button-reject",
+            request_id="manual-reject-test",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("button-reject")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-reject-test")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertIn("long BOOT/GPIO0 to reject", checklist)
+        self.assertIn("Rejected / Closed / Not signed / Signing disabled", checklist)
+
     def test_manual_review_display_runs_exchanges_with_fake_serial_device(self) -> None:
         responses = [
             "nseal1f:response:manual:1111111111111111\n",

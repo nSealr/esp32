@@ -275,6 +275,14 @@ by the ESP-IDF runtime. Host-core tests pin the non-signing copy for
 states can be reviewed before flashing. This changes only UI construction;
 runtime signing remains disabled.
 
+Status note, 2026-05-09: `scripts/manual_review_display.py` now includes
+`button-approve` and `button-reject` scenarios. They send a valid disabled
+`sign_event` review request and print the physical-control checklist for a
+human observer: short KEY/GPIO14 page traversal, long KEY/GPIO14 approve, and
+long BOOT/GPIO0 reject. This makes manual display/button acceptance runs more
+repeatable, but it still does not turn physical input into signing
+authorization.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

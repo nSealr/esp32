@@ -198,6 +198,14 @@ followed by an invalid signing-request vector:
 python3 scripts/manual_review_display.py show-request-error --port /dev/cu.<device>
 ```
 
+To exercise the physical-control acceptance path with a human observer, send a
+valid review request and follow the printed checklist:
+
+```sh
+python3 scripts/manual_review_display.py button-approve --port /dev/cu.<device>
+python3 scripts/manual_review_display.py button-reject --port /dev/cu.<device>
+```
+
 These helpers are manual display bring-up tools. They do not approve requests,
 do not persist keys, and still expect the serial protocol to return
 `signing_disabled` for valid `sign_event` requests.

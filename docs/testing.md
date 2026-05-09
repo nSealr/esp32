@@ -151,6 +151,7 @@ tests with strict C++ warnings.
 - Manual T-Display S3 display exerciser tests proving
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
   exchanges, composes the request-error scenario from shared invalid vectors,
+  prints physical-control checklists for approve/reject acceptance scenarios,
   and runs exchanges through a fake serial device without opening hardware.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the

@@ -23,6 +23,12 @@ except ImportError:  # pragma: no cover - used when executed as scripts/foo.py
 DEFAULT_REVIEW_REQUEST_ID = "manual-review-display"
 DEFAULT_TIMEOUT = 5.0
 DEFAULT_BAUDRATE = 115200
+MANUAL_REVIEW_SCENARIOS = (
+    "show-review",
+    "show-request-error",
+    "button-approve",
+    "button-reject",
+)
 
 
 def _expected_unsupported_request_frame() -> str:
@@ -71,7 +77,7 @@ def build_manual_review_exchanges(
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
 ) -> list[tuple[str, str]]:
     review_exchange = build_display_review_exchange(request_id=request_id, specs_dir=specs_dir)
-    if scenario == "show-review":
+    if scenario in {"show-review", "button-approve", "button-reject"}:
         return [review_exchange]
     if scenario == "show-request-error":
         return [
@@ -79,6 +85,40 @@ def build_manual_review_exchanges(
             build_request_error_exchange(request_id=f"{request_id}-invalid", specs_dir=specs_dir),
         ]
     raise ValueError(f"unsupported manual review scenario: {scenario}")
+
+
+def build_manual_observation_checklist(scenario: str) -> str:
+    common = [
+        "Confirm the display starts on Event / Page 1/4.",
+        "Confirm real signing remains disabled in the serial response.",
+    ]
+    if scenario == "show-review":
+        lines = [
+            *common,
+            "Inspect the review page text for readable kind, type, and created_at fields.",
+        ]
+    elif scenario == "show-request-error":
+        lines = [
+            *common,
+            "Confirm the invalid request clears the active review.",
+            "Expected final display: Request Error / Rejected / Not signed / Signing disabled.",
+        ]
+    elif scenario == "button-approve":
+        lines = [
+            *common,
+            "Press short KEY/GPIO14 three times to reach the final page.",
+            "Press long KEY/GPIO14 to approve.",
+            "Expected final display: Review OK / Closed / Not signed / Signing disabled.",
+        ]
+    elif scenario == "button-reject":
+        lines = [
+            *common,
+            "Press long BOOT/GPIO0 to reject.",
+            "Expected final display: Rejected / Closed / Not signed / Signing disabled.",
+        ]
+    else:
+        raise ValueError(f"unsupported manual review scenario: {scenario}")
+    return "\n".join(f"- {line}" for line in lines)
 
 
 def run_manual_review_exchanges(
@@ -116,10 +156,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "scenario",
-        choices=("show-review", "show-request-error"),
+        choices=MANUAL_REVIEW_SCENARIOS,
         help=(
             "show-review leaves a valid sign_event review on the display; "
-            "show-request-error first shows that review and then sends an invalid request"
+            "show-request-error first shows that review and then sends an invalid request; "
+            "button-approve and button-reject print physical-control acceptance steps"
         ),
     )
     parser.add_argument("--port", default="/dev/cu.usbmodem1101")
@@ -142,6 +183,8 @@ def main() -> int:
     print(f"manual display scenario: {args.scenario}")
     print(f"request id: {args.request_id}")
     print("real signing expected: disabled")
+    print("manual observation checklist:")
+    print(build_manual_observation_checklist(args.scenario))
     return 0
 
 
