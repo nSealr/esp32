@@ -1,6 +1,7 @@
 import base64
 import json
 import shutil
+import time
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -353,6 +354,17 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("build_review_decision_frame(decision.value())", main)
         self.assertIn("active_review_session.reset()", main)
 
+    def test_t_display_s3_firmware_closes_review_on_rejected_serial_requests(self) -> None:
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("build_request_error_frame", main)
+        self.assertIn('frame.title = "Request Error"', main)
+        self.assertIn('frame.page_indicator = "Rejected"', main)
+        self.assertIn("response_frame_is_error", main)
+        self.assertIn("decode_serial_frame(response_frame)", main)
+        self.assertIn("display_review_frame(display, build_request_error_frame())", main)
+        self.assertIn("active_review_session.reset()", main)
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 
@@ -612,6 +624,46 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertIn("response frames: 1", summary)
         self.assertIn("expected rejection frames: 2", summary)
         self.assertNotIn("nseal1f:error", summary)
+
+    def test_smoke_script_applies_timeout_per_exchange(self) -> None:
+        responses = [
+            "nseal1f:response:first:1111111111111111\n",
+            "nseal1f:error:second:2222222222222222\n",
+            "nseal1f:response:third:3333333333333333\n",
+        ]
+
+        class SlowExchangeDevice:
+            def __init__(self) -> None:
+                self._responses = list(responses)
+                self._pending = ""
+                self._empty_reads_remaining = 0
+
+            def write(self, request: bytes) -> None:
+                self.assert_request = request
+                self._pending = self._responses.pop(0)
+                self._empty_reads_remaining = 1
+
+            def flush(self) -> None:
+                return None
+
+            def read(self, _size: int) -> bytes:
+                if self._empty_reads_remaining > 0:
+                    self._empty_reads_remaining -= 1
+                    time.sleep(0.04)
+                    return b""
+                return self._pending.encode("ascii")
+
+        frames = smoke_capabilities.run_serial_exchanges(
+            SlowExchangeDevice(),
+            [
+                ("request-1\n", responses[0]),
+                ("request-2\n", responses[1]),
+                ("request-3\n", responses[2]),
+            ],
+            timeout=0.07,
+        )
+
+        self.assertEqual(frames, responses)
 
 
 if __name__ == "__main__":

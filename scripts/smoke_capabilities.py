@@ -176,13 +176,21 @@ def format_smoke_summary(frames: list[str]) -> str:
     )
 
 
+def run_serial_exchanges(device: object, exchanges: list[tuple[str, str]], timeout: float) -> list[str]:
+    responses: list[str] = []
+    for request_frame, expected_response_frame in exchanges:
+        device.write(request_frame.encode("ascii"))
+        device.flush()
+        responses.append(read_expected_frame(device, expected_response_frame, time.monotonic() + timeout))
+    return responses
+
+
 def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAULT_SPECS) -> list[str]:
     try:
         import serial  # type: ignore[import-not-found]
     except ImportError as exc:
         raise RuntimeError("pyserial is required; export ESP-IDF before running this smoke test") from exc
 
-    deadline = time.monotonic() + timeout
     exchanges = [
         load_capability_frames(specs_dir),
         load_public_key_frames(specs_dir),
@@ -191,16 +199,10 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
         *load_invalid_metadata_frames(specs_dir),
         *load_invalid_signing_request_frames(specs_dir),
     ]
-    responses: list[str] = []
 
     with serial.Serial(port, baudrate=baudrate, timeout=0.1) as device:
         device.reset_input_buffer()
-        for request_frame, expected_response_frame in exchanges:
-            device.write(request_frame.encode("ascii"))
-            device.flush()
-            responses.append(read_expected_frame(device, expected_response_frame, deadline))
-
-    return responses
+        return run_serial_exchanges(device, exchanges, timeout)
 
 
 def main() -> int:

@@ -301,6 +301,13 @@ screen. Approve shows `Review OK`, Reject shows `Rejected`, both show
 cleared. This is still UI feedback only; it does not change serial responses or
 enable a signing backend.
 
+Status note, 2026-05-09: rejected serial requests now also close any active
+T-Display S3 review session and render an explicit `Request Error` /
+`Rejected` / `Not signed` frame. This prevents stale review pages from
+remaining on screen after malformed, oversized, or unsupported host input. The
+serial protocol still returns deterministic error frames and signing remains
+disabled.
+
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing
 runtime feature, parser limits, trusted display, physical controls,

@@ -123,8 +123,9 @@ The current firmware is still a scaffold. It logs startup, answers
 valid `sign_event` requests, initializes the T-Display S3 display only far
 enough to draw a Ready/No request frame and live trusted-review pages, polls the
 two onboard physical buttons for local review navigation, shows closed review
-decisions as `Not signed`, and keeps real signing disabled until storage,
-production hardening, and signing tests are implemented.
+decisions as `Not signed`, clears active review state on rejected serial
+requests, and keeps real signing disabled until storage, production hardening,
+and signing tests are implemented.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen

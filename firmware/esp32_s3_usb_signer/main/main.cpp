@@ -64,6 +64,23 @@ nostrseal::ReviewDisplayFrame build_review_decision_frame(bool approved) {
     return frame;
 }
 
+nostrseal::ReviewDisplayFrame build_request_error_frame() {
+    nostrseal::ReviewDisplayFrame frame;
+    frame.title = "Request Error";
+    frame.page_indicator = "Rejected";
+    frame.body_lines = std::vector<std::string>{
+        "Not signed",
+        "Signing disabled",
+        "Send new request",
+    };
+    frame.action_hint = "Waiting";
+    return frame;
+}
+
+bool response_frame_is_error(const std::string& response_frame) {
+    return nostrseal::decode_serial_frame(response_frame).type == nostrseal::FrameType::Error;
+}
+
 void process_review_button(
     nostrseal_esp32::TDisplayS3Display& display,
     std::optional<nostrseal::TrustedReviewSession>& active_review_session,
@@ -106,10 +123,16 @@ void process_frame_line(
             line,
             nostrseal_esp32::t_display_s3_review_limits());
         display_sign_event_review_preview(display, result, active_review_session);
+        if (response_frame_is_error(result.response_frame)) {
+            active_review_session.reset();
+            display_review_frame(display, build_request_error_frame());
+        }
         std::printf("%s", result.response_frame.c_str());
         std::fflush(stdout);
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected serial frame: %s", exc.what());
+        active_review_session.reset();
+        display_review_frame(display, build_request_error_frame());
         write_transport_error("eyJlcnJvciI6Im1hbGZvcm1lZF9mcmFtZSJ9");
     }
 }
@@ -176,6 +199,8 @@ extern "C" void app_main(void) {
         if (line.size() > nostrseal::kMaxSerialFrameBytes) {
             ESP_LOGW(kTag, "Rejected overlong serial frame");
             line.clear();
+            active_review_session.reset();
+            display_review_frame(display, build_request_error_frame());
             write_transport_error("eyJlcnJvciI6Im92ZXJsb25nX2ZyYW1lIn0");
             continue;
         }
