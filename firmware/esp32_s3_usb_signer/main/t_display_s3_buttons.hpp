@@ -1,23 +1,10 @@
 #pragma once
 
-#include <optional>
-
 #include "esp_err.h"
 
-#include "nostrseal/review_controls.hpp"
+#include "t_display_s3_button_logic.hpp"
 
 namespace nostrseal_esp32 {
-
-struct TDisplayS3ButtonEvent {
-    nostrseal::ReviewButton button;
-    int gpio;
-    bool long_press;
-};
-
-struct TDisplayS3ButtonState {
-    bool pressed = false;
-    int64_t pressed_at_ms = 0;
-};
 
 struct TDisplayS3Buttons {
     TDisplayS3ButtonState button1;

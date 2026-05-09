@@ -308,6 +308,8 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         )
         buttons_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_buttons.hpp"
         buttons_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_buttons.cpp"
+        logic_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_button_logic.hpp"
+        logic_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_button_logic.cpp"
         cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(
             encoding="utf-8"
         )
@@ -325,6 +327,9 @@ class FirmwareProjectValidationTests(unittest.TestCase):
 
         self.assertTrue(buttons_header_path.exists(), "missing T-Display S3 button driver header")
         self.assertTrue(buttons_source_path.exists(), "missing T-Display S3 button driver source")
+        self.assertTrue(logic_header_path.exists(), "missing T-Display S3 button logic header")
+        self.assertTrue(logic_source_path.exists(), "missing T-Display S3 button logic source")
+        self.assertIn("t_display_s3_button_logic.cpp", cmake)
         self.assertIn("t_display_s3_buttons.cpp", cmake)
         self.assertIn("esp_timer", cmake)
         self.assertIn("kTDisplayS3Button1Gpio = 0", board_header)
@@ -336,10 +341,18 @@ class FirmwareProjectValidationTests(unittest.TestCase):
 
         buttons_header = buttons_header_path.read_text(encoding="utf-8")
         buttons_source = buttons_source_path.read_text(encoding="utf-8")
-        self.assertIn("TDisplayS3ButtonEvent", buttons_header)
+        logic_header = logic_header_path.read_text(encoding="utf-8")
+        logic_source = logic_source_path.read_text(encoding="utf-8")
+        self.assertIn("t_display_s3_button_logic.hpp", buttons_header)
         self.assertIn("initialize_t_display_s3_buttons", buttons_header)
         self.assertIn("poll_t_display_s3_review_button", buttons_header)
-        self.assertIn("kTDisplayS3ButtonLongPressMs", buttons_source)
+        self.assertIn("TDisplayS3ButtonEvent", logic_header)
+        self.assertIn("kTDisplayS3ButtonDebounceMs", logic_header)
+        self.assertIn("kTDisplayS3ButtonLongPressMs", logic_header)
+        self.assertIn("update_t_display_s3_button_state", logic_header)
+        self.assertIn("duration_ms < kTDisplayS3ButtonDebounceMs", logic_source)
+        self.assertIn("duration_ms >= kTDisplayS3ButtonLongPressMs", logic_source)
+        self.assertIn("update_t_display_s3_button_state", buttons_source)
         self.assertIn("ReviewButton::Back", buttons_source)
         self.assertIn("ReviewButton::Next", buttons_source)
         self.assertIn("ReviewButton::Reject", buttons_source)

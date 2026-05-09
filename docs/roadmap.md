@@ -261,6 +261,13 @@ indicator, body text, footer background, and footer action text. This is a
 regression guard for the display calibration work; it does not change the
 disabled-signing boundary.
 
+Status note, 2026-05-09: the T-Display S3 button press classifier is now
+factored into a host-buildable state machine shared by the ESP-IDF GPIO polling
+adapter. Host-core tests cover debounce rejection, short press mapping, long
+press mapping, GPIO14 Next/Approve, and GPIO0 Back/Reject behavior. This
+hardens the physical-review UX boundary without treating button input as
+production signing authorization.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

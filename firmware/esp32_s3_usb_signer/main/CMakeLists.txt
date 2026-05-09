@@ -2,6 +2,7 @@ idf_component_register(
     SRCS
         "main.cpp"
         "t_display_s3_board.cpp"
+        "t_display_s3_button_logic.cpp"
         "t_display_s3_buttons.cpp"
         "t_display_s3_display.cpp"
         "t_display_s3_raster.cpp"

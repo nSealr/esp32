@@ -18,6 +18,7 @@
 #include "nostrseal/serial_review.hpp"
 #include "nostrseal/signing_policy.hpp"
 #include "nostrseal/trusted_review.hpp"
+#include "t_display_s3_button_logic.hpp"
 #include "t_display_s3_raster.hpp"
 #include "transport_vector.hpp"
 
@@ -1089,6 +1090,67 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     assert(t_display_s3_review_frame_color_for(frame, 10, 152) == kTDisplayS3ColorBlack);
 }
 
+void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses() {
+    nostrseal_esp32::TDisplayS3ButtonState state;
+
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                state,
+                true,
+                1000,
+                14,
+                nostrseal::ReviewButton::Next,
+                nostrseal::ReviewButton::Approve)
+                .has_value());
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                state,
+                false,
+                1010,
+                14,
+                nostrseal::ReviewButton::Next,
+                nostrseal::ReviewButton::Approve)
+                .has_value());
+
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                state,
+                true,
+                2000,
+                14,
+                nostrseal::ReviewButton::Next,
+                nostrseal::ReviewButton::Approve)
+                .has_value());
+    const auto short_press = nostrseal_esp32::update_t_display_s3_button_state(
+        state,
+        false,
+        2040,
+        14,
+        nostrseal::ReviewButton::Next,
+        nostrseal::ReviewButton::Approve);
+    assert(short_press.has_value());
+    assert(short_press->button == nostrseal::ReviewButton::Next);
+    assert(short_press->gpio == 14);
+    assert(!short_press->long_press);
+
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                state,
+                true,
+                3000,
+                0,
+                nostrseal::ReviewButton::Back,
+                nostrseal::ReviewButton::Reject)
+                .has_value());
+    const auto long_press = nostrseal_esp32::update_t_display_s3_button_state(
+        state,
+        false,
+        3800,
+        0,
+        nostrseal::ReviewButton::Back,
+        nostrseal::ReviewButton::Reject);
+    assert(long_press.has_value());
+    assert(long_press->button == nostrseal::ReviewButton::Reject);
+    assert(long_press->gpio == 0);
+    assert(long_press->long_press);
+}
+
 }  // namespace
 
 int main() {
@@ -1145,6 +1207,7 @@ int main() {
     test_device_protocol_rejects_params_for_parameterless_methods();
     test_device_protocol_rejects_invalid_sign_event_request_shape();
     test_t_display_s3_raster_has_stable_boot_and_review_pixels();
+    test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses();
     std::cout << "host core tests passed\n";
     return 0;
 }

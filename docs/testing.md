@@ -65,6 +65,10 @@ tests with strict C++ warnings.
   documented GPIO0/GPIO14 physical controls to Back/Next short presses and
   Reject/Approve long presses, while keeping touch disallowed for approval and
   signing disabled.
+- Host-buildable T-Display S3 button-logic tests proving debounce filtering,
+  exact-threshold short press handling, long press handling, and GPIO-specific
+  review-button mapping before the ESP-IDF GPIO polling wrapper reads physical
+  pins.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

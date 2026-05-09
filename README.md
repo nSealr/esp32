@@ -116,6 +116,9 @@ board into a separate repository.
   `signing_disabled`, shows a terminal non-signing review screen after
   approve/reject, expires stale active review sessions into a terminal
   non-signing timeout frame, and never signs.
+- Host-buildable T-Display S3 button logic tests cover debounce filtering,
+  short-press classification, long-press classification, and the GPIO0/GPIO14
+  review-button mapping used by the ESP-IDF GPIO polling adapter.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it

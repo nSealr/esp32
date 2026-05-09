@@ -126,6 +126,12 @@ the same color-per-pixel functions for the boot pattern and review frame, so
 layout regressions in title, page indicator, body text, footer text, borders,
 and core colors are caught before flashing.
 
+The T-Display S3 button adapter follows the same pattern: GPIO polling remains
+inside the ESP-IDF wrapper, while debounce timing, short/long press
+classification, and emitted review-button events live in a host-buildable state
+machine. This keeps the GPIO0/GPIO14 mapping testable without hardware and
+keeps touch input outside the approval path.
+
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does
 not perform camera capture, animated QR reconstruction, review output on real
