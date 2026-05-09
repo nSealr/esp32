@@ -18,13 +18,16 @@
 - Shared v0 serial-frame byte limit and invalid serial-frame vector rejection
   for oversized frames, checksum mismatch, and malformed payloads.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
+- Shared-spec `get_signing_status` response through host-core protocol
+  handling, exposing `signing_enabled: false` and every missing runtime
+  signing-readiness gate.
 - Shared-spec `get_public_key` development response through host-core protocol
   handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
-- Dynamic serial request-id echo for valid `get_capabilities`, `get_public_key`,
-  and disabled `sign_event` requests instead of only recognizing exact fixture
-  payloads.
+- Dynamic serial request-id echo for valid `get_capabilities`,
+  `get_signing_status`, `get_public_key`, and disabled `sign_event` requests
+  instead of only recognizing exact fixture payloads.
 - Shared-spec QR envelope decode boundary for future ESP32-S3 QR vault camera
   input.
 - QR `sign_event` request metadata parser for decoded envelopes, including the
@@ -122,8 +125,8 @@ boundary.
 
 Status note, 2026-05-08: the host-core device protocol now decodes serial-frame
 request payloads, validates the v0 `request_id` profile, and echoes dynamic
-request ids in `get_capabilities`, development `get_public_key`, and disabled
-`sign_event` responses. `sign_event` still returns `signing_disabled`; no
+request ids in `get_capabilities`, `get_signing_status`, development
+`get_public_key`, and disabled `sign_event` responses. `sign_event` still returns `signing_disabled`; no
 signing backend, storage, display driver, or GPIO approval path is connected.
 
 Status note, 2026-05-08: valid serial/USB `sign_event` requests now pass
@@ -135,7 +138,8 @@ signing backend are connected. Runtime signing remains disabled.
 
 Status note, 2026-05-08: `make idf-smoke-capabilities` now sends both the
 shared fixture requests and dynamic `request_id` variants for capabilities,
-development public-key, and disabled `sign_event` handling. This makes the
+signing-status diagnostics, development public-key, and disabled `sign_event`
+handling. This makes the
 hardware smoke catch regressions where the ESP-IDF app only recognizes exact
 fixture payloads.
 
@@ -222,6 +226,14 @@ camera, storage, secure boot, debug lock, and signing acceptance remain
 pending. The result is recorded as a manual `NostrSeal/hardware`
 protocol-smoke report.
 
+Hardware note, 2026-05-09: the host-core device protocol now implements the
+shared `get_signing_status` diagnostic response and includes it in the
+capability method list and hardware smoke. The attached T-Display S3 build was
+compiled with ESP-IDF `v5.5.4`, flashed on `/dev/cu.usbmodem1101`, and passed
+35 USB serial exchanges: 8 valid response frames and 27 expected rejection
+frames. `get_signing_status` reports `signing_enabled: false` and every missing
+runtime signing-readiness gate. `sign_event` remains disabled.
+
 Hardware note, 2026-05-09: the T-Display S3 firmware now includes the first
 ST7789/i80 ESP-IDF display adapter for the no-camera USB/display signer target.
 It powers GPIO15, configures the 8-bit parallel bus, enables the GPIO38
@@ -237,8 +249,8 @@ signing acceptance remain pending.
 
 - Board profiles.
 - Protocol parser.
-- `get_capabilities`, development `get_public_key`, and disabled `sign_event`
-  USB serial smoke tests.
+- `get_capabilities`, `get_signing_status`, development `get_public_key`, and
+  disabled `sign_event` USB serial smoke tests.
 - Display/button abstraction.
   Status: host-core `QrReviewIo` now defines the scanner/display/button
   adapter boundary for the QR review loop, and revision `b7aa30a` confirms that

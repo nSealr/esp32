@@ -116,7 +116,7 @@ A short monitor session confirmed that the scaffold boots:
 I boot.esp32s3: SPI Flash Size : 16MB
 I nostrseal: NostrSeal ESP32-S3 USB signer scaffold booted
 W nostrseal: Signing is disabled in this scaffold until storage, review, approval, and tests are implemented
-I nostrseal: USB serial frame handler ready for get_capabilities, get_public_key, and disabled sign_event
+I nostrseal: USB serial frame handler ready for get_capabilities, get_signing_status, get_public_key, and disabled sign_event
 ```
 
 The first flash smoke test reported a hardware/config mismatch:
@@ -156,11 +156,12 @@ make IDF_PORT=/dev/cu.<device> idf-smoke-capabilities
 ```
 
 The smoke command sends the shared `get_capabilities` request frame, the shared
-`get_public_key` development request frame, the shared basic `sign_event`
-request frame, and dynamic `request_id` variants for the same three methods. It
-expects the ESP32-S3 scaffold capability response, deterministic development
-public-key response, and explicit `signing_disabled` response in both static
-and dynamic-request cases. It also sends invalid dynamic request metadata and
+`get_signing_status` diagnostic request frame, the shared `get_public_key`
+development request frame, the shared basic `sign_event` request frame, and
+dynamic `request_id` variants for the same four methods. It expects the ESP32-S3
+scaffold capability response, signing-readiness diagnostic response,
+deterministic development public-key response, and explicit `signing_disabled`
+response in both static and dynamic-request cases. It also sends invalid dynamic request metadata and
 serial-wrapped invalid signing-request vectors, including unknown top-level
 request fields, and expects deterministic `unsupported_request` error frames.
 On 2026-05-08, revision `b7aa30a` was built with ESP-IDF `v5.5.4`, flashed to

@@ -11,6 +11,7 @@
 #include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "nostrseal/serial_review.hpp"
+#include "nostrseal/signing_policy.hpp"
 
 namespace nostrseal {
 namespace {
@@ -298,7 +299,7 @@ SerialFrame unsupported_request_frame() {
 
 std::string capability_response_json(const std::string& request_id) {
     return std::string(R"({"version":1,"request_id":")") + request_id +
-           R"(","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})";
+           R"(","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_signing_status","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})";
 }
 
 std::string public_key_response_json(const std::string& request_id) {
@@ -309,6 +310,22 @@ std::string public_key_response_json(const std::string& request_id) {
 std::string signing_disabled_response_json(const std::string& request_id) {
     return std::string(R"({"version":1,"request_id":")") + request_id +
            R"(","ok":false,"error":{"code":"signing_disabled","message":"Signing is disabled until trusted review and physical approval are implemented.","retryable":false}})";
+}
+
+std::string signing_status_response_json(const std::string& request_id) {
+    const SigningReadinessStatus status = evaluate_signing_readiness(SigningReadiness{});
+    std::string missing_gates_json;
+    for (std::size_t index = 0; index < status.missing_gates.size(); ++index) {
+        if (index > 0) {
+            missing_gates_json += ",";
+        }
+        missing_gates_json += "\"";
+        missing_gates_json += status.missing_gates[index];
+        missing_gates_json += "\"";
+    }
+    return std::string(R"({"version":1,"request_id":")") + request_id +
+           R"(","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":[)" +
+           missing_gates_json + R"(]}}})";
 }
 
 }  // namespace
@@ -347,6 +364,14 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
         }
         return SerialFrameHandlingResult{
             encode_serial_frame(response_frame(public_key_response_json(metadata.request_id))),
+            std::nullopt};
+    }
+    if (metadata.method == "get_signing_status") {
+        if (metadata.has_params) {
+            return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
+        }
+        return SerialFrameHandlingResult{
+            encode_serial_frame(response_frame(signing_status_response_json(metadata.request_id))),
             std::nullopt};
     }
     if (metadata.method == "sign_event") {

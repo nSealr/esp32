@@ -557,10 +557,19 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
 
+    def test_smoke_script_builds_signing_status_frames_from_specs(self) -> None:
+        request_frame, response_frame = smoke_capabilities.load_signing_status_frames()
+
+        self.assertTrue(request_frame.startswith("nseal1f:request:"))
+        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertIn("response", response_frame)
+        self.assertTrue(request_frame.endswith("\n"))
+        self.assertTrue(response_frame.endswith("\n"))
+
     def test_smoke_script_builds_dynamic_request_id_exchanges(self) -> None:
         exchanges = smoke_capabilities.load_dynamic_request_id_frames()
 
-        self.assertEqual(len(exchanges), 3)
+        self.assertEqual(len(exchanges), 4)
         for request_frame, response_frame in exchanges:
             request = decode_serial_frame_payload(request_frame)
             response = decode_serial_frame_payload(response_frame)
@@ -568,7 +577,14 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertTrue(request["request_id"].startswith("dynamic-smoke-"))
             self.assertEqual(response["request_id"], request["request_id"])
 
-        sign_response = decode_serial_frame_payload(exchanges[2][1])
+        signing_status_response = decode_serial_frame_payload(exchanges[1][1])
+        self.assertFalse(signing_status_response["result"]["signing_status"]["signing_enabled"])
+        self.assertIn(
+            "flash_encryption",
+            signing_status_response["result"]["signing_status"]["missing_gates"],
+        )
+
+        sign_response = decode_serial_frame_payload(exchanges[3][1])
         self.assertFalse(sign_response["ok"])
         self.assertEqual(sign_response["error"]["code"], "signing_disabled")
 

@@ -211,6 +211,9 @@ def main() -> int:
     sign_event_disabled_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-sign-event-disabled.json").read_text(encoding="utf-8")
     )
+    signing_status_vector = json.loads(
+        (specs / "vectors/devices/esp32-s3-signing-status-disabled.json").read_text(encoding="utf-8")
+    )
     public_key_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
     )
@@ -243,6 +246,8 @@ def main() -> int:
     capability_response_payload = base64url_json(capability_vector["response"])
     sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
     sign_event_disabled_response_payload = base64url_json(sign_event_disabled_vector["response"])
+    signing_status_request_payload = base64url_json(signing_status_vector["request"])
+    signing_status_response_payload = base64url_json(signing_status_vector["response"])
     public_key_request_payload = base64url_json(public_key_vector["request"])
     public_key_response_payload = base64url_json(public_key_vector["response"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -276,6 +281,10 @@ def main() -> int:
                 f"constexpr const char* kSignEventRequestFrame = {cpp_string(serial_frame('request', sign_event_request_payload))};",
                 f"constexpr const char* kSignEventDisabledResponsePayloadBase64Url = {cpp_string(sign_event_disabled_response_payload)};",
                 f"constexpr const char* kSignEventDisabledResponseFrame = {cpp_string(serial_frame('response', sign_event_disabled_response_payload))};",
+                f"constexpr const char* kSigningStatusRequestPayloadBase64Url = {cpp_string(signing_status_request_payload)};",
+                f"constexpr const char* kSigningStatusRequestFrame = {cpp_string(serial_frame('request', signing_status_request_payload))};",
+                f"constexpr const char* kSigningStatusResponsePayloadBase64Url = {cpp_string(signing_status_response_payload)};",
+                f"constexpr const char* kSigningStatusResponseFrame = {cpp_string(serial_frame('response', signing_status_response_payload))};",
                 f"constexpr const char* kPublicKeyRequestPayloadBase64Url = {cpp_string(public_key_request_payload)};",
                 f"constexpr const char* kPublicKeyRequestFrame = {cpp_string(serial_frame('request', public_key_request_payload))};",
                 f"constexpr const char* kPublicKeyResponsePayloadBase64Url = {cpp_string(public_key_response_payload)};",

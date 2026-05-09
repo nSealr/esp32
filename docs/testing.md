@@ -106,13 +106,17 @@ tests with strict C++ warnings.
   ESP-IDF runtime loop.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
+- Device protocol tests proving the shared ESP32-S3 scaffold
+  `get_signing_status` request returns `signing_enabled: false` plus every
+  missing real-signing readiness gate.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
 - Device protocol tests proving the shared `sign_event` fixture returns the
   shared `signing_disabled` scaffold response.
 - Device protocol tests proving valid serial-frame request payloads with
   non-fixture `request_id` values receive matching dynamic responses for
-  `get_capabilities`, development `get_public_key`, and disabled `sign_event`.
+  `get_capabilities`, `get_signing_status`, development `get_public_key`, and
+  disabled `sign_event`.
 - ESP-IDF scaffold validation for required project files, ESP32-S3 target, board
   profile, and unsupported-claim rejection.
 - ESP32-S3 board detection tests for serial-port discovery, native USB/JTAG
@@ -123,8 +127,8 @@ tests with strict C++ warnings.
 - Optional hardware capability/public-key/signing-disabled smoke test with
   `make idf-smoke-capabilities` after exporting ESP-IDF and flashing the current
   firmware. The smoke sends both shared fixture request frames and dynamic
-  `request_id` variants so parser changes cannot silently fall back to exact
-  fixture matching. It also sends invalid dynamic metadata requests from shared
+  `request_id` variants, including `get_signing_status`, so parser changes
+  cannot silently fall back to exact fixture matching. It also sends invalid dynamic metadata requests from shared
   `NostrSeal/specs` invalid serial-frame vectors plus serial-wrapped invalid
   signing-request vectors, including unknown top-level request fields,
   expecting deterministic `unsupported_request` rejections. By default the

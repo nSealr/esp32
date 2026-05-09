@@ -984,12 +984,27 @@ void test_device_protocol_reports_development_public_key() {
     assert(decoded.payload_base64url == nostrseal::test_vectors::kPublicKeyResponsePayloadBase64Url);
 }
 
+void test_device_protocol_reports_signing_status_gates() {
+    const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kSigningStatusRequestFrame);
+
+    assert(response == nostrseal::test_vectors::kSigningStatusResponseFrame);
+    const nostrseal::SerialFrame decoded = nostrseal::decode_serial_frame(response);
+    assert(decoded.type == nostrseal::FrameType::Response);
+    assert(decoded.payload_base64url == nostrseal::test_vectors::kSigningStatusResponsePayloadBase64Url);
+}
+
 void test_device_protocol_echoes_dynamic_request_ids() {
     const std::string capability_response = nostrseal::handle_serial_frame(
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-capabilities","method":"get_capabilities"})"));
 
     assert(capability_response == response_frame_for_test(
-        R"({"version":1,"request_id":"req-alt-capabilities","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})"));
+        R"({"version":1,"request_id":"req-alt-capabilities","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_signing_status","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})"));
+
+    const std::string signing_status_response = nostrseal::handle_serial_frame(
+        request_frame_for_test(R"({"version":1,"request_id":"req-alt-signing-status","method":"get_signing_status"})"));
+
+    assert(signing_status_response == response_frame_for_test(
+        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","parser_limits","trusted_review_display","physical_approval_controls","approval_digest_binding","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"]}}})"));
 
     const std::string public_key_response = nostrseal::handle_serial_frame(
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-pubkey","method":"get_public_key"})"));
@@ -1030,6 +1045,11 @@ void test_device_protocol_rejects_params_for_parameterless_methods() {
     assert(nostrseal::handle_serial_frame(
                request_frame_for_test(
                    R"({"version":1,"request_id":"invalid-public-key-params","method":"get_public_key","params":{}})")) ==
+           error_frame_for_test(R"({"error":"unsupported_request"})"));
+
+    assert(nostrseal::handle_serial_frame(
+               request_frame_for_test(
+                   R"({"version":1,"request_id":"invalid-signing-status-params","method":"get_signing_status","params":{}})")) ==
            error_frame_for_test(R"({"error":"unsupported_request"})"));
 }
 
@@ -1088,6 +1108,7 @@ int main() {
     test_device_protocol_exposes_review_frame_before_disabled_signing_response();
     test_device_protocol_exposes_review_session_for_manual_display_navigation();
     test_device_protocol_reports_development_public_key();
+    test_device_protocol_reports_signing_status_gates();
     test_device_protocol_echoes_dynamic_request_ids();
     test_device_protocol_rejects_invalid_dynamic_request_metadata();
     test_device_protocol_rejects_unknown_top_level_request_fields();

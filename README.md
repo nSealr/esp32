@@ -77,7 +77,7 @@ board into a separate repository.
   development-only fixture key.
 - ESP32-S3 scaffold request dispatcher that parses valid serial-frame request
   payloads and echoes dynamic `request_id` values for `get_capabilities`,
-  `get_public_key`, and disabled `sign_event` responses.
+  `get_signing_status`, `get_public_key`, and disabled `sign_event` responses.
 - Primary ESP-IDF console configured on native USB Serial/JTAG so the scaffold
   can receive hardware smoke-test requests over the attached USB-C cable.
 - Portable SHA-256 checksum helper for frame corruption detection.
@@ -120,8 +120,9 @@ board into a separate repository.
 
 The current firmware is still a scaffold. It logs startup, answers
 `get_capabilities`, returns the deterministic development public key for
-`get_public_key`, returns an explicit `signing_disabled` protocol response for
-valid `sign_event` requests, initializes the T-Display S3 display only far
+`get_public_key`, returns explicit signing-readiness diagnostics through
+`get_signing_status`, returns an explicit `signing_disabled` protocol response
+for valid `sign_event` requests, initializes the T-Display S3 display only far
 enough to draw a Ready/No request frame and live trusted-review pages, polls the
 two onboard physical buttons for local review navigation, shows closed review
 decisions as `Not signed`, clears active review state on rejected serial
@@ -160,8 +161,8 @@ make idf-smoke-capabilities
 ```
 
 The hardware smoke sends the shared fixture requests and additional dynamic
-`request_id` variants for capabilities, development public-key, and disabled
-`sign_event` handling. It also sends invalid dynamic metadata requests from
+`request_id` variants for capabilities, signing status, development public-key,
+and disabled `sign_event` handling. It also sends invalid dynamic metadata requests from
 shared specs vectors plus serial-wrapped invalid signing-request vectors,
 including unknown top-level request fields, and expects deterministic
 `unsupported_request` rejections. The default smoke output summarizes expected

@@ -31,6 +31,7 @@ def default_specs_dir() -> Path:
 DEFAULT_SPECS = default_specs_dir()
 DYNAMIC_SMOKE_REQUEST_IDS = {
     "capabilities": "dynamic-smoke-capabilities",
+    "signing_status": "dynamic-smoke-signing-status",
     "public_key": "dynamic-smoke-public-key",
     "signing_disabled": "dynamic-smoke-sign-event-disabled",
 }
@@ -68,6 +69,11 @@ def load_public_key_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
     return vector_frames(vector)
 
 
+def load_signing_status_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
+    vector = load_signing_status_vector(specs_dir)
+    return vector_frames(vector)
+
+
 def load_capability_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
     return json.loads(
         (specs_dir / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
@@ -86,6 +92,12 @@ def load_public_key_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
     )
 
 
+def load_signing_status_vector(specs_dir: Path = DEFAULT_SPECS) -> dict:
+    return json.loads(
+        (specs_dir / "vectors/devices/esp32-s3-signing-status-disabled.json").read_text(encoding="utf-8")
+    )
+
+
 def vector_with_request_id(vector: dict, request_id: str) -> dict:
     updated = copy.deepcopy(vector)
     updated["request"]["request_id"] = request_id
@@ -96,6 +108,7 @@ def vector_with_request_id(vector: dict, request_id: str) -> dict:
 def load_dynamic_request_id_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
     vectors = [
         vector_with_request_id(load_capability_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["capabilities"]),
+        vector_with_request_id(load_signing_status_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["signing_status"]),
         vector_with_request_id(load_public_key_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["public_key"]),
         vector_with_request_id(load_signing_disabled_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["signing_disabled"]),
     ]
@@ -193,6 +206,7 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
 
     exchanges = [
         load_capability_frames(specs_dir),
+        load_signing_status_frames(specs_dir),
         load_public_key_frames(specs_dir),
         load_signing_disabled_frames(specs_dir),
         *load_dynamic_request_id_frames(specs_dir),

@@ -21,6 +21,7 @@
         ],
         "methods": [
           "get_capabilities",
+          "get_signing_status",
           "get_public_key",
           "sign_event"
         ],

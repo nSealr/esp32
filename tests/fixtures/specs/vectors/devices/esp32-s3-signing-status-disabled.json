@@ -1,0 +1,29 @@
+{
+  "request": {
+    "version": 1,
+    "request_id": "req-signing-status-esp32-s3-scaffold",
+    "method": "get_signing_status"
+  },
+  "response": {
+    "version": 1,
+    "request_id": "req-signing-status-esp32-s3-scaffold",
+    "ok": true,
+    "result": {
+      "signing_status": {
+        "signing_enabled": false,
+        "missing_gates": [
+          "runtime_signing_feature",
+          "parser_limits",
+          "trusted_review_display",
+          "physical_approval_controls",
+          "approval_digest_binding",
+          "key_provisioning",
+          "secure_boot",
+          "flash_encryption",
+          "debug_lock",
+          "companion_signed_output_verification"
+        ]
+      }
+    }
+  }
+}
