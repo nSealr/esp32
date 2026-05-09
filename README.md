@@ -103,6 +103,10 @@ board into a separate repository.
   display constraints, touch-not-approval, physical approve/reject
   requirements, wireless policy, debug-lock policy, and disabled production
   signing; it does not add real display/GPIO drivers.
+- Compiled T-Display S3 firmware board configuration for the USB/display
+  signer scaffold. It pins the display dimensions, ST7789 driver label,
+  GPIO38 backlight, GPIO15 display-power line, no-camera status, and
+  touch-not-approval rule without initializing a display driver or GPIO path.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it

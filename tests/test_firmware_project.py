@@ -162,6 +162,31 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             {"approve", "reject"},
         )
 
+    def test_t_display_s3_firmware_board_config_matches_profile(self) -> None:
+        profile = json.loads((ROOT / "boards/lilygo_t_display_s3.json").read_text(encoding="utf-8"))
+        header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_board.hpp"
+        source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_board.cpp"
+        cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertTrue(header_path.exists(), "missing T-Display S3 firmware board config header")
+        self.assertTrue(source_path.exists(), "missing T-Display S3 firmware board config source")
+        self.assertIn("t_display_s3_board.cpp", cmake)
+        self.assertIn("t_display_s3_board_profile", main)
+
+        header = header_path.read_text(encoding="utf-8")
+        source = source_path.read_text(encoding="utf-8")
+        self.assertIn(f"kTDisplayS3DisplayWidth = {profile['display']['resolution']['short_edge']}", header)
+        self.assertIn(f"kTDisplayS3DisplayHeight = {profile['display']['resolution']['long_edge']}", header)
+        self.assertIn(f"kTDisplayS3BacklightGpio = {profile['display']['backlight']['gpio']}", header)
+        self.assertIn(f"kTDisplayS3DisplayPowerGpio = {profile['display']['display_power']['gpio']}", header)
+        self.assertIn('"LILYGO T-Display S3"', source)
+        self.assertIn('"ST7789"', source)
+        self.assertIn("touch_approval_allowed = false", source)
+        self.assertIn("camera_present = false", source)
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 

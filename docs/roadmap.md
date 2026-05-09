@@ -79,7 +79,10 @@ detection, capability-response, development public-key response, and local
 hardware smoke-test foundation. Board profile validation now covers the
 ESP32-S3 DevKitC-1 development reference, the no-camera LILYGO T-Display S3
 USB/display signer candidate, and the LILYGO T-Display S3 Pro OV5640 QR vault
-candidate. The QR envelope decoder, QR request metadata parser,
+candidate. The ESP-IDF scaffold now compiles a T-Display S3 board-configuration
+boundary that pins display dimensions, ST7789, GPIO38 backlight, GPIO15
+display power, no camera, and touch-not-approval while still leaving real
+display/GPIO drivers disabled. The QR envelope decoder, QR request metadata parser,
 event-template object boundary extraction, review button state machine,
 host-supplied signed-field rejection, review page generation, and display frame
 renderer are implemented in host-core only. The QR path also validates the

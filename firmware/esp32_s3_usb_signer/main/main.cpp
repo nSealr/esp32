@@ -9,6 +9,7 @@
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/limits.hpp"
 #include "nostrseal/serial_frame.hpp"
+#include "t_display_s3_board.hpp"
 
 namespace {
 constexpr const char* kTag = "nostrseal";
@@ -36,6 +37,12 @@ extern "C" void app_main(void) {
     ESP_LOGI(kTag, "NostrSeal ESP32-S3 USB signer scaffold booted");
     ESP_LOGW(kTag, "Signing is disabled in this scaffold until storage, review, approval, and tests are implemented");
     ESP_LOGI(kTag, "USB serial frame handler ready for get_capabilities, get_public_key, and disabled sign_event");
+    const auto& board = nostrseal_esp32::t_display_s3_board_profile();
+    ESP_LOGI(kTag, "%s %dx%d %s profile compiled; display and GPIO drivers disabled",
+             board.name,
+             board.display_width,
+             board.display_height,
+             board.display_driver);
 
     std::string line;
     line.reserve(512);
