@@ -26,6 +26,16 @@ std::string checksum(FrameType type, const std::string& payload) {
     return sha256_hex(input).substr(0, 16);
 }
 
+std::string strip_line_ending(const std::string& line) {
+    if (line.size() >= 2 && line[line.size() - 2] == '\r' && line[line.size() - 1] == '\n') {
+        return line.substr(0, line.size() - 2);
+    }
+    if (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
+        return line.substr(0, line.size() - 1);
+    }
+    return line;
+}
+
 std::array<std::string, 3> split_frame_body(const std::string& body) {
     std::array<std::string, 3> parts;
     std::size_t start = 0;
@@ -86,10 +96,7 @@ SerialFrame decode_serial_frame(const std::string& line) {
     if (line.size() > kMaxSerialFrameBytes) {
         throw SerialFrameError("serial frame exceeds max_serial_frame_bytes");
     }
-    std::string normalized = line;
-    if (!normalized.empty() && normalized.back() == '\n') {
-        normalized.pop_back();
-    }
+    const std::string normalized = strip_line_ending(line);
     if (normalized.rfind(kPrefix, 0) != 0) {
         throw SerialFrameError("serial frame must start with nseal1f:");
     }

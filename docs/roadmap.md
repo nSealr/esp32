@@ -99,6 +99,12 @@ vectors for oversized frames, checksum mismatch, and malformed base64url
 payloads. The ESP-IDF input loop uses the same limit before dispatching a frame
 to host-core.
 
+Status note, 2026-05-09: the host-core serial decoder now accepts common
+`LF`/`CRLF`/`CR` line endings before checksum validation, matching the companion
+serial framing behavior expected from real USB serial line readers. This does
+not change frame payload, checksum, request validation, or the disabled-signing
+boundary.
+
 Status note, 2026-05-08: the host-core device protocol now decodes serial-frame
 request payloads, validates the v0 `request_id` profile, and echoes dynamic
 request ids in `get_capabilities`, development `get_public_key`, and disabled

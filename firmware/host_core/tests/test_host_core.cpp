@@ -180,6 +180,11 @@ void test_serial_frame_round_trip() {
     const nostrseal::SerialFrame decoded = nostrseal::decode_serial_frame(encoded);
     assert(decoded.type == nostrseal::FrameType::Request);
     assert(decoded.payload_base64url == frame.payload_base64url);
+
+    const nostrseal::SerialFrame decoded_crlf =
+        nostrseal::decode_serial_frame(encoded.substr(0, encoded.size() - 1) + "\r\n");
+    assert(decoded_crlf.type == nostrseal::FrameType::Request);
+    assert(decoded_crlf.payload_base64url == frame.payload_base64url);
 }
 
 void test_serial_frame_rejections() {

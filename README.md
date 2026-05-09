@@ -23,8 +23,9 @@ board into a separate repository.
   smoke test on an attached ESP32-S3.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft. The decoder mirrors the shared v0 `max_serial_frame_bytes`
-  limit and rejects shared invalid serial-frame vectors for oversized frames,
-  checksum mismatch, and malformed base64url payloads.
+  limit, accepts common serial line endings, and rejects shared invalid
+  serial-frame vectors for oversized frames, checksum mismatch, and malformed
+  base64url payloads.
 - `nseal1:` QR envelope decode boundary compatible with the shared QR
   transport vector. It rejects malformed, padded, invalid UTF-8, and oversized
   envelopes before any future camera/display adapter can review them; camera

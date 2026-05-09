@@ -12,6 +12,8 @@ tests with strict C++ warnings.
 ## Implemented Tests
 
 - Serial frame round-trip test against the companion-compatible known frame.
+- Serial frame line-ending test proving the host-core decoder accepts common
+  `LF`/`CRLF` serial input without weakening checksum validation.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
 - Shared invalid serial-frame vector tests for oversized frames, checksum
