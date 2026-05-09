@@ -19,8 +19,8 @@
   for oversized frames, checksum mismatch, and malformed payloads.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
 - Shared-spec `get_signing_status` response through host-core protocol
-  handling, exposing `signing_enabled: false` and every missing runtime
-  signing-readiness gate.
+  handling, exposing `signing_enabled: false` and the remaining runtime
+  signing-readiness gates for the current scaffold profile.
 - Shared-spec `get_public_key` development response through host-core protocol
   handling.
 - Shared-spec `sign_event` disabled response through host-core protocol
@@ -233,6 +233,14 @@ compiled with ESP-IDF `v5.5.4`, flashed on `/dev/cu.usbmodem1101`, and passed
 35 USB serial exchanges: 8 valid response frames and 27 expected rejection
 frames. `get_signing_status` reports `signing_enabled: false` and every missing
 runtime signing-readiness gate. `sign_event` remains disabled.
+
+Hardware note, 2026-05-09: the ESP32 scaffold signing-status profile now marks
+the already implemented host-core gates as satisfied: parser/resource limits
+and approval-digest binding. The diagnostic response still reports
+`signing_enabled: false`; remaining blockers are runtime signing feature,
+trusted review display acceptance, physical approval controls, key
+provisioning, secure boot, flash encryption, debug lock, and companion
+signed-output verification.
 
 Hardware note, 2026-05-09: the T-Display S3 firmware now includes the first
 ST7789/i80 ESP-IDF display adapter for the no-camera USB/display signer target.

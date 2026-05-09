@@ -1004,7 +1004,7 @@ void test_device_protocol_echoes_dynamic_request_ids() {
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-signing-status","method":"get_signing_status"})"));
 
     assert(signing_status_response == response_frame_for_test(
-        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","parser_limits","trusted_review_display","physical_approval_controls","approval_digest_binding","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"]}}})"));
+        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","trusted_review_display","physical_approval_controls","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"]}}})"));
 
     const std::string public_key_response = nostrseal::handle_serial_frame(
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-pubkey","method":"get_public_key"})"));

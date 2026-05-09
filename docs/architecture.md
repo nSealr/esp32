@@ -186,7 +186,12 @@ request bound to the displayed `approval_digest`.
 The signing-policy module is the complementary runtime gate. It does not sign
 and it does not provision keys; it records every condition that must be true
 before a later signing backend can be wired into the USB or QR flows. The
-default readiness state is disabled and reports every missing gate.
+default readiness state is disabled and reports every missing gate. The current
+device scaffold starts from that policy but reports parser limits and
+approval-digest binding as implemented; signing still remains disabled because
+runtime feature enablement, trusted display acceptance, physical controls, key
+provisioning, secure boot, flash encryption, debug lock, and companion
+signed-output verification remain open.
 
 `firmware/esp32_s3_usb_signer/security_profile.json` is the matching
 machine-readable security posture for the ESP-IDF scaffold. The v0 profile is

@@ -13,10 +13,8 @@
         "signing_enabled": false,
         "missing_gates": [
           "runtime_signing_feature",
-          "parser_limits",
           "trusted_review_display",
           "physical_approval_controls",
-          "approval_digest_binding",
           "key_provisioning",
           "secure_boot",
           "flash_encryption",

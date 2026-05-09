@@ -312,8 +312,15 @@ std::string signing_disabled_response_json(const std::string& request_id) {
            R"(","ok":false,"error":{"code":"signing_disabled","message":"Signing is disabled until trusted review and physical approval are implemented.","retryable":false}})";
 }
 
+SigningReadiness scaffold_signing_readiness() {
+    SigningReadiness readiness;
+    readiness.parser_limits_enforced = true;
+    readiness.approval_digest_binding_verified = true;
+    return readiness;
+}
+
 std::string signing_status_response_json(const std::string& request_id) {
-    const SigningReadinessStatus status = evaluate_signing_readiness(SigningReadiness{});
+    const SigningReadinessStatus status = evaluate_signing_readiness(scaffold_signing_readiness());
     std::string missing_gates_json;
     for (std::size_t index = 0; index < status.missing_gates.size(); ++index) {
         if (index > 0) {

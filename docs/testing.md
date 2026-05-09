@@ -107,8 +107,10 @@ tests with strict C++ warnings.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold
-  `get_signing_status` request returns `signing_enabled: false` plus every
-  missing real-signing readiness gate.
+  `get_signing_status` request returns `signing_enabled: false` plus the
+  remaining real-signing readiness gates for the current scaffold profile,
+  while omitting parser limits and approval-digest binding because those gates
+  are already implemented and tested in host-core.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
 - Device protocol tests proving the shared `sign_event` fixture returns the
