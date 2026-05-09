@@ -110,7 +110,8 @@ board into a separate repository.
 - T-Display S3 onboard button polling for manual review navigation after a live
   `sign_event` request. Short GPIO14 moves Next, short GPIO0 moves Back, long
   GPIO14 maps Approve, and long GPIO0 maps Reject. The runtime still returns
-  `signing_disabled` and never signs.
+  `signing_disabled`, shows a terminal non-signing review screen after
+  approve/reject, and never signs.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
@@ -121,9 +122,9 @@ The current firmware is still a scaffold. It logs startup, answers
 `get_public_key`, returns an explicit `signing_disabled` protocol response for
 valid `sign_event` requests, initializes the T-Display S3 display only far
 enough to draw a Ready/No request frame and live trusted-review pages, polls the
-two onboard physical buttons for local review navigation, and keeps real
-signing disabled until storage, production hardening, and signing tests are
-implemented.
+two onboard physical buttons for local review navigation, shows closed review
+decisions as `Not signed`, and keeps real signing disabled until storage,
+production hardening, and signing tests are implemented.
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen

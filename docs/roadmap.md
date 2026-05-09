@@ -294,6 +294,13 @@ only a new live `sign_event` request starts the multi-page review again.
 `sign_event` still returns `signing_disabled`, so button approval is display UX
 validation only and not signing enablement.
 
+Status note, 2026-05-09: terminal T-Display S3 review decisions now render a
+closed non-signing status frame instead of leaving the final decision page on
+screen. Approve shows `Review OK`, Reject shows `Rejected`, both show
+`Not signed` and `Signing disabled`, and the active RAM-only review session is
+cleared. This is still UI feedback only; it does not change serial responses or
+enable a signing backend.
+
 Status note, 2026-05-08: `signing_policy` now makes the M8 runtime signing gate
 explicit in host-core. The default state remains disabled and reports missing
 runtime feature, parser limits, trusted display, physical controls,

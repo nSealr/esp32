@@ -92,6 +92,9 @@ tests with strict C++ warnings.
   terminal non-signing decision. These tests consume generated trusted review
   requests from the shared review-screen vectors instead of duplicating page
   content by hand.
+- Firmware scaffold tests requiring T-Display S3 terminal review decisions to
+  show closed non-signing status frames with `Not signed` and
+  `Signing disabled` after approve/reject UI input.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`

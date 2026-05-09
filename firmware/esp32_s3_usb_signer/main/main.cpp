@@ -51,6 +51,19 @@ void display_sign_event_review_preview(
     }
 }
 
+nostrseal::ReviewDisplayFrame build_review_decision_frame(bool approved) {
+    nostrseal::ReviewDisplayFrame frame;
+    frame.title = approved ? "Review OK" : "Rejected";
+    frame.page_indicator = "Closed";
+    frame.body_lines = std::vector<std::string>{
+        "Not signed",
+        "Signing disabled",
+        "Send new request",
+    };
+    frame.action_hint = "Waiting";
+    return frame;
+}
+
 void process_review_button(
     nostrseal_esp32::TDisplayS3Display& display,
     std::optional<nostrseal::TrustedReviewSession>& active_review_session,
@@ -60,11 +73,13 @@ void process_review_button(
     }
     try {
         const std::optional<bool> decision = active_review_session->handle_button(button);
-        display_review_frame(display, active_review_session->current_frame());
         if (decision.has_value()) {
+            display_review_frame(display, build_review_decision_frame(decision.value()));
             ESP_LOGW(kTag, "Review decision recorded. Signing remains disabled in this scaffold.");
             active_review_session.reset();
+            return;
         }
+        display_review_frame(display, active_review_session->current_frame());
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected review button input: %s", exc.what());
         display_review_frame(display, active_review_session->current_frame());

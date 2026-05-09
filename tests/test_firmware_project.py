@@ -341,6 +341,18 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("active_review_session", main)
         self.assertIn("Signing remains disabled", main)
 
+    def test_t_display_s3_firmware_displays_terminal_review_decisions_without_signing(self) -> None:
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("build_review_decision_frame", main)
+        self.assertIn('frame.title = approved ? "Review OK" : "Rejected"', main)
+        self.assertIn('frame.page_indicator = "Closed"', main)
+        self.assertIn('"Not signed"', main)
+        self.assertIn('"Signing disabled"', main)
+        self.assertIn('"Send new request"', main)
+        self.assertIn("build_review_decision_frame(decision.value())", main)
+        self.assertIn("active_review_session.reset()", main)
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 
