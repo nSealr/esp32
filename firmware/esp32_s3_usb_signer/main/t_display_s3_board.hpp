@@ -6,6 +6,25 @@ constexpr int kTDisplayS3DisplayWidth = 170;
 constexpr int kTDisplayS3DisplayHeight = 320;
 constexpr int kTDisplayS3BacklightGpio = 38;
 constexpr int kTDisplayS3DisplayPowerGpio = 15;
+constexpr int kTDisplayS3DisplayResetGpio = 5;
+constexpr int kTDisplayS3DisplayCsGpio = 6;
+constexpr int kTDisplayS3DisplayDcGpio = 7;
+constexpr int kTDisplayS3DisplayWriteGpio = 8;
+constexpr int kTDisplayS3DisplayReadGpio = 9;
+constexpr int kTDisplayS3DisplayData0Gpio = 39;
+constexpr int kTDisplayS3DisplayData1Gpio = 40;
+constexpr int kTDisplayS3DisplayData2Gpio = 41;
+constexpr int kTDisplayS3DisplayData3Gpio = 42;
+constexpr int kTDisplayS3DisplayData4Gpio = 45;
+constexpr int kTDisplayS3DisplayData5Gpio = 46;
+constexpr int kTDisplayS3DisplayData6Gpio = 47;
+constexpr int kTDisplayS3DisplayData7Gpio = 48;
+constexpr int kTDisplayS3DisplayXGap = 35;
+constexpr int kTDisplayS3DisplayYGap = 0;
+constexpr int kTDisplayS3LogicalDisplayWidth = 320;
+constexpr int kTDisplayS3LogicalDisplayHeight = 170;
+constexpr int kTDisplayS3LogicalDisplayXGap = 0;
+constexpr int kTDisplayS3LogicalDisplayYGap = 35;
 
 struct TDisplayS3BoardProfile {
     const char* name;

@@ -81,8 +81,10 @@ ESP32-S3 DevKitC-1 development reference, the no-camera LILYGO T-Display S3
 USB/display signer candidate, and the LILYGO T-Display S3 Pro OV5640 QR vault
 candidate. The ESP-IDF scaffold now compiles a T-Display S3 board-configuration
 boundary that pins display dimensions, ST7789, GPIO38 backlight, GPIO15
-display power, no camera, and touch-not-approval while still leaving real
-display/GPIO drivers disabled. The QR envelope decoder, QR request metadata parser,
+display power, no camera, and touch-not-approval, and now initializes the
+ST7789/i80 display path far enough to draw a boot/self-test frame. Trusted
+review-frame output on the physical display and GPIO approval remain pending.
+The QR envelope decoder, QR request metadata parser,
 event-template object boundary extraction, review button state machine,
 host-supplied signed-field rejection, review page generation, and display frame
 renderer are implemented in host-core only. The QR path also validates the
@@ -94,9 +96,10 @@ wrap and truncate body text to configured limits. The host-core now also has a
 scanner/display/button I/O harness that shows every trusted frame before
 reading physical-style input, rejects non-terminal input streams after a bounded
 number of steps, and returns the terminal approval state plus the exact
-displayed frame/button transcript. Real camera, display, and GPIO drivers remain
-pending. QR review transcripts provide a deterministic host-side oracle for
-those adapters and are now checked against shared `NostrSeal/specs` vectors. The
+displayed frame/button transcript. Camera input, trusted review output on the
+physical display, and GPIO approval drivers remain pending. QR review
+transcripts provide a deterministic host-side oracle for those adapters and are
+now checked against shared `NostrSeal/specs` vectors. The
 host-core QR parser also mirrors the shared v0 limit profile and rejects
 applicable invalid QR-envelope and signing-request vectors before trusted review
 can begin.
@@ -215,6 +218,17 @@ camera, storage, secure boot, debug lock, and signing acceptance remain
 pending. The result is recorded as a manual `NostrSeal/hardware`
 protocol-smoke report.
 
+Hardware note, 2026-05-09: the T-Display S3 firmware now includes the first
+ST7789/i80 ESP-IDF display adapter for the no-camera USB/display signer target.
+It powers GPIO15, configures the 8-bit parallel bus, enables the GPIO38
+backlight, and draws a boot/self-test frame. The draw path waits for each
+asynchronous i80 color transfer before reusing the DMA buffer. The same flash
+and smoke loop on `/dev/cu.usbmodem1101` still passed 33 USB serial exchanges,
+and manual visual confirmation showed a single clean blue boot bar with no
+stray pixels. This is display bring-up only: review-frame rendering on the
+physical display, GPIO approval, camera, storage, secure boot, debug lock, and
+signing acceptance remain pending.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
@@ -225,7 +239,9 @@ protocol-smoke report.
   Status: host-core `QrReviewIo` now defines the scanner/display/button
   adapter boundary for the QR review loop, and revision `b7aa30a` confirms that
   transcript-producing host-core still builds and flashes inside the ESP-IDF
-  component. Real ESP-IDF drivers remain pending.
+  component. The no-camera T-Display S3 now has an initial ESP-IDF ST7789/i80
+  boot-frame adapter, but trusted review-frame painting and physical approval
+  GPIO acceptance remain pending.
 - Host-rendered review frame contract for display drivers.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.

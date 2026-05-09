@@ -6,9 +6,10 @@
 
 - ESP32 USB/NIP-46 signer, with ESP32-S3 as the primary target.
   The no-camera LILYGO T-Display S3 is tracked here as an integrated display
-  candidate for the USB/display signer line. Its current firmware support is a
-  compiled board-configuration boundary only; real ST7789 display output and
-  physical GPIO controls are still pending.
+  candidate for the USB/display signer line. Its current firmware support
+  initializes the ST7789/i80 path and draws a boot/self-test frame; trusted
+  review-frame rendering on the physical display and physical GPIO controls are
+  still pending.
 - ESP32 stateless QR vault target, with T-Display S3 Pro OV5640 as the primary
   camera/display target.
 - Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.

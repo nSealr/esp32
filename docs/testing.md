@@ -52,8 +52,10 @@ tests with strict C++ warnings.
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
-  the JSON board profile and are included by the ESP-IDF scaffold without
-  enabling display/GPIO drivers.
+  the JSON board profile and are included by the ESP-IDF scaffold.
+- Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
+  compiles an ST7789/i80 adapter and boot-frame path while keeping physical
+  GPIO approval and signing disabled.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review

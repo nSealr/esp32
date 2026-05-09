@@ -187,6 +187,64 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("touch_approval_allowed = false", source)
         self.assertIn("camera_present = false", source)
 
+    def test_t_display_s3_firmware_initializes_real_display_driver(self) -> None:
+        display_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.hpp"
+        display_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.cpp"
+        board_header = (ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_board.hpp").read_text(
+            encoding="utf-8"
+        )
+        cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
+
+        self.assertTrue(display_header_path.exists(), "missing T-Display S3 display driver header")
+        self.assertTrue(display_source_path.exists(), "missing T-Display S3 display driver source")
+        self.assertIn("t_display_s3_display.cpp", cmake)
+        self.assertIn("PRIV_REQUIRES", cmake)
+        self.assertIn("esp_lcd", cmake)
+        self.assertIn("esp_driver_gpio", cmake)
+        self.assertIn("t_display_s3_display.hpp", main)
+        self.assertIn("initialize_t_display_s3_display", main)
+        self.assertIn("draw_t_display_s3_boot_frame", main)
+        self.assertIn("Signing is disabled", main)
+
+        for pin_constant in (
+            "kTDisplayS3DisplayResetGpio = 5",
+            "kTDisplayS3DisplayCsGpio = 6",
+            "kTDisplayS3DisplayDcGpio = 7",
+            "kTDisplayS3DisplayWriteGpio = 8",
+            "kTDisplayS3DisplayReadGpio = 9",
+            "kTDisplayS3DisplayData0Gpio = 39",
+            "kTDisplayS3DisplayData7Gpio = 48",
+            "kTDisplayS3LogicalDisplayWidth = 320",
+            "kTDisplayS3LogicalDisplayHeight = 170",
+            "kTDisplayS3LogicalDisplayXGap = 0",
+            "kTDisplayS3LogicalDisplayYGap = 35",
+        ):
+            self.assertIn(pin_constant, board_header)
+
+        display_header = display_header_path.read_text(encoding="utf-8")
+        display_source = display_source_path.read_text(encoding="utf-8")
+        self.assertIn("display_driver_active", display_header)
+        self.assertIn("initialize_t_display_s3_display", display_header)
+        self.assertIn("draw_t_display_s3_boot_frame", display_header)
+        self.assertIn("esp_lcd_new_i80_bus", display_source)
+        self.assertIn("esp_lcd_new_panel_io_i80", display_source)
+        self.assertIn("esp_lcd_new_panel_st7789", display_source)
+        self.assertIn("esp_lcd_panel_reset", display_source)
+        self.assertIn("esp_lcd_panel_init", display_source)
+        self.assertIn("esp_lcd_panel_swap_xy(display.panel, true)", display_source)
+        self.assertIn("esp_lcd_panel_mirror(display.panel, true, false)", display_source)
+        self.assertIn("esp_lcd_panel_disp_on_off", display_source)
+        self.assertIn("esp_lcd_panel_draw_bitmap", display_source)
+        self.assertIn("wait_for_t_display_s3_color_transfer", display_source)
+        self.assertIn("esp_lcd_panel_io_tx_param", display_source)
+        self.assertIn("kTDisplayS3LogicalDisplayWidth", display_source)
+        self.assertIn("kTDisplayS3LogicalDisplayHeight", display_source)
+        self.assertIn("kTDisplayS3BacklightGpio", display_source)
+        self.assertIn("kTDisplayS3DisplayPowerGpio", display_source)
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 

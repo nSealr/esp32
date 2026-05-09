@@ -2,6 +2,7 @@ idf_component_register(
     SRCS
         "main.cpp"
         "t_display_s3_board.cpp"
+        "t_display_s3_display.cpp"
         "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/qr_envelope.cpp"
@@ -18,4 +19,7 @@ idf_component_register(
         "."
         "../../host_core/include"
         "../../../build/host_core"
+    PRIV_REQUIRES
+        esp_driver_gpio
+        esp_lcd
 )

@@ -10,6 +10,7 @@
 #include "nostrseal/limits.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "t_display_s3_board.hpp"
+#include "t_display_s3_display.hpp"
 
 namespace {
 constexpr const char* kTag = "nostrseal";
@@ -38,11 +39,19 @@ extern "C" void app_main(void) {
     ESP_LOGW(kTag, "Signing is disabled in this scaffold until storage, review, approval, and tests are implemented");
     ESP_LOGI(kTag, "USB serial frame handler ready for get_capabilities, get_public_key, and disabled sign_event");
     const auto& board = nostrseal_esp32::t_display_s3_board_profile();
-    ESP_LOGI(kTag, "%s %dx%d %s profile compiled; display and GPIO drivers disabled",
+    ESP_LOGI(kTag, "%s %dx%d %s profile compiled",
              board.name,
              board.display_width,
              board.display_height,
              board.display_driver);
+    nostrseal_esp32::TDisplayS3Display display;
+    esp_err_t display_status = nostrseal_esp32::initialize_t_display_s3_display(display);
+    if (display_status == ESP_OK) {
+        display_status = nostrseal_esp32::draw_t_display_s3_boot_frame(display);
+    }
+    if (display_status != ESP_OK) {
+        ESP_LOGW(kTag, "T-Display S3 display boot frame unavailable: %s", esp_err_to_name(display_status));
+    }
 
     std::string line;
     line.reserve(512);
