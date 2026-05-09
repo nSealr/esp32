@@ -197,6 +197,16 @@ and rejects invalid requests with deterministic `unsupported_request` frames.
 Real display, GPIO, camera, storage, secure boot, debug lock, and signing
 acceptance remain pending.
 
+Hardware note, 2026-05-09: revision `61b51df` was built with local ESP-IDF
+`v5.5.4`, flashed to the attached ESP32-S3 DevKitC-1 on
+`/dev/cu.usbmodem1101`, and smoke-tested with `make
+IDF_PORT=/dev/cu.usbmodem1101 idf-smoke-capabilities`. The smoke passed 33 USB
+serial exchanges: 6 valid response frames and 27 expected rejection frames.
+`sign_event` remains disabled with `signing_disabled`; real display, GPIO,
+camera, storage, secure boot, debug lock, and signing acceptance remain
+pending. The result is recorded as a manual `NostrSeal/hardware`
+protocol-smoke report.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
