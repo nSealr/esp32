@@ -1131,6 +1131,27 @@ void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses(
     assert(short_press->gpio == 14);
     assert(!short_press->long_press);
 
+    nostrseal_esp32::TDisplayS3ButtonState back_state;
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                back_state,
+                true,
+                4000,
+                0,
+                nostrseal::ReviewButton::Back,
+                nostrseal::ReviewButton::Reject)
+                .has_value());
+    const auto back_press = nostrseal_esp32::update_t_display_s3_button_state(
+        back_state,
+        false,
+        4040,
+        0,
+        nostrseal::ReviewButton::Back,
+        nostrseal::ReviewButton::Reject);
+    assert(back_press.has_value());
+    assert(back_press->button == nostrseal::ReviewButton::Back);
+    assert(back_press->gpio == 0);
+    assert(!back_press->long_press);
+
     assert(!nostrseal_esp32::update_t_display_s3_button_state(
                 state,
                 true,
@@ -1150,6 +1171,27 @@ void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses(
     assert(long_press->button == nostrseal::ReviewButton::Reject);
     assert(long_press->gpio == 0);
     assert(long_press->long_press);
+
+    nostrseal_esp32::TDisplayS3ButtonState approve_state;
+    assert(!nostrseal_esp32::update_t_display_s3_button_state(
+                approve_state,
+                true,
+                5000,
+                14,
+                nostrseal::ReviewButton::Next,
+                nostrseal::ReviewButton::Approve)
+                .has_value());
+    const auto approve_press = nostrseal_esp32::update_t_display_s3_button_state(
+        approve_state,
+        false,
+        5800,
+        14,
+        nostrseal::ReviewButton::Next,
+        nostrseal::ReviewButton::Approve);
+    assert(approve_press.has_value());
+    assert(approve_press->button == nostrseal::ReviewButton::Approve);
+    assert(approve_press->gpio == 14);
+    assert(approve_press->long_press);
 }
 
 void test_t_display_s3_status_frames_keep_non_signing_copy_stable() {
