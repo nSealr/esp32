@@ -4,6 +4,8 @@
 #include "esp_lcd_io_i80.h"
 #include "esp_lcd_types.h"
 
+#include "nostrseal/review_display.hpp"
+
 namespace nostrseal_esp32 {
 
 struct TDisplayS3Display {
@@ -15,5 +17,9 @@ struct TDisplayS3Display {
 
 esp_err_t initialize_t_display_s3_display(TDisplayS3Display& display);
 esp_err_t draw_t_display_s3_boot_frame(TDisplayS3Display& display);
+nostrseal::ReviewDisplayLimits t_display_s3_review_limits();
+esp_err_t draw_t_display_s3_review_frame(
+    TDisplayS3Display& display,
+    const nostrseal::ReviewDisplayFrame& frame);
 
 }  // namespace nostrseal_esp32

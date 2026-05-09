@@ -245,6 +245,39 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("kTDisplayS3BacklightGpio", display_source)
         self.assertIn("kTDisplayS3DisplayPowerGpio", display_source)
 
+    def test_t_display_s3_firmware_renders_host_core_review_frames(self) -> None:
+        display_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.hpp"
+        display_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.cpp"
+        main_path = ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp"
+
+        display_header = display_header_path.read_text(encoding="utf-8")
+        display_source = display_source_path.read_text(encoding="utf-8")
+        main = main_path.read_text(encoding="utf-8")
+
+        self.assertIn("nostrseal/review_display.hpp", display_header)
+        self.assertIn("t_display_s3_review_limits", display_header)
+        self.assertIn("draw_t_display_s3_review_frame", display_header)
+        self.assertIn("ReviewDisplayFrame", display_header)
+
+        self.assertIn("kTDisplayS3ReviewTitleChars", display_source)
+        self.assertIn("kTDisplayS3ReviewBodyLines", display_source)
+        self.assertIn("kTDisplayS3ReviewLineChars", display_source)
+        self.assertIn("kFooterActionScale = 2", display_source)
+        self.assertIn("kHeaderRightMargin", display_source)
+        self.assertIn("text_width_px", display_source)
+        self.assertIn("right_aligned_text_x", display_source)
+        self.assertNotIn("draw_text(frame.page_indicator, 230", display_source)
+        self.assertIn("draw_text", display_source)
+        self.assertIn("glyph_rows_for", display_source)
+        self.assertIn("wait_for_t_display_s3_color_transfer", display_source)
+        self.assertIn("esp_lcd_panel_draw_bitmap", display_source)
+
+        self.assertIn("nostrseal/review_display.hpp", main)
+        self.assertIn("render_review_page", main)
+        self.assertIn("t_display_s3_review_limits", main)
+        self.assertIn("draw_t_display_s3_review_frame", main)
+        self.assertIn("Signing is disabled", main)
+
     def test_board_profile_validator_discovers_every_profile(self) -> None:
         validate_board_profiles = getattr(validate_firmware, "validate_board_profiles", None)
 

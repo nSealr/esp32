@@ -5,9 +5,12 @@
 #include <cstdio>
 #include <exception>
 #include <string>
+#include <string_view>
+#include <vector>
 
 #include "nostrseal/device_protocol.hpp"
 #include "nostrseal/limits.hpp"
+#include "nostrseal/review_display.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "t_display_s3_board.hpp"
 #include "t_display_s3_display.hpp"
@@ -32,6 +35,24 @@ void process_frame_line(const std::string& line) {
         write_transport_error("eyJlcnJvciI6Im1hbGZvcm1lZF9mcmFtZSJ9");
     }
 }
+
+nostrseal::ReviewDisplayFrame build_display_smoke_review_frame() {
+    nostrseal::ReviewPage page;
+    page.title = "Event review";
+    page.lines = std::vector<std::string_view>{
+        "Kind 1",
+        "Short text note",
+        "Created 1710000000",
+        "Content: display test",
+    };
+    page.action = nostrseal::ReviewPageAction::Next;
+
+    return nostrseal::render_review_page(
+        page,
+        0,
+        3,
+        nostrseal_esp32::t_display_s3_review_limits());
+}
 }
 
 extern "C" void app_main(void) {
@@ -49,8 +70,14 @@ extern "C" void app_main(void) {
     if (display_status == ESP_OK) {
         display_status = nostrseal_esp32::draw_t_display_s3_boot_frame(display);
     }
+    if (display_status == ESP_OK) {
+        vTaskDelay(pdMS_TO_TICKS(250));
+        display_status = nostrseal_esp32::draw_t_display_s3_review_frame(
+            display,
+            build_display_smoke_review_frame());
+    }
     if (display_status != ESP_OK) {
-        ESP_LOGW(kTag, "T-Display S3 display boot frame unavailable: %s", esp_err_to_name(display_status));
+        ESP_LOGW(kTag, "T-Display S3 display review frame unavailable: %s", esp_err_to_name(display_status));
     }
 
     std::string line;
