@@ -107,6 +107,9 @@ board into a separate repository.
   GPIO15 display-power line, no-camera status, and touch-not-approval rule,
   then draws a Ready/No request frame while keeping storage and signing
   disabled.
+- Host-buildable T-Display S3 raster tests cover the same boot and review-frame
+  pixel-color function used by the ESP-IDF ST7789/i80 draw path, including
+  border, boot pattern, title, page indicator, body, and footer samples.
 - T-Display S3 onboard button polling for manual review navigation after a live
   `sign_event` request. Short GPIO14 moves Next, short GPIO0 moves Back, long
   GPIO14 maps Approve, and long GPIO0 maps Reject. The runtime still returns

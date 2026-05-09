@@ -253,6 +253,14 @@ stray pixels. This is display bring-up only: review-frame rendering on the
 physical display, GPIO approval, camera, storage, secure boot, debug lock, and
 signing acceptance remain pending.
 
+Status note, 2026-05-09: the T-Display S3 display pixel layout is now factored
+into a host-buildable raster module shared by the ESP-IDF ST7789/i80 driver.
+Host-core tests sample the same boot and review-frame color functions used by
+the physical display path, covering border, boot pattern, title text, page
+indicator, body text, footer background, and footer action text. This is a
+regression guard for the display calibration work; it does not change the
+disabled-signing boundary.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
@@ -263,9 +271,10 @@ signing acceptance remain pending.
   Status: host-core `QrReviewIo` now defines the scanner/display/button
   adapter boundary for the QR review loop, and revision `b7aa30a` confirms that
   transcript-producing host-core still builds and flashes inside the ESP-IDF
-  component. The no-camera T-Display S3 now has an initial ESP-IDF ST7789/i80
-  boot-frame adapter, but trusted review-frame painting and physical approval
-  GPIO acceptance remain pending.
+  component. The no-camera T-Display S3 now has an ESP-IDF ST7789/i80
+  review-frame adapter, onboard button review navigation, and host-buildable
+  raster tests for display layout. Production trusted-display and
+  physical-control acceptance remain pending before signing can be connected.
 - Host-rendered review frame contract for display drivers.
 - Repeatable ESP-IDF build and flash command wrappers.
 - Add display/button acceptance tests before enabling any real signing path.

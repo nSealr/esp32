@@ -251,29 +251,38 @@ class FirmwareProjectValidationTests(unittest.TestCase):
     def test_t_display_s3_firmware_renders_host_core_review_frames(self) -> None:
         display_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.hpp"
         display_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_display.cpp"
+        raster_header_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.hpp"
+        raster_source_path = ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp"
         main_path = ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp"
 
         display_header = display_header_path.read_text(encoding="utf-8")
         display_source = display_source_path.read_text(encoding="utf-8")
+        raster_header = raster_header_path.read_text(encoding="utf-8")
+        raster_source = raster_source_path.read_text(encoding="utf-8")
         main = main_path.read_text(encoding="utf-8")
 
-        self.assertIn("nostrseal/review_display.hpp", display_header)
-        self.assertIn("t_display_s3_review_limits", display_header)
+        self.assertIn("t_display_s3_raster.hpp", display_header)
         self.assertIn("draw_t_display_s3_review_frame", display_header)
         self.assertIn("ReviewDisplayFrame", display_header)
 
-        self.assertIn("kTDisplayS3ReviewTitleChars", display_source)
-        self.assertIn("kTDisplayS3ReviewBodyLines", display_source)
-        self.assertIn("kTDisplayS3ReviewLineChars", display_source)
-        self.assertIn("kFooterActionScale = 2", display_source)
-        self.assertIn("kHeaderRightMargin", display_source)
-        self.assertIn("text_width_px", display_source)
-        self.assertIn("right_aligned_text_x", display_source)
-        self.assertNotIn("draw_text(frame.page_indicator, 230", display_source)
-        self.assertIn("draw_text", display_source)
-        self.assertIn("glyph_rows_for", display_source)
+        self.assertIn("t_display_s3_boot_frame_color_for", display_source)
+        self.assertIn("t_display_s3_review_frame_color_for", display_source)
         self.assertIn("wait_for_t_display_s3_color_transfer", display_source)
         self.assertIn("esp_lcd_panel_draw_bitmap", display_source)
+
+        self.assertIn("nostrseal/review_display.hpp", raster_header)
+        self.assertIn("t_display_s3_review_limits", raster_header)
+        self.assertIn("t_display_s3_review_frame_color_for", raster_header)
+        self.assertIn("kTDisplayS3ReviewTitleChars", raster_source)
+        self.assertIn("kTDisplayS3ReviewBodyLines", raster_source)
+        self.assertIn("kTDisplayS3ReviewLineChars", raster_source)
+        self.assertIn("kFooterActionScale = 2", raster_source)
+        self.assertIn("kHeaderRightMargin", raster_source)
+        self.assertIn("text_width_px", raster_source)
+        self.assertIn("right_aligned_text_x", raster_source)
+        self.assertNotIn("draw_text(frame.page_indicator, 230", raster_source)
+        self.assertIn("text_pixel_active", raster_source)
+        self.assertIn("glyph_rows_for", raster_source)
 
         self.assertIn("nostrseal/review_display.hpp", main)
         self.assertIn("handle_serial_frame_with_review_preview", main)
@@ -286,7 +295,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn('"Send sign_event"', main)
         self.assertIn('frame.action_hint = "Waiting"', main)
         self.assertNotIn("Content: display test", main)
-        self.assertIn("case '_'", display_source)
+        self.assertIn("case '_'", raster_source)
         self.assertIn("Signing is disabled", main)
 
     def test_t_display_s3_firmware_maps_onboard_buttons_without_touch_approval(self) -> None:

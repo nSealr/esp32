@@ -56,6 +56,12 @@ def validate_firmware_project(project: Path) -> None:
         raise ValueError(f"{project}: main.cpp must define app_main")
     component_cmake = (project / "main/CMakeLists.txt").read_text(encoding="utf-8")
     for required_source in (
+        "main.cpp",
+        "t_display_s3_board.cpp",
+        "t_display_s3_buttons.cpp",
+        "t_display_s3_display.cpp",
+        "t_display_s3_raster.cpp",
+        "t_display_s3_review_state.cpp",
         "approval_gate.cpp",
         "device_protocol.cpp",
         "qr_envelope.cpp",

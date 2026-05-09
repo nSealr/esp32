@@ -56,6 +56,11 @@ tests with strict C++ warnings.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
   compiles an ST7789/i80 adapter and boot-frame path while keeping physical
   GPIO approval and signing disabled.
+- Host-buildable T-Display S3 raster tests proving the boot and review-frame
+  pixel-color functions used by the ESP-IDF display driver keep stable samples
+  for the white border, blue boot header, green/black boot checkerboard, review
+  title text, page indicator, body text, footer background, and footer action
+  text.
 - Firmware button-driver tests proving the T-Display S3 scaffold maps vendor
   documented GPIO0/GPIO14 physical controls to Back/Next short presses and
   Reject/Approve long presses, while keeping touch disallowed for approval and

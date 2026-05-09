@@ -13,7 +13,9 @@ generate-host-vectors:
 host-core-test: generate-host-vectors
 	c++ -std=c++20 -Wall -Wextra -Werror \
 		-Ifirmware/host_core/include \
+		-Ifirmware/esp32_s3_usb_signer/main \
 		-Ibuild/host_core \
+		firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp \
 		firmware/host_core/src/approval_gate.cpp \
 		firmware/host_core/src/device_protocol.cpp \
 		firmware/host_core/src/qr_envelope.cpp \

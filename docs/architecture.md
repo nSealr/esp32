@@ -7,9 +7,10 @@
 - ESP32 USB/NIP-46 signer, with ESP32-S3 as the primary target.
   The no-camera LILYGO T-Display S3 is tracked here as an integrated display
   candidate for the USB/display signer line. Its current firmware support
-  initializes the ST7789/i80 path and draws a boot/self-test frame; trusted
-  review-frame rendering on the physical display and physical GPIO controls are
-  still pending.
+  initializes the ST7789/i80 path, draws boot/ready/review/status frames, and
+  maps onboard physical buttons for manual review navigation. Production
+  signing acceptance for trusted display and physical controls is still
+  pending.
 - ESP32 stateless QR vault target, with T-Display S3 Pro OV5640 as the primary
   camera/display target.
 - Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.
@@ -118,6 +119,12 @@ frame, wraps/truncates body text to the configured limits, and keeps unsafe
 title or limit settings out of the driver boundary. A later ESP-IDF display
 adapter can paint that frame without changing review, approval, or signing
 semantics.
+
+The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
+logic in a host-buildable module. The ESP-IDF draw path and desktop tests share
+the same color-per-pixel functions for the boot pattern and review frame, so
+layout regressions in title, page indicator, body text, footer text, borders,
+and core colors are caught before flashing.
 
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
 `nseal1:` envelope contract used by Raspberry and the companion, but it does

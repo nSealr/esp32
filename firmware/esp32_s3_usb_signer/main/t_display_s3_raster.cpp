@@ -1,0 +1,174 @@
+#include "t_display_s3_raster.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <string_view>
+
+#include "t_display_s3_board.hpp"
+
+namespace nostrseal_esp32 {
+namespace {
+
+constexpr std::size_t kTDisplayS3ReviewTitleChars = 18;
+constexpr std::size_t kTDisplayS3ReviewBodyLines = 5;
+constexpr std::size_t kTDisplayS3ReviewLineChars = 26;
+constexpr int kGlyphWidth = 5;
+constexpr int kGlyphHeight = 7;
+constexpr int kGlyphSpacing = 1;
+constexpr int kHeaderHeight = 30;
+constexpr int kHeaderRightMargin = 10;
+constexpr int kFooterY = 148;
+constexpr int kFooterActionScale = 2;
+constexpr int kBodyY = 42;
+constexpr int kBodyLineHeight = 20;
+
+std::array<uint8_t, kGlyphHeight> glyph_rows_for(char ch) {
+    if (ch >= 'a' && ch <= 'z') {
+        ch = static_cast<char>(ch - ('a' - 'A'));
+    }
+
+    switch (ch) {
+        case 'A': return {0x0E, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11};
+        case 'B': return {0x1E, 0x11, 0x11, 0x1E, 0x11, 0x11, 0x1E};
+        case 'C': return {0x0E, 0x11, 0x10, 0x10, 0x10, 0x11, 0x0E};
+        case 'D': return {0x1E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1E};
+        case 'E': return {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F};
+        case 'F': return {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x10};
+        case 'G': return {0x0E, 0x11, 0x10, 0x13, 0x11, 0x11, 0x0F};
+        case 'H': return {0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11};
+        case 'I': return {0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x1F};
+        case 'J': return {0x01, 0x01, 0x01, 0x01, 0x11, 0x11, 0x0E};
+        case 'K': return {0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11};
+        case 'L': return {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x1F};
+        case 'M': return {0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11};
+        case 'N': return {0x11, 0x19, 0x15, 0x13, 0x11, 0x11, 0x11};
+        case 'O': return {0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E};
+        case 'P': return {0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10};
+        case 'Q': return {0x0E, 0x11, 0x11, 0x11, 0x15, 0x12, 0x0D};
+        case 'R': return {0x1E, 0x11, 0x11, 0x1E, 0x14, 0x12, 0x11};
+        case 'S': return {0x0F, 0x10, 0x10, 0x0E, 0x01, 0x01, 0x1E};
+        case 'T': return {0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04};
+        case 'U': return {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E};
+        case 'V': return {0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04};
+        case 'W': return {0x11, 0x11, 0x11, 0x15, 0x15, 0x15, 0x0A};
+        case 'X': return {0x11, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x11};
+        case 'Y': return {0x11, 0x11, 0x0A, 0x04, 0x04, 0x04, 0x04};
+        case 'Z': return {0x1F, 0x01, 0x02, 0x04, 0x08, 0x10, 0x1F};
+        case '0': return {0x0E, 0x11, 0x13, 0x15, 0x19, 0x11, 0x0E};
+        case '1': return {0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E};
+        case '2': return {0x0E, 0x11, 0x01, 0x02, 0x04, 0x08, 0x1F};
+        case '3': return {0x1E, 0x01, 0x01, 0x0E, 0x01, 0x01, 0x1E};
+        case '4': return {0x02, 0x06, 0x0A, 0x12, 0x1F, 0x02, 0x02};
+        case '5': return {0x1F, 0x10, 0x10, 0x1E, 0x01, 0x01, 0x1E};
+        case '6': return {0x06, 0x08, 0x10, 0x1E, 0x11, 0x11, 0x0E};
+        case '7': return {0x1F, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08};
+        case '8': return {0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E};
+        case '9': return {0x0E, 0x11, 0x11, 0x0F, 0x01, 0x02, 0x0C};
+        case '/': return {0x01, 0x01, 0x02, 0x04, 0x08, 0x10, 0x10};
+        case ':': return {0x00, 0x04, 0x04, 0x00, 0x04, 0x04, 0x00};
+        case '-': return {0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00};
+        case '_': return {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F};
+        case '.': return {0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x0C};
+        case ' ': return {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        default: return {0x0E, 0x11, 0x01, 0x02, 0x04, 0x00, 0x04};
+    }
+}
+
+bool text_pixel_active(std::string_view text, int origin_x, int origin_y, int scale, int x, int y) {
+    if (x < origin_x || y < origin_y) {
+        return false;
+    }
+    const int rel_x = x - origin_x;
+    const int rel_y = y - origin_y;
+    const int text_height = kGlyphHeight * scale;
+    if (rel_y >= text_height) {
+        return false;
+    }
+
+    const int cell_width = (kGlyphWidth + kGlyphSpacing) * scale;
+    const int char_index = rel_x / cell_width;
+    if (char_index < 0 || static_cast<std::size_t>(char_index) >= text.size()) {
+        return false;
+    }
+    const int local_x = (rel_x % cell_width) / scale;
+    if (local_x >= kGlyphWidth) {
+        return false;
+    }
+    const int local_y = rel_y / scale;
+    const auto rows = glyph_rows_for(text[static_cast<std::size_t>(char_index)]);
+    return ((rows[static_cast<std::size_t>(local_y)] >> (kGlyphWidth - 1 - local_x)) & 0x01) != 0;
+}
+
+int text_width_px(std::string_view text, int scale) {
+    if (text.empty()) {
+        return 0;
+    }
+    return static_cast<int>(text.size()) * (kGlyphWidth + kGlyphSpacing) * scale;
+}
+
+int right_aligned_text_x(std::string_view text, int scale, int right_margin) {
+    return std::max(0, kTDisplayS3LogicalDisplayWidth - right_margin - text_width_px(text, scale));
+}
+
+}  // namespace
+
+uint16_t t_display_s3_boot_frame_color_for(int x, int y) {
+    if (x < 4 || x >= kTDisplayS3LogicalDisplayWidth - 4 || y < 4 ||
+        y >= kTDisplayS3LogicalDisplayHeight - 4) {
+        return kTDisplayS3ColorWhite;
+    }
+    if (y < 56) {
+        return kTDisplayS3ColorBlue;
+    }
+    if (((x / 16) + (y / 16)) % 2 == 0) {
+        return kTDisplayS3ColorGreen;
+    }
+    return kTDisplayS3ColorBlack;
+}
+
+nostrseal::ReviewDisplayLimits t_display_s3_review_limits() {
+    return nostrseal::ReviewDisplayLimits{
+        .max_title_chars = kTDisplayS3ReviewTitleChars,
+        .max_body_lines = kTDisplayS3ReviewBodyLines,
+        .max_line_chars = kTDisplayS3ReviewLineChars,
+    };
+}
+
+uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame& frame, int x, int y) {
+    if (y < kHeaderHeight) {
+        if (text_pixel_active(frame.title, 10, 7, 2, x, y)) {
+            return kTDisplayS3ColorWhite;
+        }
+        if (text_pixel_active(
+                frame.page_indicator,
+                right_aligned_text_x(frame.page_indicator, 1, kHeaderRightMargin),
+                9,
+                1,
+                x,
+                y)) {
+            return kTDisplayS3ColorGreen;
+        }
+        return kTDisplayS3ColorDarkBlue;
+    }
+
+    for (std::size_t line = 0; line < frame.body_lines.size(); ++line) {
+        if (line >= kTDisplayS3ReviewBodyLines) {
+            break;
+        }
+        if (text_pixel_active(frame.body_lines[line], 10, kBodyY + (static_cast<int>(line) * kBodyLineHeight), 2, x, y)) {
+            return kTDisplayS3ColorWhite;
+        }
+    }
+
+    if (y >= kFooterY) {
+        if (text_pixel_active(frame.action_hint, 10, kFooterY + 4, kFooterActionScale, x, y)) {
+            return kTDisplayS3ColorBlack;
+        }
+        return kTDisplayS3ColorAmber;
+    }
+
+    return kTDisplayS3ColorBlack;
+}
+
+}  // namespace nostrseal_esp32

@@ -18,6 +18,7 @@
 #include "nostrseal/serial_review.hpp"
 #include "nostrseal/signing_policy.hpp"
 #include "nostrseal/trusted_review.hpp"
+#include "t_display_s3_raster.hpp"
 #include "transport_vector.hpp"
 
 namespace {
@@ -1059,6 +1060,35 @@ void test_device_protocol_rejects_invalid_sign_event_request_shape() {
            error_frame_for_test(R"({"error":"unsupported_request"})"));
 }
 
+void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
+    using namespace nostrseal_esp32;
+
+    assert(t_display_s3_boot_frame_color_for(0, 0) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_boot_frame_color_for(10, 10) == kTDisplayS3ColorBlue);
+    assert(t_display_s3_boot_frame_color_for(20, 60) == kTDisplayS3ColorGreen);
+    assert(t_display_s3_boot_frame_color_for(10, 60) == kTDisplayS3ColorBlack);
+
+    nostrseal::ReviewDisplayFrame frame;
+    frame.title = "Ready";
+    frame.page_indicator = "Page 1/3";
+    frame.body_lines = std::vector<std::string>{
+        "USB signer",
+        "Send sign_event",
+        "Signing disabled",
+    };
+    frame.action_hint = "Waiting";
+
+    assert(t_display_s3_review_limits().max_title_chars == 18);
+    assert(t_display_s3_review_limits().max_body_lines == 5);
+    assert(t_display_s3_review_limits().max_line_chars == 26);
+    assert(t_display_s3_review_frame_color_for(frame, 0, 0) == kTDisplayS3ColorDarkBlue);
+    assert(t_display_s3_review_frame_color_for(frame, 10, 7) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(frame, 262, 9) == kTDisplayS3ColorGreen);
+    assert(t_display_s3_review_frame_color_for(frame, 10, 42) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(frame, 0, 160) == kTDisplayS3ColorAmber);
+    assert(t_display_s3_review_frame_color_for(frame, 10, 152) == kTDisplayS3ColorBlack);
+}
+
 }  // namespace
 
 int main() {
@@ -1114,6 +1144,7 @@ int main() {
     test_device_protocol_rejects_unknown_top_level_request_fields();
     test_device_protocol_rejects_params_for_parameterless_methods();
     test_device_protocol_rejects_invalid_sign_event_request_shape();
+    test_t_display_s3_raster_has_stable_boot_and_review_pixels();
     std::cout << "host core tests passed\n";
     return 0;
 }
