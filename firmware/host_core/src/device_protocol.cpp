@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "nostrseal/limits.hpp"
@@ -313,40 +314,54 @@ std::string signing_disabled_response_json(const std::string& request_id) {
 }  // namespace
 
 std::string handle_serial_frame(const std::string& line) {
+    return handle_serial_frame_with_review_preview(line).response_frame;
+}
+
+SerialFrameHandlingResult handle_serial_frame_with_review_preview(
+    const std::string& line,
+    ReviewDisplayLimits limits) {
     const SerialFrame request = decode_serial_frame(line);
     if (request.type != FrameType::Request) {
-        return encode_serial_frame(unsupported_request_frame());
+        return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }
 
     const std::string request_json = decode_base64url(request.payload_base64url);
     if (request_json.size() > kMaxDecodedRequestJsonBytes) {
-        return encode_serial_frame(unsupported_request_frame());
+        return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }
     const RequestMetadata metadata = parse_request_metadata(request_json);
     if (!metadata.version_one || !is_request_id(metadata.request_id) || metadata.has_unknown_top_level_field) {
-        return encode_serial_frame(unsupported_request_frame());
+        return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }
     if (metadata.method == "get_capabilities") {
         if (metadata.has_params) {
-            return encode_serial_frame(unsupported_request_frame());
+            return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
         }
-        return encode_serial_frame(response_frame(capability_response_json(metadata.request_id)));
+        return SerialFrameHandlingResult{
+            encode_serial_frame(response_frame(capability_response_json(metadata.request_id))),
+            std::nullopt};
     }
     if (metadata.method == "get_public_key") {
         if (metadata.has_params) {
-            return encode_serial_frame(unsupported_request_frame());
+            return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
         }
-        return encode_serial_frame(response_frame(public_key_response_json(metadata.request_id)));
+        return SerialFrameHandlingResult{
+            encode_serial_frame(response_frame(public_key_response_json(metadata.request_id))),
+            std::nullopt};
     }
     if (metadata.method == "sign_event") {
+        std::optional<ReviewDisplayFrame> review_frame;
         try {
-            (void)build_serial_sign_event_trusted_review_request(request_json);
+            TrustedReviewSession session = begin_serial_sign_event_trusted_review(request_json, limits);
+            review_frame = session.current_frame();
         } catch (const QrEnvelopeError&) {
-            return encode_serial_frame(unsupported_request_frame());
+            return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
         }
-        return encode_serial_frame(response_frame(signing_disabled_response_json(metadata.request_id)));
+        return SerialFrameHandlingResult{
+            encode_serial_frame(response_frame(signing_disabled_response_json(metadata.request_id))),
+            std::move(review_frame)};
     }
-    return encode_serial_frame(unsupported_request_frame());
+    return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
 }
 
 }  // namespace nostrseal

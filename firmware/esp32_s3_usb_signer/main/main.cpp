@@ -25,10 +25,27 @@ void write_transport_error(const char* payload_base64url) {
     std::fflush(stdout);
 }
 
-void process_frame_line(const std::string& line) {
+void display_sign_event_review_preview(
+    nostrseal_esp32::TDisplayS3Display& display,
+    const nostrseal::SerialFrameHandlingResult& result) {
+    if (!result.review_frame.has_value()) {
+        return;
+    }
+    const esp_err_t display_status = nostrseal_esp32::draw_t_display_s3_review_frame(
+        display,
+        result.review_frame.value());
+    if (display_status != ESP_OK) {
+        ESP_LOGW(kTag, "T-Display S3 request review preview unavailable: %s", esp_err_to_name(display_status));
+    }
+}
+
+void process_frame_line(const std::string& line, nostrseal_esp32::TDisplayS3Display& display) {
     try {
-        const std::string response = nostrseal::handle_serial_frame(line);
-        std::printf("%s", response.c_str());
+        const nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
+            line,
+            nostrseal_esp32::t_display_s3_review_limits());
+        display_sign_event_review_preview(display, result);
+        std::printf("%s", result.response_frame.c_str());
         std::fflush(stdout);
     } catch (const std::exception& exc) {
         ESP_LOGW(kTag, "Rejected serial frame: %s", exc.what());
@@ -100,7 +117,7 @@ extern "C" void app_main(void) {
             continue;
         }
         if (ch == '\n') {
-            process_frame_line(line);
+            process_frame_line(line, display);
             line.clear();
         }
     }

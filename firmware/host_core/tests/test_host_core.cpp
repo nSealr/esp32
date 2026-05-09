@@ -890,6 +890,24 @@ void test_device_protocol_rejects_signing_while_disabled() {
     assert(decoded.payload_base64url == nostrseal::test_vectors::kSignEventDisabledResponsePayloadBase64Url);
 }
 
+void test_device_protocol_exposes_review_frame_before_disabled_signing_response() {
+    const nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
+        nostrseal::test_vectors::kSignEventRequestFrame,
+        nostrseal::ReviewDisplayLimits{
+            .max_title_chars = 18,
+            .max_body_lines = 5,
+            .max_line_chars = 26,
+        });
+
+    assert(result.response_frame == nostrseal::test_vectors::kSignEventDisabledResponseFrame);
+    assert(result.review_frame.has_value());
+    assert(result.review_frame->title == "Event");
+    assert(result.review_frame->page_indicator == "Page 1/4");
+    assert(!result.review_frame->body_lines.empty());
+    assert(result.review_frame->body_lines.front() == "Kind 1");
+    assert(result.review_frame->action_hint == "Next");
+}
+
 void test_device_protocol_reports_development_public_key() {
     const std::string response = nostrseal::handle_serial_frame(nostrseal::test_vectors::kPublicKeyRequestFrame);
 
@@ -998,6 +1016,7 @@ int main() {
     test_signing_policy_requires_every_runtime_gate_before_enablement();
     test_device_protocol_reports_scaffold_capabilities();
     test_device_protocol_rejects_signing_while_disabled();
+    test_device_protocol_exposes_review_frame_before_disabled_signing_response();
     test_device_protocol_reports_development_public_key();
     test_device_protocol_echoes_dynamic_request_ids();
     test_device_protocol_rejects_invalid_dynamic_request_metadata();
