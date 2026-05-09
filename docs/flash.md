@@ -180,3 +180,23 @@ boundary compiles into the ESP-IDF component while runtime protocol behavior
 stays conservative: capability and development public-key requests succeed,
 `sign_event` returns `signing_disabled`, and invalid requests return
 deterministic `unsupported_request` frames.
+
+## Manual T-Display S3 Review Display Exercise
+
+After flashing the current T-Display S3 firmware, a deterministic review screen
+can be sent to the device for human inspection:
+
+```sh
+python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
+```
+
+To exercise the request-error display state, send a valid review request
+followed by an invalid signing-request vector:
+
+```sh
+python3 scripts/manual_review_display.py show-request-error --port /dev/cu.<device>
+```
+
+These helpers are manual display bring-up tools. They do not approve requests,
+do not persist keys, and still expect the serial protocol to return
+`signing_disabled` for valid `sign_event` requests.

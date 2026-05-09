@@ -169,6 +169,19 @@ rejections instead of printing raw protocol error frames; use
 `scripts/smoke_capabilities.py --verbose-frames` when raw frames are needed.
 Real signing is still expected to return `signing_disabled`.
 
+For manual T-Display S3 display inspection after flashing, use:
+
+```sh
+python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
+python3 scripts/manual_review_display.py show-request-error --port /dev/cu.<device>
+```
+
+`show-review` leaves a valid disabled `sign_event` review on the physical
+display. `show-request-error` first shows that review and then sends an invalid
+request so the firmware should clear the active review and display the
+non-signing request-error state. Both modes still expect signing to remain
+disabled.
+
 ## License
 
 Firmware and tooling are released under the MIT License unless a file says

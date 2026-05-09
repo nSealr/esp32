@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from scripts import detect_esp32_s3
+from scripts import manual_review_display
 from scripts import smoke_capabilities
 from scripts import validate_firmware
 from scripts.validate_firmware import validate_firmware_project
@@ -745,6 +746,72 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         )
 
         self.assertEqual(frames, responses)
+
+
+class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
+    def test_manual_review_display_builds_dynamic_sign_event_exchange(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-review",
+            request_id="manual-review-test",
+        )
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-review-test")
+        self.assertEqual(response["request_id"], "manual-review-test")
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+
+    def test_manual_review_display_builds_request_error_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-request-error",
+            request_id="manual-error-test",
+        )
+
+        self.assertEqual(len(exchanges), 2)
+        valid_request = decode_serial_frame_payload(exchanges[0][0])
+        invalid_request = decode_serial_frame_payload(exchanges[1][0])
+        invalid_response = decode_serial_frame_payload(exchanges[1][1])
+
+        self.assertEqual(valid_request["request_id"], "manual-error-test")
+        self.assertEqual(invalid_request["request_id"], "manual-error-test-invalid")
+        self.assertIn("pubkey", invalid_request["params"]["event_template"])
+        self.assertEqual(invalid_response, {"error": "unsupported_request"})
+
+    def test_manual_review_display_runs_exchanges_with_fake_serial_device(self) -> None:
+        responses = [
+            "nseal1f:response:manual:1111111111111111\n",
+            "nseal1f:error:manual:2222222222222222\n",
+        ]
+
+        class ManualDisplayDevice:
+            def __init__(self) -> None:
+                self.written: list[bytes] = []
+                self._responses = list(responses)
+                self._pending = ""
+
+            def write(self, request: bytes) -> None:
+                self.written.append(request)
+                self._pending = self._responses.pop(0)
+
+            def flush(self) -> None:
+                return None
+
+            def read(self, _size: int) -> bytes:
+                return self._pending.encode("ascii")
+
+        device = ManualDisplayDevice()
+        frames = manual_review_display.run_manual_review_exchanges(
+            device,
+            [("request-1\n", responses[0]), ("request-2\n", responses[1])],
+            timeout=0.01,
+        )
+
+        self.assertEqual(frames, responses)
+        self.assertEqual(device.written, [b"request-1\n", b"request-2\n"])
 
 
 if __name__ == "__main__":
