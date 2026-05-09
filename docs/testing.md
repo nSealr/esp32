@@ -152,7 +152,9 @@ tests with strict C++ warnings.
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
   exchanges, composes the request-error scenario from shared invalid vectors,
   prints physical-control checklists for approve/reject acceptance scenarios,
-  and runs exchanges through a fake serial device without opening hardware.
+  includes the terminal `Send new request` prompt in request-error and closed
+  decision expectations, and runs exchanges through a fake serial device
+  without opening hardware.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

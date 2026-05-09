@@ -208,4 +208,6 @@ python3 scripts/manual_review_display.py button-reject --port /dev/cu.<device>
 
 These helpers are manual display bring-up tools. They do not approve requests,
 do not persist keys, and still expect the serial protocol to return
-`signing_disabled` for valid `sign_event` requests.
+`signing_disabled` for valid `sign_event` requests. Terminal request-error,
+approve, and reject screens should also show `Send new request` as the final
+prompt after `Signing disabled`.

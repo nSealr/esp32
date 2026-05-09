@@ -101,20 +101,20 @@ def build_manual_observation_checklist(scenario: str) -> str:
         lines = [
             *common,
             "Confirm the invalid request clears the active review.",
-            "Expected final display: Request Error / Rejected / Not signed / Signing disabled.",
+            "Expected final display: Request Error / Rejected / Not signed / Signing disabled / Send new request.",
         ]
     elif scenario == "button-approve":
         lines = [
             *common,
             "Press short KEY/GPIO14 three times to reach the final page.",
             "Press long KEY/GPIO14 to approve.",
-            "Expected final display: Review OK / Closed / Not signed / Signing disabled.",
+            "Expected final display: Review OK / Closed / Not signed / Signing disabled / Send new request.",
         ]
     elif scenario == "button-reject":
         lines = [
             *common,
             "Press long BOOT/GPIO0 to reject.",
-            "Expected final display: Rejected / Closed / Not signed / Signing disabled.",
+            "Expected final display: Rejected / Closed / Not signed / Signing disabled / Send new request.",
         ]
     else:
         raise ValueError(f"unsupported manual review scenario: {scenario}")

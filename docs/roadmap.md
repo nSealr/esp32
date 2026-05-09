@@ -279,9 +279,10 @@ Status note, 2026-05-09: `scripts/manual_review_display.py` now includes
 `button-approve` and `button-reject` scenarios. They send a valid disabled
 `sign_event` review request and print the physical-control checklist for a
 human observer: short KEY/GPIO14 page traversal, long KEY/GPIO14 approve, and
-long BOOT/GPIO0 reject. This makes manual display/button acceptance runs more
-repeatable, but it still does not turn physical input into signing
-authorization.
+long BOOT/GPIO0 reject. The terminal checklist now also includes the expected
+`Send new request` prompt shown after `Signing disabled`. This makes manual
+display/button acceptance runs more repeatable, but it still does not turn
+physical input into signing authorization.
 
 ## M7: Firmware Foundation
 
@@ -348,16 +349,16 @@ validation only and not signing enablement.
 Status note, 2026-05-09: terminal T-Display S3 review decisions now render a
 closed non-signing status frame instead of leaving the final decision page on
 screen. Approve shows `Review OK`, Reject shows `Rejected`, both show
-`Not signed` and `Signing disabled`, and the active RAM-only review session is
-cleared. This is still UI feedback only; it does not change serial responses or
-enable a signing backend.
+`Not signed`, `Signing disabled`, and `Send new request`, and the active
+RAM-only review session is cleared. This is still UI feedback only; it does not
+change serial responses or enable a signing backend.
 
 Status note, 2026-05-09: rejected serial requests now also close any active
 T-Display S3 review session and render an explicit `Request Error` /
-`Rejected` / `Not signed` frame. This prevents stale review pages from
-remaining on screen after malformed, oversized, or unsupported host input. The
-serial protocol still returns deterministic error frames and signing remains
-disabled.
+`Rejected` / `Not signed` / `Signing disabled` / `Send new request` frame. This
+prevents stale review pages from remaining on screen after malformed,
+oversized, or unsupported host input. The serial protocol still returns
+deterministic error frames and signing remains disabled.
 
 Status note, 2026-05-09: active T-Display S3 review sessions now have a
 five-minute inactivity timeout. Expiry clears the RAM-only review state and

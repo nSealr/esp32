@@ -194,8 +194,9 @@ display. `show-request-error` first shows that review and then sends an invalid
 request so the firmware should clear the active review and display the
 non-signing request-error state. `button-approve` and `button-reject` send the
 same valid review request and print the physical-control checklist for manual
-approval/rejection acceptance. All modes still expect signing to remain
-disabled.
+approval/rejection acceptance. Terminal request-error, approve, and reject
+screens include the final `Send new request` prompt. All modes still expect
+signing to remain disabled.
 
 ## License
 

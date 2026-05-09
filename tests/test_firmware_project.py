@@ -823,6 +823,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
             scenario="show-request-error",
             request_id="manual-error-test",
         )
+        checklist = manual_review_display.build_manual_observation_checklist("show-request-error")
 
         self.assertEqual(len(exchanges), 2)
         valid_request = decode_serial_frame_payload(exchanges[0][0])
@@ -833,6 +834,10 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(invalid_request["request_id"], "manual-error-test-invalid")
         self.assertIn("pubkey", invalid_request["params"]["event_template"])
         self.assertEqual(invalid_response, {"error": "unsupported_request"})
+        self.assertIn(
+            "Request Error / Rejected / Not signed / Signing disabled / Send new request",
+            checklist,
+        )
 
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
@@ -850,7 +855,10 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertIn("short KEY/GPIO14 three times to reach the final page", checklist)
         self.assertIn("long KEY/GPIO14 to approve", checklist)
-        self.assertIn("Review OK / Closed / Not signed / Signing disabled", checklist)
+        self.assertIn(
+            "Review OK / Closed / Not signed / Signing disabled / Send new request",
+            checklist,
+        )
 
     def test_manual_review_display_builds_button_rejection_acceptance_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
@@ -867,7 +875,10 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(request["request_id"], "manual-reject-test")
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertIn("long BOOT/GPIO0 to reject", checklist)
-        self.assertIn("Rejected / Closed / Not signed / Signing disabled", checklist)
+        self.assertIn(
+            "Rejected / Closed / Not signed / Signing disabled / Send new request",
+            checklist,
+        )
 
     def test_manual_review_display_runs_exchanges_with_fake_serial_device(self) -> None:
         responses = [
