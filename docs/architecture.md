@@ -8,9 +8,10 @@
   The no-camera LILYGO T-Display S3 is tracked here as an integrated display
   candidate for the USB/display signer line. Its current firmware support
   initializes the ST7789/i80 path, draws boot/ready/review/status frames, and
-  maps onboard physical buttons for manual review navigation. Production
-  signing acceptance for trusted display and physical controls is still
-  pending.
+  maps onboard physical buttons for manual review navigation. The security
+  profile records manual development acceptance evidence for trusted display
+  and physical controls, while production signing acceptance for those gates
+  remains blocked.
 - ESP32 stateless QR vault target, with T-Display S3 Pro OV5640 as the primary
   camera/display target.
 - Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.
@@ -217,8 +218,10 @@ machine-readable security posture for the ESP-IDF scaffold. The v0 profile is
 development-only: runtime signing is disabled, production signing is not
 allowed, secure boot and flash encryption are not enabled, USB/JTAG debug
 access remains unlocked for bring-up, and key provisioning is not implemented.
-The validator requires those blockers to stay explicit until a later production
-profile is designed and tested.
+Trusted display and physical controls have manual development evidence recorded
+in the profile, but they remain production blockers. The validator requires
+those blockers to stay explicit until a later production profile is designed
+and tested.
 
 ## ESP-IDF Scaffold
 

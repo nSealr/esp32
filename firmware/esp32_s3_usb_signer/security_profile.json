@@ -28,6 +28,29 @@
     "ready": false,
     "required_before_signing": true
   },
+  "trusted_review_display": {
+    "status": "manual_development_acceptance_passed",
+    "required_before_signing": true,
+    "production_claim": "blocked_until_production_acceptance",
+    "evidence_reports": [
+      "NostrSeal/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
+    ]
+  },
+  "physical_approval_controls": {
+    "status": "manual_development_acceptance_passed",
+    "required_before_signing": true,
+    "production_claim": "blocked_until_production_acceptance",
+    "touch_approval_allowed": false,
+    "evidence_reports": [
+      "NostrSeal/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
+      "NostrSeal/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
+    ]
+  },
   "production_blockers": [
     "runtime_signing_feature",
     "trusted_review_display",

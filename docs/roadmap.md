@@ -380,6 +380,13 @@ encryption, debug lock, key provisioning, trusted display, physical controls,
 and signed-output verification as production blockers, and is enforced by
 `make ci`.
 
+Status note, 2026-05-09: `security_profile.json` now records T-Display S3
+manual development acceptance evidence for trusted display and physical
+approve/reject controls, including the hardware reports that exercised page
+navigation, terminal decisions, approve, and reject. This does not remove
+trusted display or physical controls from the production blocker list and does
+not enable signing.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

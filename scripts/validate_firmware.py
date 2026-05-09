@@ -32,6 +32,31 @@ REQUIRED_SECURITY_BLOCKERS = {
     "companion_signed_output_verification",
 }
 
+ACCEPTANCE_STATUSES = {"manual_development_acceptance_passed"}
+
+
+def _require_non_empty_string_list(value: object, path: Path, field: str) -> None:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{path}: {field} must be a non-empty list")
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError(f"{path}: {field} must contain non-empty strings")
+
+
+def _validate_manual_acceptance_evidence(path: Path, profile: dict, field: str) -> dict:
+    value = profile.get(field)
+    if not isinstance(value, dict):
+        raise ValueError(f"{path}: {field} must be an object")
+    if value.get("status") not in ACCEPTANCE_STATUSES:
+        allowed = ", ".join(sorted(ACCEPTANCE_STATUSES))
+        raise ValueError(f"{path}: {field}.status must be one of {allowed}")
+    if value.get("required_before_signing") is not True:
+        raise ValueError(f"{path}: {field}.required_before_signing must be true")
+    if value.get("production_claim") != "blocked_until_production_acceptance":
+        raise ValueError(f"{path}: {field}.production_claim must remain blocked_until_production_acceptance")
+    _require_non_empty_string_list(value.get("evidence_reports"), path, f"{field}.evidence_reports")
+    return value
+
 
 def validate_firmware_project(project: Path) -> None:
     for rel in REQUIRED_PROJECT_FILES:
@@ -122,6 +147,11 @@ def validate_security_profile(path: Path) -> None:
     if missing_blockers:
         missing = ", ".join(sorted(missing_blockers))
         raise ValueError(f"{path}: missing production blockers: {missing}")
+
+    _validate_manual_acceptance_evidence(path, profile, "trusted_review_display")
+    physical_controls = _validate_manual_acceptance_evidence(path, profile, "physical_approval_controls")
+    if physical_controls.get("touch_approval_allowed") is not False:
+        raise ValueError(f"{path}: physical_approval_controls.touch_approval_allowed must be false")
 
 
 def validate_board_profile(path: Path) -> None:

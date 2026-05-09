@@ -15,6 +15,11 @@ The current profile is `development_scaffold`:
 - key provisioning: not implemented
 - persistent secret storage: not implemented
 - companion signed-output verification gate: not ready
+- trusted review display: manual development acceptance passed on T-Display S3,
+  but production claim remains blocked
+- physical approval controls: manual development acceptance passed on
+  T-Display S3, touch approval remains disallowed, and production claim remains
+  blocked
 
 This is intentional for development. It is not a production custody profile and
 must not be used to claim a finished hardware wallet.

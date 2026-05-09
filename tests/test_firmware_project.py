@@ -84,6 +84,27 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("secure_boot", profile["production_blockers"])
         self.assertIn("debug_lock", profile["production_blockers"])
         self.assertIn("key_provisioning", profile["production_blockers"])
+        self.assertIn("trusted_review_display", profile["production_blockers"])
+        self.assertIn("physical_approval_controls", profile["production_blockers"])
+        self.assertEqual(
+            profile["trusted_review_display"]["status"],
+            "manual_development_acceptance_passed",
+        )
+        self.assertEqual(
+            profile["trusted_review_display"]["production_claim"],
+            "blocked_until_production_acceptance",
+        )
+        self.assertTrue(profile["trusted_review_display"]["evidence_reports"])
+        self.assertEqual(
+            profile["physical_approval_controls"]["status"],
+            "manual_development_acceptance_passed",
+        )
+        self.assertEqual(
+            profile["physical_approval_controls"]["production_claim"],
+            "blocked_until_production_acceptance",
+        )
+        self.assertIs(profile["physical_approval_controls"]["touch_approval_allowed"], False)
+        self.assertTrue(profile["physical_approval_controls"]["evidence_reports"])
 
     def test_security_profile_validator_rejects_production_signing_without_hardening(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -107,6 +128,27 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             )
 
             with self.assertRaisesRegex(ValueError, "production signing cannot be allowed"):
+                validate_firmware.validate_security_profile(profile_path)
+
+    def test_security_profile_validator_requires_display_and_control_acceptance_evidence(self) -> None:
+        profile = json.loads((ROOT / "firmware/esp32_s3_usb_signer/security_profile.json").read_text(encoding="utf-8"))
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_display = dict(profile)
+            missing_display.pop("trusted_review_display", None)
+            profile_path.write_text(json.dumps(missing_display), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "trusted_review_display"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_controls = dict(profile)
+            missing_controls.pop("physical_approval_controls", None)
+            profile_path.write_text(json.dumps(missing_controls), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "physical_approval_controls"):
                 validate_firmware.validate_security_profile(profile_path)
 
     def test_firmware_validator_requires_serial_review_component(self) -> None:

@@ -92,6 +92,9 @@ board into a separate repository.
 - Machine-readable ESP32-S3 USB signer security profile that records the
   current development-only hardening state and production blockers before any
   persistent-secret or real-signing path can be claimed.
+- The security profile now also records manual development acceptance evidence
+  for T-Display S3 trusted display and physical approve/reject controls, while
+  keeping those gates as production blockers.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens a deterministic pre-driver rendering
   oracle.
