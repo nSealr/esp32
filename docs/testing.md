@@ -175,19 +175,20 @@ tests with strict C++ warnings.
 - Optional hardware review-scenario smoke test with
   `make idf-smoke-review-scenarios` after exporting ESP-IDF and flashing the
   current firmware. This non-interactive smoke sends the basic, tagged,
-  long-content, scroll-window, Unicode fallback, and request-error review
-  scenarios used by the manual display exerciser and verifies the protocol
-  still returns `signing_disabled` or deterministic `unsupported_request`
-  frames. It does not replace human visual inspection of the display.
+  long-content, scroll-window, dense-tags, Unicode fallback, and request-error
+  review scenarios used by the manual display exerciser and verifies the
+  protocol still returns `signing_disabled` or deterministic
+  `unsupported_request` frames. It does not replace human visual inspection of
+  the display.
 - Manual T-Display S3 display exerciser tests proving
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
-  exchanges, composes tagged-event and long-content review scenarios from
-  shared specs vectors, expects compact content/tag inspection without
-  ellipses, composes the request-error scenario from shared invalid vectors,
-  prints physical-control checklists for approve/reject acceptance scenarios,
-  includes the terminal `Send new request` prompt in request-error and closed
-  decision expectations, and runs exchanges through a fake serial device
-  without opening hardware.
+  exchanges, composes tagged-event, long-content, scroll-window, dense-tags,
+  and Unicode fallback review scenarios, expects compact content/tag inspection
+  without ellipses, composes the request-error scenario from shared invalid
+  vectors, prints physical-control checklists for approve/reject acceptance
+  scenarios, includes the terminal `Send new request` prompt in request-error
+  and closed decision expectations, and runs exchanges through a fake serial
+  device without opening hardware.
 - Hardened firmware smoke evidence recorded for revision `dd2d5d1` on
   `/dev/cu.usbmodem101`; this confirms only scaffold protocol behavior and the
   expected `signing_disabled` refusal path.

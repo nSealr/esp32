@@ -20,6 +20,7 @@ DEFAULT_REVIEW_SMOKE_SCENARIOS = (
     "show-tags",
     "show-long-content",
     "show-scroll-review",
+    "show-dense-tags",
     "show-unicode-review",
     "show-request-error",
 )

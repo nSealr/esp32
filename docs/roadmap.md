@@ -333,10 +333,16 @@ a complete Unicode font remains a later acceptance task.
 
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
-scroll-window, Unicode fallback, and request-error review requests. It reuses
-the manual review exerciser scenarios to verify serial response behavior on a
-flashed board while keeping visual display inspection and physical-button
-acceptance as separate manual evidence.
+scroll-window, dense-tags, Unicode fallback, and request-error review requests.
+It reuses the manual review exerciser scenarios to verify serial response
+behavior on a flashed board while keeping visual display inspection and
+physical-button acceptance as separate manual evidence.
+
+Status note, 2026-05-10: the manual and non-interactive T-Display S3 review
+scenario set now includes `show-dense-tags`, a valid disabled `sign_event`
+fixture with enough structured tags to exercise multiple Tags scroll windows.
+The scenario keeps tag display raw/grouped, avoids inferred tag meaning, avoids
+ellipses, and preserves the `signing_disabled` protocol expectation.
 
 ## M7: Firmware Foundation
 

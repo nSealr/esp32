@@ -974,6 +974,34 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertNotIn("...", checklist)
         self.assertNotIn("Warnings", checklist)
 
+    def test_manual_review_display_builds_dense_tags_scroll_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-dense-tags",
+            request_id="manual-dense-tags",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-dense-tags")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-dense-tags")
+        self.assertEqual(response["request_id"], "manual-dense-tags")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertGreaterEqual(len(event_template["tags"]), 12)
+        self.assertLessEqual(
+            len(json.dumps(request, separators=(",", ":")).encode("utf-8")),
+            704,
+        )
+        self.assertIn("Page 3/4 Lines 1-9/", checklist)
+        self.assertIn("multiple Tags scroll windows", checklist)
+        self.assertIn("short BOOT/GPIO0 to scroll within Tags", checklist)
+        self.assertIn("no inferred tag meaning", checklist)
+        self.assertNotIn("...", checklist)
+        self.assertNotIn("Warnings", checklist)
+
     def test_manual_review_display_builds_unicode_review_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
             scenario="show-unicode-review",
@@ -1011,21 +1039,23 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
 
     def test_review_scenario_smoke_builds_noninteractive_review_exchanges(self) -> None:
         exchanges = smoke_review_scenarios.build_review_smoke_exchanges(
-            scenarios=("show-tags", "show-unicode-review", "show-request-error"),
+            scenarios=("show-tags", "show-dense-tags", "show-unicode-review", "show-request-error"),
             request_id_prefix="unit-review",
         )
         decoded_requests = [decode_serial_frame_payload(request_frame) for request_frame, _ in exchanges]
         decoded_responses = [decode_serial_frame_payload(response_frame) for _, response_frame in exchanges]
 
-        self.assertEqual(len(exchanges), 4)
+        self.assertEqual(len(exchanges), 5)
         self.assertEqual(decoded_requests[0]["request_id"], "unit-review-show-tags")
-        self.assertEqual(decoded_requests[1]["request_id"], "unit-review-show-unicode-review")
-        self.assertEqual(decoded_requests[2]["request_id"], "unit-review-show-request-error")
-        self.assertEqual(decoded_requests[3]["request_id"], "unit-review-show-request-error-invalid")
+        self.assertEqual(decoded_requests[1]["request_id"], "unit-review-show-dense-tags")
+        self.assertEqual(decoded_requests[2]["request_id"], "unit-review-show-unicode-review")
+        self.assertEqual(decoded_requests[3]["request_id"], "unit-review-show-request-error")
+        self.assertEqual(decoded_requests[4]["request_id"], "unit-review-show-request-error-invalid")
         self.assertEqual(decoded_responses[0]["error"]["code"], "signing_disabled")
         self.assertEqual(decoded_responses[1]["error"]["code"], "signing_disabled")
         self.assertEqual(decoded_responses[2]["error"]["code"], "signing_disabled")
-        self.assertEqual(decoded_responses[3]["error"], "unsupported_request")
+        self.assertEqual(decoded_responses[3]["error"]["code"], "signing_disabled")
+        self.assertEqual(decoded_responses[4]["error"], "unsupported_request")
 
     def test_review_scenario_smoke_summary_counts_protocol_outcomes(self) -> None:
         response_frame = smoke_capabilities.load_signing_disabled_frames()[1]

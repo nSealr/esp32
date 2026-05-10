@@ -210,6 +210,13 @@ request id so the test request stays under the v0 decoded-request limit:
 python3 scripts/manual_review_display.py show-scroll-review --port /dev/cu.<device> --request-id manual-scroll
 ```
 
+To inspect a dense structured tag list that should require multiple Tags scroll
+windows without inferred tag meaning or ellipses, send:
+
+```sh
+python3 scripts/manual_review_display.py show-dense-tags --port /dev/cu.<device> --request-id manual-dense-tags
+```
+
 To inspect the display-safe UTF-8 fallback path, send:
 
 ```sh
@@ -231,8 +238,8 @@ make IDF_PORT=/dev/cu.<device> idf-smoke-review-scenarios
 ```
 
 This verifies the serial responses for the same basic, tagged, long-content,
-scroll-window, Unicode fallback, and request-error review requests. It does
-not replace visual inspection of the physical display.
+scroll-window, dense-tags, Unicode fallback, and request-error review requests.
+It does not replace visual inspection of the physical display.
 
 To exercise the physical-control acceptance path with a human observer, send a
 valid review request and follow the printed checklist:

@@ -28,6 +28,7 @@ MANUAL_REVIEW_SCENARIOS = (
     "show-tags",
     "show-long-content",
     "show-scroll-review",
+    "show-dense-tags",
     "show-unicode-review",
     "show-request-error",
     "button-approve",
@@ -147,6 +148,39 @@ def build_scroll_review_exchange(
     return _review_exchange_from_request(request, request_id, specs_dir)
 
 
+def build_dense_tags_review_exchange(
+    request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-dense-tags",
+    specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
+) -> tuple[str, str]:
+    request = {
+        "version": 1,
+        "request_id": request_id,
+        "method": "sign_event",
+        "params": {
+            "event_template": {
+                "created_at": 1710000300,
+                "kind": 1,
+                "tags": [
+                    ["p", "1" * 64, "mention"],
+                    ["e", "2" * 64, "wss://relay.example"],
+                    ["t", "nostrseal"],
+                    ["t", "hardware"],
+                    ["t", "display"],
+                    ["t", "review"],
+                    ["t", "scroll"],
+                    ["t", "tags"],
+                    ["client", "nostrseal"],
+                    ["subject", "dense tags"],
+                    ["nonce", "7"],
+                    ["alt", "manual review"],
+                ],
+                "content": "Dense tag review fixture.",
+            }
+        },
+    }
+    return _review_exchange_from_request(request, request_id, specs_dir)
+
+
 def build_unicode_review_exchange(
     request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-unicode",
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
@@ -194,6 +228,8 @@ def build_manual_review_exchanges(
         return [build_long_content_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-scroll-review":
         return [build_scroll_review_exchange(request_id=request_id, specs_dir=specs_dir)]
+    if scenario == "show-dense-tags":
+        return [build_dense_tags_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-unicode-review":
         return [build_unicode_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-request-error":
@@ -250,6 +286,17 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm the Tags body shows grouped tag values and has no ellipses.",
             "Press short BOOT/GPIO0 to scroll within Tags to the next line range without repeating the last line.",
             "Press short KEY/GPIO14 from any scroll window to Decision / Page 4/4.",
+        ]
+    elif scenario == "show-dense-tags":
+        lines = [
+            common[0],
+            "Confirm real signing remains disabled in the serial response.",
+            "Press short KEY/GPIO14 twice to reach Tags / Page 3/4 Lines 1-9/N.",
+            "Confirm dense tags are shown as grouped tag content with no inferred tag meaning.",
+            "Confirm the long p/e tag values use continuation indentation instead of looking like new items.",
+            "Use short BOOT/GPIO0 to scroll within Tags across multiple Tags scroll windows.",
+            "Confirm no tag content is abbreviated with ellipses.",
+            "Press short KEY/GPIO14 from any Tags scroll window to reach Decision / Page 4/4.",
         ]
     elif scenario == "show-unicode-review":
         lines = [
@@ -327,6 +374,7 @@ def main() -> int:
             "show-tags shows a tagged event with grouped tag content; "
             "show-long-content shows compact full content plus many tags; "
             "show-scroll-review shows content and tags with scroll windows; "
+            "show-dense-tags stresses multi-window structured tag review; "
             "show-unicode-review shows display-safe UTF-8 fallback codepoints; "
             "show-request-error first shows that review and then sends an invalid request; "
             "button-approve and button-reject print physical-control acceptance steps"

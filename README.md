@@ -192,13 +192,16 @@ For manual T-Display S3 display inspection after flashing, use:
 
 ```sh
 python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
+python3 scripts/manual_review_display.py show-dense-tags --port /dev/cu.<device>
 python3 scripts/manual_review_display.py show-request-error --port /dev/cu.<device>
 python3 scripts/manual_review_display.py button-approve --port /dev/cu.<device>
 python3 scripts/manual_review_display.py button-reject --port /dev/cu.<device>
 ```
 
 `show-review` leaves a valid disabled `sign_event` review on the physical
-display. `show-request-error` first shows that review and then sends an invalid
+display. `show-dense-tags` stresses a valid event with enough structured tags
+to require Tags scroll windows without interpreting tag meaning or abbreviating
+values. `show-request-error` first shows that review and then sends an invalid
 request so the firmware should clear the active review and display the
 non-signing request-error state. `button-approve` and `button-reject` send the
 same valid review request and print the physical-control checklist for manual
