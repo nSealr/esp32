@@ -350,6 +350,12 @@ rest of that line until newline before accepting new frames. This removes the
 tail-byte contamination risk discovered while adding overlong transport smoke;
 real signing remains disabled.
 
+Status note, 2026-05-10: the hardware capability smoke now follows the
+overlong-frame rejection with a valid `get_capabilities` request using
+`request_id: post-overlong-recovery`. This pins the same recovery behavior on
+the attached board, not only in host-core unit tests; real signing remains
+disabled.
+
 Status note, 2026-05-10: the manual and non-interactive T-Display S3 review
 scenario set now includes `show-dense-tags`, a valid disabled `sign_event`
 fixture with enough structured tags to exercise multiple Tags scroll windows.

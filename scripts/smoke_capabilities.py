@@ -34,6 +34,7 @@ DYNAMIC_SMOKE_REQUEST_IDS = {
     "signing_status": "dynamic-smoke-signing-status",
     "public_key": "dynamic-smoke-public-key",
     "signing_disabled": "dynamic-smoke-sign-event-disabled",
+    "post_overlong_recovery": "post-overlong-recovery",
 }
 INVALID_METADATA_VECTOR_NAMES = (
     "serial-frame-request-invalid-version",
@@ -120,6 +121,14 @@ def load_dynamic_request_id_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tupl
         vector_with_request_id(load_signing_disabled_vector(specs_dir), DYNAMIC_SMOKE_REQUEST_IDS["signing_disabled"]),
     ]
     return [vector_frames(vector) for vector in vectors]
+
+
+def load_post_overlong_recovery_frames(specs_dir: Path = DEFAULT_SPECS) -> tuple[str, str]:
+    vector = vector_with_request_id(
+        load_capability_vector(specs_dir),
+        DYNAMIC_SMOKE_REQUEST_IDS["post_overlong_recovery"],
+    )
+    return vector_frames(vector)
 
 
 def load_invalid_metadata_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
@@ -235,10 +244,8 @@ def build_hardware_smoke_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tupl
         *load_invalid_metadata_frames(specs_dir),
         *load_invalid_signing_request_frames(specs_dir),
         *load_malformed_transport_frame_exchanges(specs_dir),
-        # Keep overlong frames last: the firmware rejects once the line exceeds
-        # the transport limit, then any remaining bytes are intentionally not
-        # used by later smoke exchanges.
         *load_overlong_transport_frame_exchanges(specs_dir),
+        load_post_overlong_recovery_frames(specs_dir),
     ]
 
 

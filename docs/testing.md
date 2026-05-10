@@ -175,9 +175,11 @@ tests with strict C++ warnings.
   unknown top-level request fields, expecting deterministic
   `unsupported_request` rejections. Shared malformed transport vectors for
   checksum mismatch, malformed base64url payload, and overlong frame handling
-  must return deterministic `malformed_frame` or `overlong_frame` errors. By
-  default the smoke prints a clean summary; raw protocol frames are available with
-  `scripts/smoke_capabilities.py --verbose-frames`.
+  must return deterministic `malformed_frame` or `overlong_frame` errors. The
+  smoke then sends a fresh valid capability request after the overlong frame to
+  prove the runtime drained the rejected line and recovered before processing
+  the next request. By default the smoke prints a clean summary; raw protocol
+  frames are available with `scripts/smoke_capabilities.py --verbose-frames`.
 - Optional hardware review-scenario smoke test with
   `make idf-smoke-review-scenarios` after exporting ESP-IDF and flashing the
   current firmware. This non-interactive smoke sends the basic, tagged,

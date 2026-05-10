@@ -190,8 +190,10 @@ including unknown top-level request fields, and expects deterministic
 `unsupported_request` rejections. It also exercises shared malformed serial
 transport vectors for checksum mismatch, malformed base64url payload, and
 overlong frame handling, expecting deterministic `malformed_frame` or
-`overlong_frame` errors. The default smoke output summarizes expected
-rejections instead of printing raw protocol error frames; use
+`overlong_frame` errors, then sends a fresh valid capability request to prove
+the runtime drained the overlong line and recovered before the next request.
+The default smoke output summarizes expected rejections instead of printing raw
+protocol error frames; use
 `scripts/smoke_capabilities.py --verbose-frames` when raw frames are needed.
 Real signing is still expected to return `signing_disabled`.
 

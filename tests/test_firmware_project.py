@@ -750,16 +750,25 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertEqual(decode_serial_frame_payload(overlong_exchanges[0][1]), {"error": "overlong_frame"})
         self.assertTrue(overlong_exchanges[0][0].endswith("\n"))
 
-    def test_smoke_script_keeps_overlong_transport_frame_last(self) -> None:
+    def test_smoke_script_verifies_recovery_after_overlong_transport_frame(self) -> None:
         exchanges = smoke_capabilities.build_hardware_smoke_exchanges()
         overlong_frame = json.loads(
             (smoke_capabilities.DEFAULT_SPECS / "vectors/invalid/serial-frame-oversized.json").read_text(
                 encoding="utf-8"
             )
         )["frame"]
+        overlong_index = next(
+            index
+            for index, exchange in enumerate(exchanges)
+            if exchange[0] == f"{overlong_frame}\n"
+        )
+        recovery_request = decode_serial_frame_payload(exchanges[overlong_index + 1][0])
+        recovery_response = decode_serial_frame_payload(exchanges[overlong_index + 1][1])
 
-        self.assertEqual(exchanges[-1][0], f"{overlong_frame}\n")
-        self.assertEqual(decode_serial_frame_payload(exchanges[-1][1]), {"error": "overlong_frame"})
+        self.assertEqual(decode_serial_frame_payload(exchanges[overlong_index][1]), {"error": "overlong_frame"})
+        self.assertEqual(recovery_request["request_id"], "post-overlong-recovery")
+        self.assertEqual(recovery_response["request_id"], "post-overlong-recovery")
+        self.assertTrue(recovery_response["ok"])
 
     def test_smoke_script_wraps_invalid_signing_request_vectors(self) -> None:
         with TemporaryDirectory() as temp_root:
