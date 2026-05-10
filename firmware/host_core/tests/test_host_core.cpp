@@ -18,6 +18,7 @@
 #include "nostrseal/serial_review.hpp"
 #include "nostrseal/signing_policy.hpp"
 #include "nostrseal/trusted_review.hpp"
+#include "nostrseal/utf8.hpp"
 #include "t_display_s3_button_logic.hpp"
 #include "t_display_s3_raster.hpp"
 #include "t_display_s3_status_frames.hpp"
@@ -993,6 +994,25 @@ void test_review_display_wraps_and_truncates_long_body_lines() {
     assert(frame.action_hint == "Next");
 }
 
+void test_review_display_wraps_utf8_without_splitting_codepoints() {
+    const std::string text = std::string("abc") + "\xC3\xA8" + "def";
+    const nostrseal::ReviewPage page{
+        "Content",
+        {text},
+        nostrseal::ReviewPageAction::Next,
+    };
+
+    const nostrseal::ReviewDisplayFrame frame = nostrseal::render_review_page(
+        page,
+        0,
+        1,
+        nostrseal::ReviewDisplayLimits{.max_title_chars = 12, .max_body_lines = 3, .max_line_chars = 4});
+
+    assert((frame.body_lines == std::vector<std::string>{std::string("abc") + "\xC3\xA8", "def"}));
+    assert(nostrseal::is_valid_utf8(frame.body_lines[0]));
+    assert(nostrseal::is_valid_utf8(frame.body_lines[1]));
+}
+
 void test_review_display_matches_shared_long_content_frame_vector() {
     const std::string long_preview = std::string(120, 'x') + "...";
     const nostrseal::ReviewPage page{
@@ -1716,6 +1736,7 @@ int main() {
     test_review_display_preserves_logical_page_indicator_and_body_styles();
     test_review_display_renders_decision_frame();
     test_review_display_wraps_and_truncates_long_body_lines();
+    test_review_display_wraps_utf8_without_splitting_codepoints();
     test_review_display_matches_shared_long_content_frame_vector();
     test_review_display_rejects_unsafe_frame_bounds();
     test_trusted_review_session_binds_display_navigation_and_approval();

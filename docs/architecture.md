@@ -139,7 +139,10 @@ text before wrapping, so the display does not silently turn event content into
 ambiguous question marks. Complete Unicode glyph rendering remains a separate
 display-font acceptance task before production signing. QR and serial request
 parsing preserve JSON `\uXXXX` escapes, including surrogate pairs, before the
-display fallback is applied.
+display fallback is applied. The renderer itself also preserves UTF-8 codepoint
+boundaries when wrapping or truncating generic review-frame text, so future
+display adapters cannot receive invalid UTF-8 solely because of host-core
+pagination.
 
 The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share

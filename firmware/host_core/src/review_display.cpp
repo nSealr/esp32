@@ -1,5 +1,7 @@
 #include "nostrseal/review_display.hpp"
 
+#include "nostrseal/utf8.hpp"
+
 #include <stdexcept>
 #include <utility>
 
@@ -28,13 +30,42 @@ bool compact_style(ReviewBodyLineStyle style) {
 }
 
 std::string truncate_for_display(const std::string& text, std::size_t max_chars, bool force_ellipsis = false) {
-    if (text.size() <= max_chars && !force_ellipsis) {
+    auto display_char_count = [](std::string_view value) {
+        std::size_t count = 0;
+        std::size_t offset = 0;
+        while (offset < value.size()) {
+            std::uint32_t codepoint = 0;
+            const std::size_t before = offset;
+            (void)decode_next_utf8_codepoint(value, offset, codepoint);
+            if (offset == before) {
+                ++offset;
+            }
+            ++count;
+        }
+        return count;
+    };
+
+    if (display_char_count(text) <= max_chars && !force_ellipsis) {
         return text;
     }
     if (max_chars <= 3) {
         return std::string(max_chars, '.');
     }
-    return text.substr(0, max_chars - 3) + "...";
+    std::string out;
+    std::size_t copied = 0;
+    std::size_t offset = 0;
+    while (offset < text.size() && copied < max_chars - 3U) {
+        const std::size_t start = offset;
+        std::uint32_t codepoint = 0;
+        (void)decode_next_utf8_codepoint(text, offset, codepoint);
+        if (offset == start) {
+            ++offset;
+        }
+        out += text.substr(start, offset - start);
+        ++copied;
+    }
+    out += "...";
+    return out;
 }
 
 std::vector<std::string> wrap_line(std::string_view line, std::size_t width) {
@@ -42,29 +73,27 @@ std::vector<std::string> wrap_line(std::string_view line, std::size_t width) {
         return {""};
     }
 
-    std::string text{line};
     std::vector<std::string> wrapped;
     std::size_t position = 0;
-    while (position < text.size()) {
-        const std::size_t remaining = text.size() - position;
-        if (remaining <= width) {
-            wrapped.push_back(text.substr(position));
-            break;
-        }
-
-        std::size_t cut = width;
-        const std::size_t space = text.rfind(' ', position + width - 1);
-        if (space != std::string::npos && space >= position) {
-            cut = space - position;
-            if (cut == 0) {
-                cut = width;
-            }
-        }
-        wrapped.push_back(text.substr(position, cut));
-        position += cut;
-        while (position < text.size() && text[position] == ' ') {
+    std::string current;
+    std::size_t current_chars = 0;
+    while (position < line.size()) {
+        const std::size_t start = position;
+        std::uint32_t codepoint = 0;
+        (void)decode_next_utf8_codepoint(line, position, codepoint);
+        if (position == start) {
             ++position;
         }
+        if (current_chars == width) {
+            wrapped.push_back(std::move(current));
+            current.clear();
+            current_chars = 0;
+        }
+        current += line.substr(start, position - start);
+        ++current_chars;
+    }
+    if (!current.empty()) {
+        wrapped.push_back(std::move(current));
     }
     return wrapped;
 }

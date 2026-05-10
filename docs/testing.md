@@ -112,8 +112,8 @@ tests with strict C++ warnings.
   before approval, allowing backward navigation during review, allowing early
   rejection, and rejecting additional input after a terminal decision.
 - Review display-frame tests requiring deterministic title, page indicator,
-  body lines, action hints, body-line wrapping/truncation, and rejection of
-  unsafe display bounds.
+  body lines, action hints, body-line wrapping/truncation, UTF-8 codepoint
+  boundary preservation during wrapping, and rejection of unsafe display bounds.
 - Trusted review-session tests requiring display navigation, legacy backward
   review for generic pages, logical top-level/scroll navigation for sign-event
   display pages, final-page approval, request/digest-bound `can_sign`, and
