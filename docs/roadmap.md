@@ -109,11 +109,14 @@ bounded to configured limits, and sign-event display sessions now keep stable
 logical pages with compact styled body rows; content and grouped tag content
 become scroll windows only when they do not fit. Pages with additional scroll
 windows expose `Next/Scroll` in the footer. The host-core
-now also has a scanner/display/button I/O harness that shows every trusted frame before
-reading physical-style input, rejects non-terminal input streams after a bounded
-number of steps, and returns the terminal approval state plus the exact
-displayed frame/button transcript. Camera input, trusted review output on the
-physical display, and GPIO approval drivers remain pending. QR review
+now also has a scanner/display/button I/O harness that shows every trusted
+frame before reading physical-style input, rejects non-terminal input streams
+after a bounded number of steps, and returns the terminal approval state plus
+the exact displayed frame/button transcript. The T-Display S3 USB/display
+signer has a development runtime for physical display review and onboard
+button navigation, but production acceptance for trusted display and physical
+controls remains blocked. Camera input for the ESP32 stateless QR vault, the
+T-Display S3 Pro target, and any signing backend remain pending. QR review
 transcripts provide a deterministic host-side oracle for those adapters and are
 now checked against shared `NostrSeal/specs` vectors. The
 host-core QR parser also mirrors the shared v0 limit profile and rejects
