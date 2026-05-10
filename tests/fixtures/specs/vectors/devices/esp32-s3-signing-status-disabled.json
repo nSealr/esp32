@@ -20,6 +20,12 @@
           "flash_encryption",
           "debug_lock",
           "companion_signed_output_verification"
+        ],
+        "development_accepted_gates": [
+          "parser_limits",
+          "trusted_review_display",
+          "physical_approval_controls",
+          "approval_digest_binding"
         ]
       }
     }
