@@ -112,10 +112,10 @@ firmware core is checked against the same serial frame vector used by the
 companion. The same generated header now includes review-screen approval
 digests, trusted review request factories, directory-discovered
 review-display-frame vectors, QR
-review transcripts, the shared v0 limit profile, invalid serial-frame vectors,
-and invalid QR/signing-request hardening vectors, allowing the host-core
-parser, approval gate, and trusted-review session to reject unsafe input before
-any future signing backend is connected.
+review-detail-page vectors, QR review transcripts, the shared v0 limit profile,
+invalid serial-frame vectors, and invalid QR/signing-request hardening vectors,
+allowing the host-core parser, approval gate, and trusted-review session to
+reject unsafe input before any future signing backend is connected.
 
 The review-control state machine is intentionally separate from
 `approval_gate`: `review_controls` models local user navigation, while
@@ -131,6 +131,9 @@ represented as compact styled rows inside stable logical pages; only oversized
 sections become scroll windows such as `Page 3/4 Lines 1-9/18`. A later
 ESP-IDF display adapter can paint those frames without changing review,
 approval, or signing semantics.
+The T-Display S3 sized detail-page output is now pinned by shared
+`NostrSeal/specs` review-detail-page vectors, while the `approval_digest`
+continues to come from the older digest-bound `screen-pages` contract.
 Frames with additional scroll windows show `Next/Scroll` in the footer so the
 physical display exposes both navigation axes. Adjacent scroll windows do not
 repeat the boundary line; the next window starts at the next unread line.

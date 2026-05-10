@@ -101,10 +101,10 @@ tests with strict C++ warnings.
   rejection as deterministic frame/button/decision records from shared
   `NostrSeal/specs` review-transcript vectors.
 - Host test header generation from the shared `NostrSeal/specs` serial,
-  review-screen, review-display-frame, review-transcript, limits, and invalid
-  hardening vectors. Review-display-frame generation is directory-driven, so
-  new shared display-frame vectors are consumed without adding one-off loader
-  code.
+  review-screen, review-display-frame, review-detail-page, review-transcript,
+  limits, and invalid hardening vectors. Review-display-frame and
+  review-detail-page generation is directory-driven, so new shared display
+  vectors are consumed without adding one-off loader code.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
   is still guarded by `NostrSeal/lab` integration checks.
@@ -122,6 +122,10 @@ tests with strict C++ warnings.
   rejection as a terminal non-signing decision. These tests consume generated
   trusted review requests from the shared review-screen vectors instead of
   duplicating page content by hand where the shared contract applies.
+- QR display-review tests now also consume shared review-detail-page vectors
+  for T-Display S3 sized pages, proving complete Event/Content/Tags/Decision
+  physical pages, scroll-window indicators, compact line styles, continuation
+  indentation, and `U+XXXX` display fallback match `NostrSeal/specs`.
 - Firmware scaffold tests requiring T-Display S3 terminal review decisions to
   show closed non-signing status frames with `Not signed` and
   `Signing disabled` after approve/reject UI input.

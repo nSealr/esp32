@@ -1,0 +1,168 @@
+{
+  "name": "kind-1-long-events-many-tags-t-display-s3",
+  "format": "review-detail-pages-v0",
+  "display_profile": "ascii-safe-codepoint-fallback-v0",
+  "source_review_vector": "kind-1-long-events-many-tags",
+  "approval_digest": "a20e42cf8dca3a5ae67e490e513fc4493a57179a2f6ac21de0b375bbda82b0a0",
+  "limits": {
+    "max_title_chars": 18,
+    "max_body_lines": 5,
+    "max_line_chars": 26,
+    "max_compact_body_lines": 9,
+    "max_compact_line_chars": 48
+  },
+  "pages": [
+    {
+      "title": "Event",
+      "lines": [
+        "Kind 1",
+        "Created 1710000120",
+        "Author",
+        "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859a",
+        "  b0f0b704075871aa"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/4",
+      "body_line_styles": [
+        "meta",
+        "meta",
+        "meta",
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Event"
+    },
+    {
+      "title": "Content",
+      "lines": [
+        "bytes: 281",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "action": "next",
+      "page_indicator": "Page 2/4",
+      "body_line_styles": [
+        "meta",
+        "value",
+        "value",
+        "value",
+        "value",
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Content"
+    },
+    {
+      "title": "Tags",
+      "lines": [
+        "Tag 1/9",
+        "e",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "  aaaaaaaaaaaaaaaa",
+        "root",
+        "Tag 2/9",
+        "t",
+        "nostrseal",
+        "Tag 3/9"
+      ],
+      "action": "next",
+      "page_indicator": "Page 3/4 Lines 1-9/29",
+      "body_line_styles": [
+        "meta",
+        "value",
+        "value",
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "meta"
+      ],
+      "logical_page_id": "Tags"
+    },
+    {
+      "title": "Tags",
+      "lines": [
+        "t",
+        "hardware",
+        "Tag 4/9",
+        "t",
+        "review",
+        "Tag 5/9",
+        "t",
+        "security",
+        "Tag 6/9"
+      ],
+      "action": "next",
+      "page_indicator": "Page 3/4 Lines 10-18/29",
+      "body_line_styles": [
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "meta"
+      ],
+      "logical_page_id": "Tags"
+    },
+    {
+      "title": "Tags",
+      "lines": [
+        "t",
+        "qr",
+        "Tag 7/9",
+        "t",
+        "vault",
+        "Tag 8/9",
+        "t",
+        "companion",
+        "Tag 9/9"
+      ],
+      "action": "next",
+      "page_indicator": "Page 3/4 Lines 19-27/29",
+      "body_line_styles": [
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "meta"
+      ],
+      "logical_page_id": "Tags"
+    },
+    {
+      "title": "Tags",
+      "lines": [
+        "t",
+        "test"
+      ],
+      "action": "next",
+      "page_indicator": "Page 3/4 Lines 28-29/29",
+      "body_line_styles": [
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Tags"
+    },
+    {
+      "title": "Decision",
+      "lines": [
+        "Approve signing only if all pages match."
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 4/4",
+      "body_line_styles": [],
+      "logical_page_id": "Decision"
+    }
+  ]
+}

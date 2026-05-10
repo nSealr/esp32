@@ -90,6 +90,17 @@ void assert_trusted_review_pages(
     }
 }
 
+void assert_detailed_trusted_review_pages(
+    const std::vector<nostrseal::TrustedReviewPage>& actual,
+    const std::vector<nostrseal::TrustedReviewPage>& expected) {
+    assert_trusted_review_pages(actual, expected);
+    for (std::size_t index = 0; index < actual.size(); ++index) {
+        assert(actual[index].page_indicator == expected[index].page_indicator);
+        assert(actual[index].body_line_styles == expected[index].body_line_styles);
+        assert(actual[index].logical_page_id == expected[index].logical_page_id);
+    }
+}
+
 std::size_t page_count_with_title(
     const std::vector<nostrseal::TrustedReviewPage>& pages,
     const std::string& title) {
@@ -549,6 +560,22 @@ void test_qr_display_review_pages_group_logical_sections_with_compact_styles() {
     assert(!lines_contain(pages[2].lines, "raw tags JSON"));
     assert(tag_text.find(pubkey.substr(0, 48)) != std::string::npos);
     assert(tag_text.find(pubkey.substr(48)) != std::string::npos);
+}
+
+void test_qr_display_review_pages_match_shared_detail_page_vectors() {
+    for (const nostrseal::test_vectors::ReviewDetailPageVector& vector :
+         nostrseal::test_vectors::review_detail_page_vectors()) {
+        const nostrseal::QrSigningRequest request =
+            nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{"ignored", vector.request_json});
+
+        const std::vector<nostrseal::TrustedReviewPage> pages =
+            nostrseal::build_qr_display_review_pages(request, vector.limits);
+        const nostrseal::TrustedReviewRequest review_request =
+            nostrseal::build_qr_display_review_request(request, vector.limits);
+
+        assert(review_request.approval_digest == vector.approval_digest);
+        assert_detailed_trusted_review_pages(pages, vector.pages);
+    }
 }
 
 void test_qr_display_review_pages_escape_non_ascii_for_display_safety() {
@@ -1780,6 +1807,7 @@ int main() {
     test_qr_trusted_review_request_matches_shared_tagged_vector();
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
+    test_qr_display_review_pages_match_shared_detail_page_vectors();
     test_qr_display_review_pages_escape_non_ascii_for_display_safety();
     test_qr_display_review_pages_preserve_supported_ascii_punctuation();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();

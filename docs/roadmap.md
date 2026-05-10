@@ -444,10 +444,11 @@ development scaffold, not permission to connect a signing backend.
   fields, applies shared v0 parser/resource limits, rejects applicable invalid
   hardening vectors, and parses the minimal unsigned event fields `created_at`,
   `kind`, `tags`, and `content`. QR review pages now match shared basic/tagged
-  review-screen page and `approval_digest` vectors; camera capture,
-  animated-frame reconstruction, hardware display output, and signing-vector
-  consumption remain pending. Raw QR review flow is available in host-core for
-  future camera/display/GPIO adapters.
+  review-screen page and `approval_digest` vectors, and the T-Display S3 sized
+  complete physical pages match shared review-detail-page vectors; camera
+  capture, animated-frame reconstruction, hardware display output, and
+  signing-vector consumption remain pending. Raw QR review flow is available in
+  host-core for future camera/display/GPIO adapters.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.

@@ -64,6 +64,18 @@ def cpp_review_button(button: str) -> str:
     raise ValueError(f"unsupported review button: {button}")
 
 
+def cpp_review_body_style(style: str) -> str:
+    if style == "normal":
+        return "nostrseal::ReviewBodyLineStyle::Normal"
+    if style == "meta":
+        return "nostrseal::ReviewBodyLineStyle::Meta"
+    if style == "label":
+        return "nostrseal::ReviewBodyLineStyle::Label"
+    if style == "value":
+        return "nostrseal::ReviewBodyLineStyle::Value"
+    raise ValueError(f"unsupported review body line style: {style}")
+
+
 def cpp_optional_bool(value: bool | None) -> str:
     if value is None:
         return "std::nullopt"
@@ -149,6 +161,8 @@ def review_display_limits_factory(name: str, limits: dict) -> list[str]:
         f"        .max_title_chars = {limits['max_title_chars']},",
         f"        .max_body_lines = {limits['max_body_lines']},",
         f"        .max_line_chars = {limits['max_line_chars']},",
+        f"        .max_compact_body_lines = {limits.get('max_compact_body_lines', 9)},",
+        f"        .max_compact_line_chars = {limits.get('max_compact_line_chars', 48)},",
         "    };",
         "}",
     ]
@@ -176,6 +190,69 @@ def review_display_vector_factories(vectors: list[dict]) -> list[str]:
         lines.append("")
         lines.extend(review_display_frame_factory(f"{base_name}_display_frame", vector["frame"]))
         lines.append("")
+    return lines
+
+
+def trusted_review_page_initializer(page: dict) -> list[str]:
+    body_lines = ", ".join(cpp_string(line) for line in page["lines"])
+    styles = ", ".join(cpp_review_body_style(style) for style in page.get("body_line_styles", []))
+    return [
+        "            nostrseal::TrustedReviewPage{",
+        f"                {cpp_string(page['title'])},",
+        f"                {{{body_lines}}},",
+        f"                {cpp_review_action(page['action'])},",
+        f"                {cpp_string(page.get('page_indicator', ''))},",
+        f"                {{{styles}}},",
+        f"                {cpp_string(page.get('logical_page_id', ''))},",
+        "            },",
+    ]
+
+
+def review_detail_page_vector_factories(vectors: list[dict], reviews_by_name: dict[str, dict]) -> list[str]:
+    lines = [
+        "struct ReviewDetailPageVector {",
+        "    const char* name;",
+        "    const char* request_json;",
+        "    const char* approval_digest;",
+        "    nostrseal::ReviewDisplayLimits limits;",
+        "    std::vector<nostrseal::TrustedReviewPage> pages;",
+        "};",
+        "",
+        "inline std::vector<ReviewDetailPageVector> review_detail_page_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        source = reviews_by_name[vector["source_review_vector"]]
+        lines.extend(
+            [
+                "        ReviewDetailPageVector{",
+                f"            {cpp_string(vector['name'])},",
+                f"            {cpp_string(compact_json(source['request']))},",
+                f"            {cpp_string(vector['approval_digest'])},",
+                "            nostrseal::ReviewDisplayLimits{",
+                f"                .max_title_chars = {vector['limits']['max_title_chars']},",
+                f"                .max_body_lines = {vector['limits']['max_body_lines']},",
+                f"                .max_line_chars = {vector['limits']['max_line_chars']},",
+                f"                .max_compact_body_lines = {vector['limits']['max_compact_body_lines']},",
+                f"                .max_compact_line_chars = {vector['limits']['max_compact_line_chars']},",
+                "            },",
+                "            {",
+            ]
+        )
+        for page in vector["pages"]:
+            lines.extend(trusted_review_page_initializer(page))
+        lines.extend(
+            [
+                "            },",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
     return lines
 
 
@@ -252,6 +329,15 @@ def main() -> int:
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/review-display-frames").glob("*.json"))
     ]
+    review_detail_page_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/review-detail-pages").glob("*.json"))
+    ]
+    review_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/review").glob("*.json"))
+    ]
+    reviews_by_name = {vector["name"]: vector for vector in review_vectors}
     display_frames_by_name = {vector["name"]: vector for vector in review_display_frame_vectors}
     long_content_display_frame = display_frames_by_name["kind-1-long-content-page-1-20x3"]
     invalid_vectors = [
@@ -332,6 +418,8 @@ def main() -> int:
                 ),
                 "",
                 *review_display_vector_factories(review_display_frame_vectors),
+                *review_detail_page_vector_factories(review_detail_page_vectors, reviews_by_name),
+                "",
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",
                 *trusted_review_factory("tagged_trusted_review_request", tagged_review_screen["screen_review"]),

@@ -49,6 +49,11 @@ board into a separate repository.
   against shared `NostrSeal/specs` review-screen vectors. QR-derived
   `approval_digest` now matches shared basic/tagged vectors, while camera
   input, display/GPIO drivers, key storage, and signing remain disabled.
+- T-Display S3 sized QR review detail pages checked against shared
+  `NostrSeal/specs` review-detail-page vectors. These pin complete
+  Event/Content/Tags/Decision pages, scroll windows, compact line styles, long
+  value continuations, and explicit `U+XXXX` fallback for unsupported display
+  glyphs without changing the `approval_digest` contract.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
@@ -99,7 +104,7 @@ board into a separate repository.
   limits, giving small ESP32 screens a deterministic pre-driver rendering
   oracle.
 - Generated host test fixtures from shared serial, review-screen,
-  review-display-frame, review-transcript, limits, and invalid hardening
+  review-display-frame, review-detail-page, review-transcript, limits, and invalid hardening
   vectors in `NostrSeal/specs`.
 - Board profile for the no-camera LILYGO T-Display S3 as an ESP32-S3
   USB/display signer candidate. The profile documents integrated ST7789
