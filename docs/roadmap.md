@@ -250,6 +250,14 @@ trusted review display acceptance, physical approval controls, key
 provisioning, secure boot, flash encryption, debug lock, and companion
 signed-output verification.
 
+Status note, 2026-05-10: the shared `get_signing_status` contract now also
+reports `development_accepted_gates`. The T-Display S3 scaffold lists parser
+limits, trusted-review display, physical approval controls, and
+approval-digest binding there because those gates have host-core coverage or
+manual development evidence. `signing_enabled` remains false, and trusted
+display plus physical controls still remain production blockers until a later
+production acceptance profile exists.
+
 Hardware note, 2026-05-09: the T-Display S3 firmware now includes the first
 ST7789/i80 ESP-IDF display adapter for the no-camera USB/display signer target.
 It powers GPIO15, configures the 8-bit parallel bus, enables the GPIO38
@@ -417,6 +425,11 @@ approve/reject controls, including the hardware reports that exercised page
 navigation, terminal decisions, approve, and reject. This does not remove
 trusted display or physical controls from the production blocker list and does
 not enable signing.
+
+Status note, 2026-05-10: `get_signing_status` now mirrors that distinction by
+adding `development_accepted_gates` while keeping `signing_enabled: false` and
+the production blockers intact. The field is diagnostic evidence for the
+development scaffold, not permission to connect a signing backend.
 
 ## M8.5: ESP32-S3 QR Vault Target
 

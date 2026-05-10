@@ -657,11 +657,14 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertEqual(response["request_id"], request["request_id"])
 
         signing_status_response = decode_serial_frame_payload(exchanges[1][1])
-        self.assertFalse(signing_status_response["result"]["signing_status"]["signing_enabled"])
+        signing_status = signing_status_response["result"]["signing_status"]
+        self.assertFalse(signing_status["signing_enabled"])
         self.assertIn(
             "flash_encryption",
-            signing_status_response["result"]["signing_status"]["missing_gates"],
+            signing_status["missing_gates"],
         )
+        self.assertIn("trusted_review_display", signing_status["development_accepted_gates"])
+        self.assertIn("physical_approval_controls", signing_status["development_accepted_gates"])
 
         sign_response = decode_serial_frame_payload(exchanges[3][1])
         self.assertFalse(sign_response["ok"])

@@ -319,23 +319,34 @@ SigningReadiness scaffold_signing_readiness() {
     SigningReadiness readiness;
     readiness.parser_limits_enforced = true;
     readiness.approval_digest_binding_verified = true;
+    readiness.development_accepted_gates = {
+        "parser_limits",
+        "trusted_review_display",
+        "physical_approval_controls",
+        "approval_digest_binding",
+    };
     return readiness;
+}
+
+std::string gates_json(const std::vector<std::string>& gates) {
+    std::string output;
+    for (std::size_t index = 0; index < gates.size(); ++index) {
+        if (index > 0) {
+            output += ",";
+        }
+        output += "\"";
+        output += gates[index];
+        output += "\"";
+    }
+    return output;
 }
 
 std::string signing_status_response_json(const std::string& request_id) {
     const SigningReadinessStatus status = evaluate_signing_readiness(scaffold_signing_readiness());
-    std::string missing_gates_json;
-    for (std::size_t index = 0; index < status.missing_gates.size(); ++index) {
-        if (index > 0) {
-            missing_gates_json += ",";
-        }
-        missing_gates_json += "\"";
-        missing_gates_json += status.missing_gates[index];
-        missing_gates_json += "\"";
-    }
     return std::string(R"({"version":1,"request_id":")") + request_id +
            R"(","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":[)" +
-           missing_gates_json + R"(]}}})";
+           gates_json(status.missing_gates) + R"(],"development_accepted_gates":[)" +
+           gates_json(status.development_accepted_gates) + R"(]}}})";
 }
 
 }  // namespace

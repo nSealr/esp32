@@ -4,6 +4,7 @@ namespace nostrseal {
 
 SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readiness) {
     SigningReadinessStatus status;
+    status.development_accepted_gates = readiness.development_accepted_gates;
     if (!readiness.runtime_signing_feature_enabled) {
         status.missing_gates.push_back("runtime_signing_feature");
     }

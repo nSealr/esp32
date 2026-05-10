@@ -1262,6 +1262,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
         nostrseal::evaluate_signing_readiness(default_readiness);
 
     assert(!default_status.signing_enabled);
+    assert(default_status.development_accepted_gates.empty());
     assert((default_status.missing_gates == std::vector<std::string>{
                                                "runtime_signing_feature",
                                                "parser_limits",
@@ -1286,12 +1287,24 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
         .flash_encryption_enabled = true,
         .debug_locked = true,
         .companion_signed_output_verification_ready = true,
+        .development_accepted_gates = {
+            "parser_limits",
+            "trusted_review_display",
+            "physical_approval_controls",
+            "approval_digest_binding",
+        },
     };
     const nostrseal::SigningReadinessStatus safety_status =
         nostrseal::evaluate_signing_readiness(safety_gates);
 
     assert(!safety_status.signing_enabled);
     assert((safety_status.missing_gates == std::vector<std::string>{"runtime_signing_feature"}));
+    assert((safety_status.development_accepted_gates == std::vector<std::string>{
+                                                        "parser_limits",
+                                                        "trusted_review_display",
+                                                        "physical_approval_controls",
+                                                        "approval_digest_binding",
+                                                    }));
 
     safety_gates.runtime_signing_feature_enabled = true;
     const nostrseal::SigningReadinessStatus ready_status =
@@ -1299,6 +1312,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
 
     assert(ready_status.signing_enabled);
     assert(ready_status.missing_gates.empty());
+    assert((ready_status.development_accepted_gates == safety_status.development_accepted_gates));
 }
 
 void test_device_protocol_reports_scaffold_capabilities() {
@@ -1387,7 +1401,7 @@ void test_device_protocol_echoes_dynamic_request_ids() {
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-signing-status","method":"get_signing_status"})"));
 
     assert(signing_status_response == response_frame_for_test(
-        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","trusted_review_display","physical_approval_controls","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"]}}})"));
+        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","trusted_review_display","physical_approval_controls","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"],"development_accepted_gates":["parser_limits","trusted_review_display","physical_approval_controls","approval_digest_binding"]}}})"));
 
     const std::string public_key_response = nostrseal::handle_serial_frame(
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-pubkey","method":"get_public_key"})"));

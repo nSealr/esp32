@@ -16,11 +16,13 @@ struct SigningReadiness {
     bool flash_encryption_enabled = false;
     bool debug_locked = false;
     bool companion_signed_output_verification_ready = false;
+    std::vector<std::string> development_accepted_gates;
 };
 
 struct SigningReadinessStatus {
     bool signing_enabled = false;
     std::vector<std::string> missing_gates;
+    std::vector<std::string> development_accepted_gates;
 };
 
 SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readiness);
