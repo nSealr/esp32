@@ -101,8 +101,8 @@ board into a separate repository.
   for T-Display S3 trusted display and physical approve/reject controls, while
   keeping those gates as production blockers.
 - Trusted display frames wrap and truncate long body text to configured display
-  limits, giving small ESP32 screens a deterministic pre-driver rendering
-  oracle.
+  limits, giving small ESP32 screens and display adapters a deterministic
+  rendering oracle.
 - Generated host test fixtures from shared serial, review-screen,
   review-display-frame, review-detail-page, review-transcript, limits, and invalid hardening
   vectors in `NostrSeal/specs`.

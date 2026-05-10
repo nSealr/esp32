@@ -58,9 +58,9 @@ The first firmware foundation is host-buildable C++ under
   shared review-screen vectors.
 - `serial_review`: converts decoded serial/USB `sign_event` request JSON into
   the same renderer-neutral trusted-review request and `approval_digest` used
-  by the QR path. This gives the USB signer path a review boundary before a
-  display driver, GPIO buttons, storage, or signing backend exists. It also
-  defines the serial/display/button I/O harness for future USB signer adapter
+  by the QR path. This gives the USB signer path a review boundary before
+  production display/control acceptance, storage, or a signing backend exists.
+  It also defines the serial/display/button I/O harness for USB signer adapter
   acceptance tests.
 - `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
   envelopes to trusted review frames and approval state. It includes the
@@ -120,7 +120,7 @@ reject unsafe input before any future signing backend is connected.
 The review-control state machine is intentionally separate from
 `approval_gate`: `review_controls` models local user navigation, while
 `approval_gate` binds the final approval to the request id and
-`approval_digest`. The future display/button adapter must satisfy both before a
+`approval_digest`. The display/button adapter path must satisfy both before a
 real signing backend can be connected.
 
 The review-display renderer is also intentionally hardware-neutral. It does not
@@ -128,9 +128,9 @@ drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded
 frame and keeps unsafe title or limit settings out of the driver boundary. For
 real sign-event review sessions, content and grouped tag content are
 represented as compact styled rows inside stable logical pages; only oversized
-sections become scroll windows such as `Page 3/4 Lines 1-9/18`. A later
-ESP-IDF display adapter can paint those frames without changing review,
-approval, or signing semantics.
+sections become scroll windows such as `Page 3/4 Lines 1-9/18`. ESP-IDF
+display adapters, such as the T-Display S3 ST7789/i80 path, can paint those
+frames without changing review, approval, or signing semantics.
 The T-Display S3 sized detail-page output is now pinned by shared
 `NostrSeal/specs` review-detail-page vectors, while the `approval_digest`
 continues to come from the older digest-bound `screen-pages` contract.
@@ -197,11 +197,11 @@ The serial review boundary reuses that same request parser, page builder, and
 The current device protocol calls this boundary for valid `sign_event` frames,
 then still returns `signing_disabled`. This is intentional: it proves the USB
 signer path cannot later diverge from the shared trusted-review contract while
-keeping real signing blocked until display/GPIO, custody, and provisioning
-gates pass.
+keeping real signing blocked until production display/control acceptance,
+custody, and provisioning gates pass.
 
-`SerialReviewFlow` and `SerialReviewIo` extend that boundary to future display
-and GPIO drivers for the USB signer. A transport adapter supplies one decoded
+`SerialReviewFlow` and `SerialReviewIo` extend that boundary to display and GPIO
+driver acceptance for the USB signer. A transport adapter supplies one decoded
 request JSON payload, a display adapter paints each bounded trusted frame, and
 physical controls provide `next`, `approve`, or `reject`. The harness records
 the frame/button transcript and terminal approval state but still has no

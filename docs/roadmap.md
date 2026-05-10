@@ -138,8 +138,11 @@ boundary.
 Status note, 2026-05-08: the host-core device protocol now decodes serial-frame
 request payloads, validates the v0 `request_id` profile, and echoes dynamic
 request ids in `get_capabilities`, `get_signing_status`, development
-`get_public_key`, and disabled `sign_event` responses. `sign_event` still returns `signing_disabled`; no
-signing backend, storage, display driver, or GPIO approval path is connected.
+`get_public_key`, and disabled `sign_event` responses. `sign_event` still
+returns `signing_disabled`; at that milestone no signing backend, storage,
+display driver, or GPIO approval path was connected. Later T-Display S3 work
+added development display/button review adapters while keeping storage and
+signing disabled.
 
 Status note, 2026-05-08: valid serial/USB `sign_event` requests now pass
 through a host-core trusted-review boundary before the disabled-signing
@@ -268,9 +271,11 @@ backlight, and draws a boot/self-test frame. The draw path waits for each
 asynchronous i80 color transfer before reusing the DMA buffer. The same flash
 and smoke loop on `/dev/cu.usbmodem1101` still passed 33 USB serial exchanges,
 and manual visual confirmation showed a single clean blue boot bar with no
-stray pixels. This is display bring-up only: review-frame rendering on the
-physical display, GPIO approval, camera, storage, secure boot, debug lock, and
-signing acceptance remain pending.
+stray pixels. At that point this was display bring-up only: review-frame
+rendering on the physical display, GPIO approval, camera, storage, secure boot,
+debug lock, and signing acceptance still remained pending. Later T-Display S3
+runtime work added development review-frame rendering and onboard-button
+navigation while keeping production signing disabled.
 
 Status note, 2026-05-09: the T-Display S3 display pixel layout is now factored
 into a host-buildable raster module shared by the ESP-IDF ST7789/i80 driver.
