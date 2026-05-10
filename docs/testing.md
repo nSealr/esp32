@@ -190,6 +190,11 @@ tests with strict C++ warnings.
   protocol still returns `signing_disabled` or deterministic
   `unsupported_request` frames. It does not replace human visual inspection of
   the display.
+- Current-head T-Display S3 smoke evidence recorded for revision `8307c4b` on
+  `/dev/cu.usbmodem1101`: ESP-IDF build and flash passed, capability smoke
+  passed with 39 exchanges, review-scenario smoke passed with 7 scenarios, and
+  lab companion serial smoke verified a request-matched `signing_disabled`
+  response for a companion-generated `sign_event`.
 - Manual T-Display S3 display exerciser tests proving
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
   exchanges, composes tagged-event, long-content, scroll-window, dense-tags,

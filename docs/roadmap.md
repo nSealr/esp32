@@ -471,6 +471,15 @@ adding `development_accepted_gates` while keeping `signing_enabled: false` and
 the production blockers intact. The field is diagnostic evidence for the
 development scaffold, not permission to connect a signing backend.
 
+Hardware note, 2026-05-10: revision `8307c4b` was rebuilt with ESP-IDF
+`v5.5.4`, flashed on the attached LILYGO T-Display S3 at
+`/dev/cu.usbmodem1101`, and smoke-tested as the current repository head.
+`idf-smoke-capabilities` passed with 39 verified exchanges, including the
+post-overlong recovery check. `idf-smoke-review-scenarios` passed all 7 review
+scenarios. A lab companion serial smoke then generated a `sign_event` request
+from the shared basic kind `1` fixture and verified the request-matched
+`signing_disabled` response. Production signing remains disabled.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
