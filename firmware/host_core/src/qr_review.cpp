@@ -257,7 +257,7 @@ void append_display_pages(
     std::size_t logical_page_count) {
     const std::size_t lines_per_screen = styled.styles.empty() ? limits.max_body_lines : limits.max_compact_body_lines;
     const std::size_t total = styled.lines.empty() ? 1U : styled.lines.size();
-    const std::size_t scroll_step = lines_per_screen > 1U ? lines_per_screen - 1U : 1U;
+    const std::size_t scroll_step = lines_per_screen;
     std::size_t position = 0;
     while (position < total) {
         std::vector<std::string> body;

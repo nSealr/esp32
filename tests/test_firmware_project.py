@@ -958,6 +958,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("Page 3/4 Lines 1-9/", checklist)
         self.assertIn("short BOOT/GPIO0 to scroll within Content", checklist)
         self.assertIn("short BOOT/GPIO0 to scroll within Tags", checklist)
+        self.assertIn("without repeating the last line", checklist)
         self.assertIn("short KEY/GPIO14 from any scroll window to Decision", checklist)
         self.assertNotIn("detail screen", checklist)
         self.assertNotIn("...", checklist)

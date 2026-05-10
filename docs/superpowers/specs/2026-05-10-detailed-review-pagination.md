@@ -24,6 +24,9 @@ The ESP32 trusted-review display must let the user inspect the complete event be
 - Approval does not require forced traversal through every scroll window; the
   user can inspect Content or Tags with BOOT/GPIO0 and move to the next
   top-level page with KEY/GPIO14.
+- Scroll windows do not repeat the final visible line from the previous
+  window. The next window starts at the next unread line so line ranges are
+  clear on the small display.
 - The body may use compact text so long content and grouped tag content are
   readable without turning every wrapped line into a separate logical page.
 - Tags are displayed as grouped content instead of interpreted tag labels or

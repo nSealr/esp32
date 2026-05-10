@@ -129,7 +129,8 @@ sections become scroll windows such as `Page 3/4 Lines 1-9/18`. A later
 ESP-IDF display adapter can paint those frames without changing review,
 approval, or signing semantics.
 Frames with additional scroll windows show `Next/Scroll` in the footer so the
-physical display exposes both navigation axes.
+physical display exposes both navigation axes. Adjacent scroll windows do not
+repeat the boundary line; the next window starts at the next unread line.
 
 The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share

@@ -557,7 +557,10 @@ void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
 }
 
 void test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections() {
-    const std::string long_content(448, 'x');
+    std::string long_content;
+    for (std::size_t index = 0; index < 448U; ++index) {
+        long_content.push_back(static_cast<char>('a' + (index % 26U)));
+    }
     const nostrseal::QrSigningRequest request{
         .version = 1,
         .request_id = "req-scroll-display",
@@ -582,15 +585,23 @@ void test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections()
     assert(pages[1].title == "Content");
     assert(pages[1].page_indicator.rfind("Page 2/4 Lines 1-9/", 0) == 0);
     assert(pages[2].title == "Content");
-    assert(pages[2].page_indicator.rfind("Page 2/4 Lines 9-", 0) == 0);
+    assert(pages[2].page_indicator.rfind("Page 2/4 Lines 10-", 0) == 0);
+    assert(!pages[1].lines.empty());
+    assert(!pages[2].lines.empty());
+    assert(pages[1].lines.back() != pages[2].lines.front());
 
     bool saw_tag_scroll_indicator = false;
+    bool saw_tag_second_window_without_overlap = false;
     for (const nostrseal::TrustedReviewPage& page : pages) {
         if (page.title == "Tags" && page.page_indicator.rfind("Page 3/4 Lines ", 0) == 0) {
             saw_tag_scroll_indicator = true;
         }
+        if (page.title == "Tags" && page.page_indicator.rfind("Page 3/4 Lines 10-", 0) == 0) {
+            saw_tag_second_window_without_overlap = true;
+        }
     }
     assert(saw_tag_scroll_indicator);
+    assert(saw_tag_second_window_without_overlap);
 }
 
 void test_qr_trusted_review_session_binds_qr_digest_and_navigation() {
@@ -1132,7 +1143,7 @@ void test_serial_review_session_uses_two_axis_navigation_for_scroll_windows() {
 
     assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
     assert(session.current_frame().title == "Tags");
-    assert(session.current_frame().page_indicator.rfind("Page 3/4 Lines 9-", 0) == 0);
+    assert(session.current_frame().page_indicator.rfind("Page 3/4 Lines 10-", 0) == 0);
     assert(session.current_frame().page_indicator != first_tag_page_indicator);
     assert(session.current_frame().action_hint == "Next/Scroll");
 

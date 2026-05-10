@@ -222,10 +222,10 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 once to reach Content / Page 2/4 Lines 1-9/N.",
             "Confirm the Content body is readable and has no ellipses.",
-            "Press short BOOT/GPIO0 to scroll within Content to the next line range.",
+            "Press short BOOT/GPIO0 to scroll within Content to the next line range without repeating the last line.",
             "Press short KEY/GPIO14 to reach Tags / Page 3/4 Lines 1-9/N.",
             "Confirm the Tags body shows grouped tag values and has no ellipses.",
-            "Press short BOOT/GPIO0 to scroll within Tags to the next line range.",
+            "Press short BOOT/GPIO0 to scroll within Tags to the next line range without repeating the last line.",
             "Press short KEY/GPIO14 from any scroll window to Decision / Page 4/4.",
         ]
     elif scenario == "show-request-error":
