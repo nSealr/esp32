@@ -165,34 +165,6 @@ void append_split_value_lines(
     }
 }
 
-void append_field_lines(
-    StyledReviewLines& out,
-    const std::string& prefix,
-    const std::string& value,
-    std::size_t width) {
-    if (prefix.size() >= width) {
-        append_styled_line(out, prefix.substr(0, width), ReviewBodyLineStyle::Label);
-        append_split_value_lines(out, value, width);
-        return;
-    }
-
-    const std::size_t first_width = width - prefix.size() - 1U;
-    if (value.empty()) {
-        append_styled_line(out, prefix, ReviewBodyLineStyle::Label);
-        return;
-    }
-
-    std::size_t position = 0;
-    const std::size_t first_count = std::min(first_width, value.size());
-    append_styled_line(out, prefix + " " + value.substr(0, first_count), ReviewBodyLineStyle::Label);
-    position += first_count;
-    while (position < value.size()) {
-        const std::size_t count = std::min(width, value.size() - position);
-        append_styled_line(out, value.substr(position, count), ReviewBodyLineStyle::Value);
-        position += count;
-    }
-}
-
 StyledReviewLines detailed_content_lines(const std::string& content, ReviewDisplayLimits limits) {
     StyledReviewLines out;
     if (content.empty()) {
@@ -208,20 +180,30 @@ StyledReviewLines detailed_content_lines(const std::string& content, ReviewDispl
     return out;
 }
 
-std::string tag_value_label(const std::vector<std::string>& tag) {
-    if (tag.empty()) {
-        return "value:";
+void append_tag_item_lines(
+    StyledReviewLines& out,
+    const std::string& value,
+    std::size_t width) {
+    if (value.empty()) {
+        return;
     }
-    if (tag[0] == "p") {
-        return "pubkey:";
+
+    constexpr std::string_view kContinuationIndent = "  ";
+    const std::size_t continuation_width =
+        width > kContinuationIndent.size() ? width - kContinuationIndent.size() : width;
+    std::size_t position = 0;
+    bool first_line = true;
+    while (position < value.size()) {
+        const std::size_t line_width = first_line ? width : continuation_width;
+        const std::size_t count = std::min(line_width, value.size() - position);
+        std::string line = value.substr(position, count);
+        if (!first_line && width > kContinuationIndent.size()) {
+            line = std::string{kContinuationIndent} + line;
+        }
+        append_styled_line(out, std::move(line), ReviewBodyLineStyle::Value);
+        position += count;
+        first_line = false;
     }
-    if (tag[0] == "e") {
-        return "event:";
-    }
-    if (tag[0] == "t") {
-        return "topic:";
-    }
-    return "value:";
 }
 
 StyledReviewLines detailed_tag_lines(
@@ -233,26 +215,16 @@ StyledReviewLines detailed_tag_lines(
         return out;
     }
 
-    append_styled_line(out, tags.size() == 1U ? "1 tag" : std::to_string(tags.size()) + " tags",
-                       ReviewBodyLineStyle::Meta);
     for (std::size_t tag_index = 0; tag_index < tags.size(); ++tag_index) {
         const std::vector<std::string>& tag = tags[tag_index];
-        const std::string tag_name = tag.empty() ? "empty" : tag[0];
         append_styled_line(out,
-                           "Tag " + std::to_string(tag_index + 1U) + "/" + std::to_string(tags.size()) + " " +
-                               tag_name,
+                           "Tag " + std::to_string(tag_index + 1U) + "/" + std::to_string(tags.size()),
                            ReviewBodyLineStyle::Meta);
+        for (std::size_t field_index = 0; field_index < tag.size(); ++field_index) {
+            append_tag_item_lines(out, tag[field_index], limits.max_compact_line_chars);
+        }
         if (tag.empty()) {
             append_styled_line(out, "empty tag", ReviewBodyLineStyle::Value);
-            continue;
-        }
-        if (tag.size() > 1U) {
-            append_field_lines(out, tag_value_label(tag), tag[1], limits.max_compact_line_chars);
-        }
-        for (std::size_t field_index = 2; field_index < tag.size(); ++field_index) {
-            const std::string value = tag[field_index].empty() ? "empty" : tag[field_index];
-            const std::string label = field_index == 2U ? "relay:" : (field_index == 3U ? "marker:" : "field:");
-            append_field_lines(out, label, value, limits.max_compact_line_chars);
         }
     }
     return out;
@@ -265,13 +237,15 @@ std::string logical_page_indicator(std::size_t page_index, std::size_t page_coun
 std::string logical_page_indicator(
     std::size_t page_index,
     std::size_t page_count,
-    std::size_t subpage_index,
-    std::size_t subpage_count) {
-    if (subpage_count <= 1U) {
+    std::size_t first_line,
+    std::size_t last_line,
+    std::size_t line_count) {
+    if (line_count == 0U || (first_line == 1U && last_line >= line_count)) {
         return logical_page_indicator(page_index, page_count);
     }
-    return logical_page_indicator(page_index, page_count) + " " +
-           std::to_string(subpage_index) + "/" + std::to_string(subpage_count);
+    return logical_page_indicator(page_index, page_count) + " Lines " +
+           std::to_string(first_line) + "-" + std::to_string(last_line) + "/" +
+           std::to_string(line_count);
 }
 
 void append_display_pages(
@@ -281,14 +255,14 @@ void append_display_pages(
     ReviewDisplayLimits limits,
     std::size_t logical_page_index,
     std::size_t logical_page_count) {
-    std::size_t position = 0;
     const std::size_t lines_per_screen = styled.styles.empty() ? limits.max_body_lines : limits.max_compact_body_lines;
     const std::size_t total = styled.lines.empty() ? 1U : styled.lines.size();
-    const std::size_t subpage_count = (total + lines_per_screen - 1U) / lines_per_screen;
-    std::size_t subpage_index = 1U;
+    const std::size_t scroll_step = lines_per_screen > 1U ? lines_per_screen - 1U : 1U;
+    std::size_t position = 0;
     while (position < total) {
         std::vector<std::string> body;
         std::vector<ReviewBodyLineStyle> body_styles;
+        const std::size_t first_position = position;
         for (std::size_t line = 0; line < lines_per_screen && position < styled.lines.size(); ++line) {
             body.push_back(styled.lines[position]);
             body_styles.push_back(position < styled.styles.size() ? styled.styles[position] : ReviewBodyLineStyle::Normal);
@@ -303,10 +277,14 @@ void append_display_pages(
             title,
             std::move(body),
             ReviewPageAction::Next,
-            logical_page_indicator(logical_page_index, logical_page_count, subpage_index, subpage_count),
+            logical_page_indicator(logical_page_index, logical_page_count, first_position + 1U, position, total),
             std::move(body_styles),
+            title,
         });
-        ++subpage_index;
+        if (position >= total) {
+            break;
+        }
+        position = first_position + scroll_step;
     }
 }
 
@@ -504,6 +482,8 @@ std::vector<TrustedReviewPage> build_qr_display_review_pages(
             },
             ReviewPageAction::Next,
             logical_page_indicator(1, 4),
+            {},
+            "Event",
         },
     };
 
@@ -516,6 +496,8 @@ std::vector<TrustedReviewPage> build_qr_display_review_pages(
         },
         ReviewPageAction::ApproveOrReject,
         logical_page_indicator(4, 4),
+        {},
+        "Decision",
     });
     return pages;
 }

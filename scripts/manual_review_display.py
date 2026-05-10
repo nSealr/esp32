@@ -27,6 +27,7 @@ MANUAL_REVIEW_SCENARIOS = (
     "show-review",
     "show-tags",
     "show-long-content",
+    "show-scroll-review",
     "show-request-error",
     "button-approve",
     "button-reject",
@@ -113,6 +114,38 @@ def build_long_content_review_exchange(
     )
 
 
+def build_scroll_review_exchange(
+    request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-scroll",
+    specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
+) -> tuple[str, str]:
+    content = (
+        "NostrSeal scroll review content shows a long Nostr note across "
+        "multiple display windows without truncation. "
+        * 5
+    )[:420]
+    request = {
+        "version": 1,
+        "request_id": request_id,
+        "method": "sign_event",
+        "params": {
+            "event_template": {
+                "created_at": 1710000240,
+                "kind": 1,
+                "tags": [
+                    ["t", "nostrseal"],
+                    ["t", "hardware"],
+                    ["t", "review"],
+                    ["t", "security"],
+                    ["t", "qr"],
+                    ["t", "vault"],
+                ],
+                "content": content,
+            }
+        },
+    }
+    return _review_exchange_from_request(request, request_id, specs_dir)
+
+
 def build_request_error_exchange(
     request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-invalid",
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
@@ -138,6 +171,8 @@ def build_manual_review_exchanges(
         return [build_tagged_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-long-content":
         return [build_long_content_review_exchange(request_id=request_id, specs_dir=specs_dir)]
+    if scenario == "show-scroll-review":
+        return [build_scroll_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-request-error":
         return [
             review_exchange,
@@ -161,11 +196,13 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm the display starts on Event / Page 1/4.",
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 until the Tags section is shown as Page 3/4.",
-            "Confirm the Tags body uses compact label/value rows, not uniform large text.",
-            "Confirm this fixture shows 2 tags on one compact Tags screen without ellipses.",
-            "Confirm the p tag shows the full 64-character pubkey.",
-            "Confirm marker mention and topic nostrseal are visible.",
-            "Continue with short KEY/GPIO14 until the final Decision page.",
+            "Confirm the Tags body shows tag content grouped by tag, not interpreted tag labels.",
+            "Confirm this fixture shows Tag 1/2 and Tag 2/2 on one compact Tags screen without ellipses.",
+            "Confirm Tag 1/2 shows p, the full 64-character pubkey, and mention, without the empty field.",
+            "Confirm the pubkey continuation line is indented and uses the same color as the first pubkey line.",
+            "Confirm Tag 2/2 shows t and nostrseal.",
+            "If Tags shows a Page 3/4 Lines X-Y/N indicator, press short BOOT/GPIO0 to scroll only within Tags.",
+            "Continue with short KEY/GPIO14 from Tags to the final Decision page.",
         ]
     elif scenario == "show-long-content":
         lines = [
@@ -173,9 +210,23 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 until the Content section is shown as Page 2/4.",
             "Confirm the Content body uses compact text and shows the full long content without ellipses.",
-            "Continue with short KEY/GPIO14 through the Tags section, shown as Page 3/4 or Page 3/4 N/M.",
-            "Confirm every tag field is readable without ellipses and uses compact label/value rows.",
-            "Continue with short KEY/GPIO14 until the final Decision page.",
+            "If Content shows a Page 2/4 Lines X-Y/N indicator, press short BOOT/GPIO0 to scroll only within Content.",
+            "Press short KEY/GPIO14 to the Tags section, shown as Page 3/4 or Page 3/4 Lines X-Y/N.",
+            "Confirm every visible tag item is readable without ellipses.",
+            "Use short BOOT/GPIO0 to scroll within Tags when a Page 3/4 Lines X-Y/N indicator is shown.",
+            "Press short KEY/GPIO14 from any Tags scroll window to reach the final Decision page.",
+        ]
+    elif scenario == "show-scroll-review":
+        lines = [
+            "Confirm the display starts on Event / Page 1/4.",
+            "Confirm real signing remains disabled in the serial response.",
+            "Press short KEY/GPIO14 once to reach Content / Page 2/4 Lines 1-9/N.",
+            "Confirm the Content body is readable and has no ellipses.",
+            "Press short BOOT/GPIO0 to scroll within Content to the next line range.",
+            "Press short KEY/GPIO14 to reach Tags / Page 3/4 Lines 1-9/N.",
+            "Confirm the Tags body shows grouped tag values and has no ellipses.",
+            "Press short BOOT/GPIO0 to scroll within Tags to the next line range.",
+            "Press short KEY/GPIO14 from any scroll window to Decision / Page 4/4.",
         ]
     elif scenario == "show-request-error":
         lines = [
@@ -187,6 +238,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
         lines = [
             *common,
             "Press short KEY/GPIO14 three times to reach the final page.",
+            "Optional Content/Tags scroll windows use short BOOT/GPIO0 and are not required to reach Decision.",
             "Press long KEY/GPIO14 to approve.",
             "Expected final display: Review OK / Closed / Not signed / Signing disabled / Send new request.",
         ]
@@ -239,8 +291,9 @@ def main() -> int:
         choices=MANUAL_REVIEW_SCENARIOS,
         help=(
             "show-review leaves a valid sign_event review on the display; "
-            "show-tags shows a tagged event with unabridged tag review; "
+            "show-tags shows a tagged event with grouped tag content; "
             "show-long-content shows compact full content plus many tags; "
+            "show-scroll-review shows content and tags with scroll windows; "
             "show-request-error first shows that review and then sends an invalid request; "
             "button-approve and button-reject print physical-control acceptance steps"
         ),

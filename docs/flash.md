@@ -191,7 +191,7 @@ can be sent to the device for human inspection:
 python3 scripts/manual_review_display.py show-review --port /dev/cu.<device>
 ```
 
-To inspect the compact unabridged tagged-event review section, send:
+To inspect the compact grouped tag-content review section, send:
 
 ```sh
 python3 scripts/manual_review_display.py show-tags --port /dev/cu.<device>
@@ -201,6 +201,13 @@ To inspect compact full-content and many-tag review behavior, send:
 
 ```sh
 python3 scripts/manual_review_display.py show-long-content --port /dev/cu.<device>
+```
+
+To inspect the scroll-window behavior for both Content and Tags, use a short
+request id so the test request stays under the v0 decoded-request limit:
+
+```sh
+python3 scripts/manual_review_display.py show-scroll-review --port /dev/cu.<device> --request-id manual-scroll
 ```
 
 To exercise the request-error display state, send a valid review request

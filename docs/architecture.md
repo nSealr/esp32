@@ -84,20 +84,22 @@ The first firmware foundation is host-buildable C++ under
   indicator, body lines, body-line styles, and action hint fields. Generic
   frames are bounded at the renderer boundary, while sign-event display
   sessions keep stable logical pages for Event, Content, Tags, and Decision and
-  use compact styled body rows for long content and tag details.
+  use compact styled body rows for long content and grouped tag content.
 - `trusted_review`: host-buildable review session boundary that combines owned
   review pages, `review_display` frames, `review_controls` button navigation,
   and `approval_gate` request/digest binding. It is the first firmware-core
   object a future display/button adapter can drive without touching signing
-  code.
+  code. Sign-event display sessions can opt into logical navigation: KEY/GPIO14
+  cycles Event, Content, Tags, and Decision, while BOOT/GPIO0 scrolls inside
+  the current Content or Tags page when more lines are available.
 - `device_protocol`: scaffold request dispatcher for shared-spec capability,
   development public-key, and disabled-signing responses. It parses the serial
   request payload enough to validate v0 request ids and echo dynamic
   `request_id` values. Valid serial/USB `sign_event` requests are also forced
   through the trusted-review request builder before the dispatcher returns
   `signing_disabled`; the live display session uses logical review pages plus
-  compact internal sub-screens so content and tags can be inspected without
-  abbreviated warning heuristics. It does not sign events.
+  compact scroll windows so content and grouped tag content can be inspected
+  without abbreviated warning heuristics. It does not sign events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -121,10 +123,13 @@ real signing backend can be connected.
 The review-display renderer is also intentionally hardware-neutral. It does not
 drive ST7789, ILI9341, OLED, or LVGL directly; it produces a small bounded
 frame and keeps unsafe title or limit settings out of the driver boundary. For
-real sign-event review sessions, content and tag fields are represented as
-compact styled rows inside stable logical pages; only oversized sections become
-internal sub-screens such as `Page 3/4 1/2`. A later ESP-IDF display adapter
-can paint those frames without changing review, approval, or signing semantics.
+real sign-event review sessions, content and grouped tag content are
+represented as compact styled rows inside stable logical pages; only oversized
+sections become scroll windows such as `Page 3/4 Lines 1-9/18`. A later
+ESP-IDF display adapter can paint those frames without changing review,
+approval, or signing semantics.
+Frames with additional scroll windows show `Next/Scroll` in the footer so the
+physical display exposes both navigation axes.
 
 The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share
@@ -135,8 +140,11 @@ and core colors are caught before flashing.
 The T-Display S3 button adapter follows the same pattern: GPIO polling remains
 inside the ESP-IDF wrapper, while debounce timing, short/long press
 classification, and emitted review-button events live in a host-buildable state
-machine. This keeps the GPIO0/GPIO14 mapping testable without hardware and
-keeps touch input outside the approval path.
+machine. GPIO14 short press emits the top-level next control, GPIO0 short press
+emits the scroll/back control that logical sign-event reviews interpret as
+Content/Tags scroll navigation, and long presses remain approve/reject. This
+keeps the GPIO0/GPIO14 mapping testable without hardware and keeps touch input
+outside the approval path.
 
 The T-Display S3 runtime status frames are also host-buildable. Ready,
 approved/rejected, timeout, and request-error frames are constructed by a small

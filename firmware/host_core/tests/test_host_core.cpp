@@ -477,7 +477,8 @@ void test_qr_display_review_pages_show_full_tag_values_without_ellipsis() {
 
     assert(page_count_with_title(pages, "Tags") == 1);
     assert(tag_text.find("...") == std::string::npos);
-    assert(tag_text.find(pubkey) != std::string::npos);
+    assert(tag_text.find(pubkey.substr(0, 48)) != std::string::npos);
+    assert(tag_text.find(pubkey.substr(48)) != std::string::npos);
     assert(tag_text.find("nostrseal") != std::string::npos);
     assert(pages.back().title == "Decision");
     assert(!lines_contain(pages.back().lines, "warning"));
@@ -504,9 +505,25 @@ void test_qr_display_review_pages_group_logical_sections_with_compact_styles() {
     assert(pages[3].page_indicator == "Page 4/4");
     assert(pages[2].body_line_styles.size() == pages[2].lines.size());
     assert(pages[2].body_line_styles.front() == nostrseal::ReviewBodyLineStyle::Meta);
-    assert(lines_contain(pages[2].lines, "Tag 1/2 p"));
-    assert(lines_contain(pages[2].lines, "pubkey:"));
-    assert(joined_lines_for_title(pages, "Tags").find(pubkey) != std::string::npos);
+    const std::string tag_text = joined_lines_for_title(pages, "Tags");
+    assert((pages[2].lines == std::vector<std::string>{
+                                "Tag 1/2",
+                                "p",
+                                "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859a",
+                                "  b0f0b704075871aa",
+                                "mention",
+                                "Tag 2/2",
+                                "t",
+                                "nostrseal",
+                            }));
+    assert(pages[2].body_line_styles[2] == nostrseal::ReviewBodyLineStyle::Value);
+    assert(pages[2].body_line_styles[3] == nostrseal::ReviewBodyLineStyle::Value);
+    assert(pages[2].lines[3].rfind("  ", 0) == 0);
+    assert(!lines_contain(pages[2].lines, "[0]"));
+    assert(!lines_contain(pages[2].lines, "\""));
+    assert(!lines_contain(pages[2].lines, "raw tags JSON"));
+    assert(tag_text.find(pubkey.substr(0, 48)) != std::string::npos);
+    assert(tag_text.find(pubkey.substr(48)) != std::string::npos);
 }
 
 void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
@@ -539,6 +556,43 @@ void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
     assert(!lines_contain(pages.back().lines, "Many tags"));
 }
 
+void test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections() {
+    const std::string long_content(448, 'x');
+    const nostrseal::QrSigningRequest request{
+        .version = 1,
+        .request_id = "req-scroll-display",
+        .method = "sign_event",
+        .has_params = true,
+        .has_event_template = true,
+        .event_template_json = "",
+        .event_template = nostrseal::QrEventTemplate{
+            .created_at = 1710000240,
+            .kind = 1,
+            .tags_json = R"([["t","tag0"],["t","tag1"],["t","tag2"],["t","tag3"],["t","tag4"],["t","tag5"]])",
+            .tags = {{"t", "tag0"}, {"t", "tag1"}, {"t", "tag2"}, {"t", "tag3"}, {"t", "tag4"}, {"t", "tag5"}},
+            .content = long_content,
+        },
+    };
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+
+    assert(page_count_with_title(pages, "Content") > 1);
+    assert(page_count_with_title(pages, "Tags") > 1);
+    assert(pages[1].title == "Content");
+    assert(pages[1].page_indicator.rfind("Page 2/4 Lines 1-9/", 0) == 0);
+    assert(pages[2].title == "Content");
+    assert(pages[2].page_indicator.rfind("Page 2/4 Lines 9-", 0) == 0);
+
+    bool saw_tag_scroll_indicator = false;
+    for (const nostrseal::TrustedReviewPage& page : pages) {
+        if (page.title == "Tags" && page.page_indicator.rfind("Page 3/4 Lines ", 0) == 0) {
+            saw_tag_scroll_indicator = true;
+        }
+    }
+    assert(saw_tag_scroll_indicator);
+}
+
 void test_qr_trusted_review_session_binds_qr_digest_and_navigation() {
     const nostrseal::QrEnvelope envelope =
         nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
@@ -550,7 +604,7 @@ void test_qr_trusted_review_session_binds_qr_digest_and_navigation() {
     assert(first_frame.page_indicator == "Page 1/4");
     assert(!session.can_sign());
 
-    expect_throw("approval requires viewing every review page", [&] {
+    expect_throw("approval requires decision review page", [&] {
         (void)session.handle_button(nostrseal::ReviewButton::Approve);
     });
 
@@ -580,7 +634,7 @@ void test_qr_review_flow_drives_scanned_qr_without_signing_backend() {
     assert(first_frame.title == "Event");
     assert(first_frame.page_indicator == "Page 1/4");
 
-    expect_throw("approval requires viewing every review page", [&] {
+    expect_throw("approval requires decision review page", [&] {
         (void)flow.handle_button(nostrseal::ReviewButton::Approve);
     });
 
@@ -612,9 +666,18 @@ void test_qr_review_flow_transcript_records_display_and_approval_steps() {
         nostrseal::test_vectors::kQrEnvelopeKind1Basic,
         nostrseal::test_vectors::basic_qr_review_approve_buttons());
 
-    assert_qr_review_transcript(
-        transcript,
-        nostrseal::test_vectors::basic_qr_review_approve_transcript());
+    assert(transcript.size() == 4);
+    assert(transcript[0].frame.title == "Event");
+    assert(transcript[0].frame.body_lines == nostrseal::test_vectors::basic_qr_review_approve_transcript()[0].frame.body_lines);
+    assert(transcript[1].frame.title == "Content");
+    assert(transcript[1].frame.body_lines == nostrseal::test_vectors::basic_qr_review_approve_transcript()[1].frame.body_lines);
+    assert(transcript[2].frame.title == "Tags");
+    assert((transcript[2].frame.body_lines == std::vector<std::string>{"No tags"}));
+    assert(transcript[3].frame.title == "Decision");
+    assert(transcript[3].frame.action_hint == "Approve / Reject");
+    assert(transcript[3].decision.has_value());
+    assert(transcript[3].decision.value());
+    assert(transcript[3].approved_for_signing);
 }
 
 void test_qr_review_flow_transcript_records_early_rejection() {
@@ -640,9 +703,11 @@ void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing()
     assert(result.decision.has_value());
     assert(result.decision.value());
     assert(result.approved_for_signing);
-    assert_qr_review_transcript(
-        result.transcript,
-        nostrseal::test_vectors::basic_qr_review_approve_transcript());
+    assert(result.transcript.size() == 4);
+    assert(result.transcript[2].frame.title == "Tags");
+    assert((result.transcript[2].frame.body_lines == std::vector<std::string>{"No tags"}));
+    assert(result.transcript.back().decision.has_value());
+    assert(result.transcript.back().decision.value());
     assert(io.frames.size() == 4);
     assert(io.frames.front().title == "Event");
     assert(io.frames.front().page_indicator == "Page 1/4");
@@ -658,7 +723,8 @@ void test_qr_review_io_flow_rejects_non_terminal_button_stream() {
     });
 
     assert(io.frames.size() == 5);
-    assert(io.frames.back().title == "Decision");
+    assert(io.frames[3].title == "Decision");
+    assert(io.frames.back().title == "Event");
 }
 
 void test_qr_review_io_flow_requires_nonzero_step_limit() {
@@ -995,7 +1061,7 @@ void test_serial_sign_event_review_matches_shared_review_contract() {
     assert(!session.can_sign());
 }
 
-void test_serial_review_session_uses_full_detail_display_pages() {
+void test_serial_review_session_uses_full_scroll_display_pages() {
     const std::string pubkey = "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
     nostrseal::TrustedReviewSession session = nostrseal::begin_serial_sign_event_trusted_review(
         R"({"version":1,"request_id":"req-kind-1-tags","method":"sign_event","params":{"event_template":{"created_at":1710000060,"kind":1,"tags":[["p","4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa","","mention"],["t","nostrseal"]],"content":"NostrSeal fixture: tagged kind 1 event."}}})",
@@ -1022,9 +1088,72 @@ void test_serial_review_session_uses_full_detail_display_pages() {
     assert(saw_tags);
     assert(!saw_warnings);
     assert(tag_text.find("...") == std::string::npos);
-    assert(tag_text.find(pubkey) != std::string::npos);
+    assert(tag_text.find(pubkey.substr(0, 48)) != std::string::npos);
+    assert(tag_text.find(pubkey.substr(48)) != std::string::npos);
     assert(tag_text.find("mention") != std::string::npos);
     assert(tag_text.find("nostrseal") != std::string::npos);
+}
+
+void test_serial_review_session_uses_two_axis_navigation_for_scroll_windows() {
+    std::string tags_json;
+    for (int index = 0; index < 16; ++index) {
+        if (!tags_json.empty()) {
+            tags_json += ",";
+        }
+        tags_json += R"(["t","tagvalue)";
+        tags_json += std::to_string(index);
+        tags_json += R"(000000000000"])";
+    }
+    const std::string request_json =
+        R"({"version":1,"request_id":"req-many-tags-nav","method":"sign_event","params":{"event_template":{"created_at":1710000180,"kind":1,"tags":[)" +
+        tags_json +
+        R"(],"content":"many tags navigation"}}})";
+
+    nostrseal::TrustedReviewSession session = nostrseal::begin_serial_sign_event_trusted_review(
+        request_json,
+        nostrseal_esp32::t_display_s3_review_limits());
+
+    assert(session.current_frame().title == "Event");
+    assert(session.current_frame().page_indicator == "Page 1/4");
+    expect_throw("approval requires decision review page", [&] {
+        (void)session.handle_button(nostrseal::ReviewButton::Approve);
+    });
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Content");
+    assert(session.current_frame().page_indicator == "Page 2/4");
+    assert(session.current_frame().action_hint == "Next");
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Tags");
+    const std::string first_tag_page_indicator = session.current_frame().page_indicator;
+    assert(first_tag_page_indicator.rfind("Page 3/4 Lines 1-9/", 0) == 0);
+    assert(session.current_frame().action_hint == "Next/Scroll");
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Back).has_value());
+    assert(session.current_frame().title == "Tags");
+    assert(session.current_frame().page_indicator.rfind("Page 3/4 Lines 9-", 0) == 0);
+    assert(session.current_frame().page_indicator != first_tag_page_indicator);
+    assert(session.current_frame().action_hint == "Next/Scroll");
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Decision");
+    assert(session.current_frame().page_indicator == "Page 4/4");
+    assert(!session.can_sign());
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Event");
+    assert(session.current_frame().page_indicator == "Page 1/4");
+
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(!session.handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(session.current_frame().title == "Decision");
+
+    const auto approval = session.handle_button(nostrseal::ReviewButton::Approve);
+    assert(approval.has_value());
+    assert(approval.value());
+    assert(session.can_sign());
 }
 
 void test_serial_review_io_flow_drives_request_display_and_buttons_without_signing() {
@@ -1147,7 +1276,9 @@ void test_device_protocol_exposes_review_session_for_manual_display_navigation()
     assert(!result.review_session->handle_button(nostrseal::ReviewButton::Next).has_value());
     assert(result.review_session->current_frame().title == "Content");
     assert(!result.review_session->handle_button(nostrseal::ReviewButton::Back).has_value());
-    assert(result.review_session->current_frame().title == "Event");
+    assert(result.review_session->current_frame().title == "Content");
+    assert(!result.review_session->handle_button(nostrseal::ReviewButton::Next).has_value());
+    assert(result.review_session->current_frame().title == "Tags");
     assert(!result.review_session->can_sign());
 }
 
@@ -1447,6 +1578,7 @@ int main() {
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();
+    test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
     test_qr_review_flow_rejects_unsafe_scanned_qr();
@@ -1470,7 +1602,8 @@ int main() {
     test_trusted_review_session_keeps_rejection_terminal();
     test_trusted_review_session_allows_backward_review_before_approval();
     test_serial_sign_event_review_matches_shared_review_contract();
-    test_serial_review_session_uses_full_detail_display_pages();
+    test_serial_review_session_uses_full_scroll_display_pages();
+    test_serial_review_session_uses_two_axis_navigation_for_scroll_windows();
     test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
     test_signing_policy_requires_every_runtime_gate_before_enablement();
     test_device_protocol_reports_scaffold_capabilities();

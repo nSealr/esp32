@@ -899,9 +899,12 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertEqual(event_template["tags"][0][0], "p")
         self.assertEqual(event_template["tags"][1], ["t", "nostrseal"])
-        self.assertIn("Confirm the Tags body uses compact label/value rows", checklist)
-        self.assertIn("Confirm this fixture shows 2 tags on one compact Tags screen", checklist)
-        self.assertIn("Confirm the p tag shows the full 64-character pubkey", checklist)
+        self.assertIn("tag content grouped by tag, not interpreted tag labels", checklist)
+        self.assertIn("Tag 1/2 and Tag 2/2 on one compact Tags screen", checklist)
+        self.assertIn("Tag 1/2 shows p, the full 64-character pubkey, and mention", checklist)
+        self.assertIn("pubkey continuation line is indented", checklist)
+        self.assertIn("Tag 2/2 shows t and nostrseal", checklist)
+        self.assertIn("short BOOT/GPIO0 to scroll only within Tags", checklist)
         self.assertNotIn("Warnings", checklist)
 
     def test_manual_review_display_builds_long_content_review_scenario(self) -> None:
@@ -923,8 +926,41 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertGreater(len(event_template["content"]), 280)
         self.assertEqual(len(event_template["tags"]), 9)
         self.assertIn("Confirm the Content body uses compact text", checklist)
-        self.assertIn("shown as Page 3/4 or Page 3/4 N/M", checklist)
-        self.assertIn("compact label/value rows", checklist)
+        self.assertIn("shown as Page 3/4 or Page 3/4 Lines X-Y/N", checklist)
+        self.assertIn("short BOOT/GPIO0 to scroll only within Content", checklist)
+        self.assertIn("from any Tags scroll window to reach the final Decision page", checklist)
+        self.assertIn("every visible tag item is readable without ellipses", checklist)
+        self.assertNotIn("Warnings", checklist)
+
+    def test_manual_review_display_builds_scroll_review_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-scroll-review",
+            request_id="manual-scroll",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-scroll-review")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-scroll")
+        self.assertEqual(response["request_id"], "manual-scroll")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertGreaterEqual(len(event_template["content"].encode("utf-8")), 420)
+        self.assertGreaterEqual(len(event_template["tags"]), 6)
+        self.assertLessEqual(
+            len(json.dumps(request, separators=(",", ":")).encode("utf-8")),
+            704,
+        )
+        self.assertIn("Page 2/4 Lines 1-9/", checklist)
+        self.assertIn("Page 3/4 Lines 1-9/", checklist)
+        self.assertIn("short BOOT/GPIO0 to scroll within Content", checklist)
+        self.assertIn("short BOOT/GPIO0 to scroll within Tags", checklist)
+        self.assertIn("short KEY/GPIO14 from any scroll window to Decision", checklist)
+        self.assertNotIn("detail screen", checklist)
+        self.assertNotIn("...", checklist)
         self.assertNotIn("Warnings", checklist)
 
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
@@ -942,6 +978,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(request["request_id"], "manual-approve-test")
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertIn("short KEY/GPIO14 three times to reach the final page", checklist)
+        self.assertIn("Optional Content/Tags scroll windows use short BOOT/GPIO0", checklist)
         self.assertIn("long KEY/GPIO14 to approve", checklist)
         self.assertIn(
             "Review OK / Closed / Not signed / Signing disabled / Send new request",

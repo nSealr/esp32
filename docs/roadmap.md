@@ -47,8 +47,10 @@
   page-indicator, and action-hint fields.
 - Host-buildable body-line wrapping/truncation for trusted display frames.
 - ESP32 display-review logical pages for `Event`, `Content`, `Tags`, and
-  `Decision`, with compact styled body rows and internal sub-screens for valid
-  content/tag fields that do not fit on one screen.
+  `Decision`, with compact styled body rows and scroll windows for valid
+  content or grouped tag content that does not fit on one screen. Live logical
+  reviews use two-axis navigation: KEY/GPIO14 cycles top-level pages and
+  BOOT/GPIO0 scrolls within Content or Tags when more lines are present.
 - Host-buildable trusted review session combining display frames, button
   navigation, terminal approve/reject decisions, and request/digest-bound
   approval.
@@ -57,7 +59,7 @@
 - QR-derived trusted-review session creation from parsed request data.
 - Serial/USB `sign_event` trusted-review request creation from decoded request
   JSON, using the same shared `approval_digest` contract as QR while live
-  display sessions can use compact full-detail logical pages.
+  display sessions can use compact full-review logical pages.
 - `SerialReviewIo` host-core adapter harness for future USB signer display and
   physical-button drivers, without signing.
 - `QrReviewFlow` host-core boundary from raw scanned QR envelope to trusted
@@ -104,9 +106,10 @@ trusted review session now ties review controls and display frames to
 approval-digest binding for future adapters, and QR-derived requests can enter
 that same session boundary through a raw-QR review flow. Display frames remain
 bounded to configured limits, and sign-event display sessions now keep stable
-logical pages with compact styled body rows; content and tag fields become
-internal sub-screens only when they do not fit. The host-core now also has a
-scanner/display/button I/O harness that shows every trusted frame before
+logical pages with compact styled body rows; content and grouped tag content
+become scroll windows only when they do not fit. Pages with additional scroll
+windows expose `Next/Scroll` in the footer. The host-core
+now also has a scanner/display/button I/O harness that shows every trusted frame before
 reading physical-style input, rejects non-terminal input streams after a bounded
 number of steps, and returns the terminal approval state plus the exact
 displayed frame/button transcript. Camera input, trusted review output on the
@@ -139,7 +142,7 @@ Status note, 2026-05-08: valid serial/USB `sign_event` requests now pass
 through a host-core trusted-review boundary before the disabled-signing
 response is returned. The boundary builds the same shared `approval_digest` as
 the QR path from decoded request JSON, and live display sessions use compact
-full-detail logical pages for physical review. Runtime signing remains disabled.
+full-review logical pages for physical review. Runtime signing remains disabled.
 
 Status note, 2026-05-08: `make idf-smoke-capabilities` now sends both the
 shared fixture requests and dynamic `request_id` variants for capabilities,
@@ -269,8 +272,8 @@ disabled-signing boundary.
 Status note, 2026-05-09: the T-Display S3 button press classifier is now
 factored into a host-buildable state machine shared by the ESP-IDF GPIO polling
 adapter. Host-core tests cover debounce rejection, short press mapping, long
-press mapping, GPIO14 Next/Approve, and GPIO0 Back/Reject behavior. This
-hardens the physical-review UX boundary without treating button input as
+press mapping, GPIO14 Next/Approve, and GPIO0 scroll-or-back/Reject behavior.
+This hardens the physical-review UX boundary without treating button input as
 production signing authorization.
 
 Status note, 2026-05-09: the T-Display S3 Ready, approve/reject, timeout, and
@@ -283,18 +286,27 @@ runtime signing remains disabled.
 Status note, 2026-05-09: `scripts/manual_review_display.py` now includes
 `button-approve` and `button-reject` scenarios. They send a valid disabled
 `sign_event` review request and print the physical-control checklist for a
-human observer: short KEY/GPIO14 page traversal, long KEY/GPIO14 approve, and
-long BOOT/GPIO0 reject. The terminal checklist now also includes the expected
-`Send new request` prompt shown after `Signing disabled`. This makes manual
+human observer: short KEY/GPIO14 top-level page traversal, optional short
+BOOT/GPIO0 Content/Tags scroll traversal, long KEY/GPIO14 approve, and long BOOT/GPIO0
+reject. The terminal checklist now also includes the expected `Send new
+request` prompt shown after `Signing disabled`. This makes manual
 display/button acceptance runs more repeatable, but it still does not turn
 physical input into signing authorization.
 
 Status note, 2026-05-10: the manual T-Display S3 review exerciser now includes
 tagged-event and long-content scenarios built from shared `NostrSeal/specs`
-vectors. These scenarios let a human inspect unabridged tag fields, compact
-full-content review, many-tag sub-screens, and stable logical page indicators
+vectors. These scenarios let a human inspect grouped tag content, compact
+full-content review, many-tag scroll windows, and stable logical page indicators
 on the physical display while the serial response still returns
 `signing_disabled`.
+
+Status note, 2026-05-10: live T-Display S3 sign-event review now uses two-axis
+navigation for full-review display pages. Short KEY/GPIO14 cycles Event,
+Content, Tags, and Decision; short BOOT/GPIO0 scrolls within
+the current logical page; long KEY/GPIO14 can approve only on Decision; and
+long BOOT/GPIO0 can reject from any page. This removes forced traversal through
+every content/tag scroll window while still allowing complete inspection
+before a non-signing approval UI action.
 
 ## M7: Firmware Foundation
 
@@ -345,18 +357,19 @@ is connected.
 Status note, 2026-05-09: the review-control state machine now supports explicit
 backward navigation before a terminal decision. Host-core tests cover `Next`,
 `Back`, early `Reject`, and final-page `Approve` behavior, including the rule
-that returning to prior pages never enables `can_sign`. The live T-Display S3
-runtime still paints only the first request-derived review page and returns
-`signing_disabled`; physical button mapping and an interactive GPIO/display
-loop remain M8 blockers.
+that returning to prior pages never enables `can_sign`. Logical sign-event
+display sessions now reinterpret the same short GPIO0 event as scroll-window
+navigation so the user can move across Event, Content, Tags, and Decision
+without forced traversal through every scroll window.
 
 Status note, 2026-05-09: the T-Display S3 runtime now maps the vendor-documented
-onboard buttons into the manual review loop: short GPIO14 is Next, short GPIO0
-is Back, long GPIO14 is Approve, and long GPIO0 is Reject. A reboot intentionally
-clears the RAM-only active review session and shows a Ready/No request frame;
-only a new live `sign_event` request starts the multi-page review again.
-`sign_event` still returns `signing_disabled`, so button approval is display UX
-validation only and not signing enablement.
+onboard buttons into the manual review loop: short GPIO14 is top-level Next,
+short GPIO0 is scroll/back depending on review mode, long GPIO14 is Approve,
+and long GPIO0 is Reject. A reboot intentionally clears the RAM-only active
+review session and shows a Ready/No request frame; only a new live `sign_event`
+request starts the multi-page review again. `sign_event` still returns
+`signing_disabled`, so button approval is display UX validation only and not
+signing enablement.
 
 Status note, 2026-05-09: terminal T-Display S3 review decisions now render a
 closed non-signing status frame instead of leaving the final decision page on

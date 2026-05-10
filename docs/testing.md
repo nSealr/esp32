@@ -35,12 +35,13 @@ tests with strict C++ warnings.
 - QR trusted-review tests comparing ESP32-generated pages and
   `approval_digest` values with shared basic and tagged review-screen vectors.
 - ESP32 display-review pagination tests proving physical review pages can show
-  long content and full tag field values without ellipses, keep stable logical
-  page indicators, and preserve compact body-line styles while the shared
-  approval-digest contract remains unchanged and signing stays disabled.
+  long content and grouped tag content without ellipses, keep stable
+  logical page indicators, expose two-axis top-level/scroll navigation, and
+  preserve compact body-line styles while the shared approval-digest contract
+  remains unchanged and signing stays disabled.
 - Serial/USB `sign_event` trusted-review tests proving decoded request JSON
   produces the same shared review contract and `approval_digest` as QR, while
-  physical review sessions can use compact full-detail logical pages and the
+  physical review sessions can use compact full-review logical pages and the
   device protocol still returns `signing_disabled`.
 - Serial/USB review I/O harness tests proving future USB signer display and
   physical-button adapters can drive the same trusted review session from
@@ -70,9 +71,9 @@ tests with strict C++ warnings.
   title text, page indicator, body text, footer background, and footer action
   text.
 - Firmware button-driver tests proving the T-Display S3 scaffold maps vendor
-  documented GPIO0/GPIO14 physical controls to Back/Next short presses and
-  Reject/Approve long presses, while keeping touch disallowed for approval and
-  signing disabled.
+  documented GPIO0/GPIO14 physical controls to Scroll/Next short presses in
+  logical sign-event reviews and Reject/Approve long presses, while keeping
+  touch disallowed for approval and signing disabled.
 - Host-buildable T-Display S3 button-logic tests proving debounce filtering,
   exact-threshold short press handling, long press handling, and GPIO-specific
   review-button mapping before the ESP-IDF GPIO polling wrapper reads physical
@@ -107,11 +108,12 @@ tests with strict C++ warnings.
 - Review display-frame tests requiring deterministic title, page indicator,
   body lines, action hints, body-line wrapping/truncation, and rejection of
   unsafe display bounds.
-- Trusted review-session tests requiring display navigation, backward review,
-  final-page approval, request/digest-bound `can_sign`, and rejection as a
-  terminal non-signing decision. These tests consume generated trusted review
-  requests from the shared review-screen vectors instead of duplicating page
-  content by hand.
+- Trusted review-session tests requiring display navigation, legacy backward
+  review for generic pages, logical top-level/scroll navigation for sign-event
+  display pages, final-page approval, request/digest-bound `can_sign`, and
+  rejection as a terminal non-signing decision. These tests consume generated
+  trusted review requests from the shared review-screen vectors instead of
+  duplicating page content by hand where the shared contract applies.
 - Firmware scaffold tests requiring T-Display S3 terminal review decisions to
   show closed non-signing status frames with `Not signed` and
   `Signing disabled` after approve/reject UI input.
