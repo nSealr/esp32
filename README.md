@@ -119,8 +119,10 @@ board into a separate repository.
   pixel-color function used by the ESP-IDF ST7789/i80 draw path, including
   border, boot pattern, title, page indicator, body, and footer samples.
 - T-Display S3 onboard button polling for manual review navigation after a live
-  `sign_event` request. Short GPIO14 moves Next, short GPIO0 moves Back, long
-  GPIO14 maps Approve, and long GPIO0 maps Reject. The runtime still returns
+  `sign_event` request. Short GPIO14 cycles the stable Event, Content, Tags,
+  and Decision pages; short GPIO0 scrolls within Content or Tags when that
+  page has more display windows; long GPIO14 maps Approve on the Decision
+  page; and long GPIO0 maps Reject from any page. The runtime still returns
   `signing_disabled`, shows a terminal non-signing review screen after
   approve/reject, expires stale active review sessions into a terminal
   non-signing timeout frame, and never signs.
