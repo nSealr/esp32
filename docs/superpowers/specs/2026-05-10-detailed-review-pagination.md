@@ -41,10 +41,11 @@ The ESP32 trusted-review display must let the user inspect the complete event be
   indented with two spaces and keep the same body style as the first line of
   that item.
 - The final page uses neutral decision/check language, not subjective warnings.
-- On the current bitmap-font T-Display S3 path, unsupported UTF-8 codepoints are
-  rendered explicitly as `U+XXXX`/`U+XXXXX` fallback text instead of being
-  silently replaced by `?`. This is a safety fallback, not a claim of complete
-  Unicode glyph rendering.
+- On the current bitmap-font T-Display S3 path, supported printable ASCII,
+  including common event punctuation, is rendered directly by explicit glyphs.
+  Unsupported UTF-8 codepoints are rendered explicitly as `U+XXXX`/`U+XXXXX`
+  fallback text instead of being silently replaced by `?`. This is a safety
+  fallback, not a claim of complete Unicode glyph rendering.
 - QR and serial JSON parsers preserve `\uXXXX` escapes, including surrogate
   pairs, before review display fallback is applied.
 
@@ -66,6 +67,8 @@ This pass updates ESP32 display pagination only. Real signing remains disabled. 
   signer author pubkey.
 - Host-core tests prove non-ASCII UTF-8 content and tag values are represented
   by explicit fallback codepoints on the current bitmap-font display path.
+- Host-core tests prove supported printable ASCII punctuation remains readable
+  instead of being expanded into fallback codepoints.
 - Host-core tests prove escaped JSON Unicode content and tag values are not
   degraded to `?` before review.
 - Serial/manual review sessions use the scroll-window pages.

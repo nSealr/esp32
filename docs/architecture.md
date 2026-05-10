@@ -135,10 +135,12 @@ Frames with additional scroll windows show `Next/Scroll` in the footer so the
 physical display exposes both navigation axes. Adjacent scroll windows do not
 repeat the boundary line; the next window starts at the next unread line.
 The current T-Display S3 bitmap-font path is conservative for Unicode:
-unsupported non-ASCII codepoints are represented as explicit `U+XXXX` fallback
-text before wrapping, so the display does not silently turn event content into
-ambiguous question marks. Complete Unicode glyph rendering remains a separate
-display-font acceptance task before production signing. QR and serial request
+supported printable ASCII, including common event punctuation, is rendered
+directly by explicit glyphs, while unsupported non-ASCII codepoints are
+represented as explicit `U+XXXX` fallback text before wrapping. This keeps the
+display from silently turning event content into ambiguous question marks.
+Complete Unicode glyph rendering remains a separate display-font acceptance
+task before production signing. QR and serial request
 parsing preserve JSON `\uXXXX` escapes, including surrogate pairs, before the
 display fallback is applied. The renderer itself also preserves UTF-8 codepoint
 boundaries when wrapping or truncating generic review-frame text, so future

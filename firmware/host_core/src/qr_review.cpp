@@ -82,10 +82,45 @@ std::vector<std::string> split_exact_display_lines(std::string_view text, std::s
 }
 
 bool display_glyph_ascii(char ch) {
-    return (ch >= 'A' && ch <= 'Z') ||
-           (ch >= 'a' && ch <= 'z') ||
-           (ch >= '0' && ch <= '9') ||
-           ch == ' ' || ch == '/' || ch == ':' || ch == '-' || ch == '_' || ch == '.' || ch == '+';
+    if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')) {
+        return true;
+    }
+    switch (ch) {
+        case ' ':
+        case '!':
+        case '"':
+        case '#':
+        case '$':
+        case '%':
+        case '&':
+        case '\'':
+        case '(':
+        case ')':
+        case '*':
+        case '+':
+        case ',':
+        case '-':
+        case '.':
+        case '/':
+        case ':':
+        case ';':
+        case '<':
+        case '=':
+        case '>':
+        case '?':
+        case '@':
+        case '[':
+        case '\\':
+        case ']':
+        case '_':
+        case '{':
+        case '|':
+        case '}':
+        case '~':
+            return true;
+        default:
+            return false;
+    }
 }
 
 void append_codepoint_escape(std::string& out, std::uint32_t codepoint) {

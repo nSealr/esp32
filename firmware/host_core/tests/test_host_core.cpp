@@ -581,6 +581,37 @@ void test_qr_display_review_pages_escape_non_ascii_for_display_safety() {
     assert(tag_text.find("U+1F600") != std::string::npos);
 }
 
+void test_qr_display_review_pages_preserve_supported_ascii_punctuation() {
+    const std::string content = "hello, nostr! #tag? @alice & key=value";
+    const nostrseal::QrSigningRequest request{
+        .version = 1,
+        .request_id = "req-ascii-punctuation-display",
+        .method = "sign_event",
+        .has_params = true,
+        .has_event_template = true,
+        .event_template_json = "",
+        .event_template = nostrseal::QrEventTemplate{
+            .created_at = 1710000360,
+            .kind = 1,
+            .tags_json = "",
+            .tags = {{"client", "nseal/esp32-v0"}, {"subject", "a+b=c?"}},
+            .content = content,
+        },
+    };
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+    const std::string content_text = joined_lines_for_title(pages, "Content");
+    const std::string tag_text = joined_lines_for_title(pages, "Tags");
+
+    assert(content_text.find(content) != std::string::npos);
+    assert(content_text.find("U+002C") == std::string::npos);
+    assert(content_text.find("U+0021") == std::string::npos);
+    assert(content_text.find("U+003F") == std::string::npos);
+    assert(tag_text.find("nseal/esp32-v0") != std::string::npos);
+    assert(tag_text.find("a+b=c?") != std::string::npos);
+}
+
 void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
     const std::string long_content(281, 'x');
     const nostrseal::QrSigningRequest request{
@@ -1568,6 +1599,17 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     };
 
     assert(t_display_s3_review_frame_color_for(lowercase_frame, 11, 44) == kTDisplayS3ColorWhite);
+
+    nostrseal::ReviewDisplayFrame comma_frame;
+    comma_frame.title = "Content";
+    comma_frame.page_indicator = "Page 2/4";
+    comma_frame.body_lines = std::vector<std::string>{","};
+    comma_frame.action_hint = "Next";
+    comma_frame.body_line_styles = std::vector<nostrseal::ReviewBodyLineStyle>{
+        nostrseal::ReviewBodyLineStyle::Value,
+    };
+
+    assert(t_display_s3_review_frame_color_for(comma_frame, 12, 47) == kTDisplayS3ColorWhite);
 }
 
 void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses() {
@@ -1739,6 +1781,7 @@ int main() {
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
     test_qr_display_review_pages_escape_non_ascii_for_display_safety();
+    test_qr_display_review_pages_preserve_supported_ascii_punctuation();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();
     test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
