@@ -703,6 +703,64 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
             self.assertTrue(error_frame.startswith("nseal1f:error:"))
 
+    def test_smoke_script_wraps_invalid_transport_frame_vectors(self) -> None:
+        with TemporaryDirectory() as temp_root:
+            specs_dir = Path(temp_root)
+            invalid_dir = specs_dir / "vectors" / "invalid"
+            invalid_dir.mkdir(parents=True)
+            invalid_dir.joinpath("serial-frame-checksum-mismatch.json").write_text(
+                json.dumps(
+                    {
+                        "name": "serial-frame-checksum-mismatch",
+                        "category": "serial-frame",
+                        "frame": "nseal1f:request:payload:0000000000000000\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            invalid_dir.joinpath("serial-frame-malformed-payload.json").write_text(
+                json.dumps(
+                    {
+                        "name": "serial-frame-malformed-payload",
+                        "category": "serial-frame",
+                        "frame": "nseal1f:request:not-valid-base64!:0000000000000000\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            invalid_dir.joinpath("serial-frame-oversized.json").write_text(
+                json.dumps(
+                    {
+                        "name": "serial-frame-oversized",
+                        "category": "serial-frame",
+                        "frame": "nseal1f:" + ("x" * 1100),
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            malformed_exchanges = smoke_capabilities.load_malformed_transport_frame_exchanges(specs_dir)
+            overlong_exchanges = smoke_capabilities.load_overlong_transport_frame_exchanges(specs_dir)
+
+        self.assertEqual(len(malformed_exchanges), 2)
+        self.assertEqual(len(overlong_exchanges), 1)
+        for request_frame, error_frame in malformed_exchanges:
+            self.assertTrue(request_frame.startswith("nseal1f:"))
+            self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "malformed_frame"})
+        self.assertEqual(decode_serial_frame_payload(overlong_exchanges[0][1]), {"error": "overlong_frame"})
+        self.assertFalse(overlong_exchanges[0][0].endswith("\n"))
+
+    def test_smoke_script_keeps_overlong_transport_frame_last(self) -> None:
+        exchanges = smoke_capabilities.build_hardware_smoke_exchanges()
+        overlong_frame = json.loads(
+            (smoke_capabilities.DEFAULT_SPECS / "vectors/invalid/serial-frame-oversized.json").read_text(
+                encoding="utf-8"
+            )
+        )["frame"]
+
+        self.assertEqual(exchanges[-1][0], overlong_frame)
+        self.assertEqual(decode_serial_frame_payload(exchanges[-1][1]), {"error": "overlong_frame"})
+
     def test_smoke_script_wraps_invalid_signing_request_vectors(self) -> None:
         with TemporaryDirectory() as temp_root:
             specs_dir = Path(temp_root)

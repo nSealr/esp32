@@ -39,7 +39,14 @@ INVALID_METADATA_VECTOR_NAMES = (
     "serial-frame-request-invalid-version",
     "serial-frame-request-invalid-request-id",
 )
+MALFORMED_TRANSPORT_VECTOR_NAMES = (
+    "serial-frame-checksum-mismatch",
+    "serial-frame-malformed-payload",
+)
+OVERLONG_TRANSPORT_VECTOR_NAMES = ("serial-frame-oversized",)
 UNSUPPORTED_REQUEST_ERROR = {"error": "unsupported_request"}
+MALFORMED_FRAME_ERROR = {"error": "malformed_frame"}
+OVERLONG_FRAME_ERROR = {"error": "overlong_frame"}
 
 
 def base64url_json(value: dict) -> str:
@@ -126,6 +133,32 @@ def load_invalid_metadata_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[
     return frames
 
 
+def _load_invalid_serial_frame_vector(specs_dir: Path, vector_name: str) -> dict:
+    vector = json.loads((specs_dir / "vectors" / "invalid" / f"{vector_name}.json").read_text(encoding="utf-8"))
+    if vector.get("category") != "serial-frame":
+        raise ValueError(f"{vector_name} is not a serial-frame invalid vector")
+    frame = vector.get("frame")
+    if not isinstance(frame, str):
+        raise ValueError(f"{vector_name} does not contain a frame")
+    return vector
+
+
+def load_malformed_transport_frame_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
+    expected_error_frame = encode_serial_frame("error", base64url_json(MALFORMED_FRAME_ERROR))
+    return [
+        (_load_invalid_serial_frame_vector(specs_dir, vector_name)["frame"], expected_error_frame)
+        for vector_name in MALFORMED_TRANSPORT_VECTOR_NAMES
+    ]
+
+
+def load_overlong_transport_frame_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
+    expected_error_frame = encode_serial_frame("error", base64url_json(OVERLONG_FRAME_ERROR))
+    return [
+        (_load_invalid_serial_frame_vector(specs_dir, vector_name)["frame"], expected_error_frame)
+        for vector_name in OVERLONG_TRANSPORT_VECTOR_NAMES
+    ]
+
+
 def load_invalid_signing_request_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
     error_payload = base64url_json(UNSUPPORTED_REQUEST_ERROR)
     expected_error_frame = encode_serial_frame("error", error_payload)
@@ -189,6 +222,23 @@ def format_smoke_summary(frames: list[str]) -> str:
     )
 
 
+def build_hardware_smoke_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
+    return [
+        load_capability_frames(specs_dir),
+        load_signing_status_frames(specs_dir),
+        load_public_key_frames(specs_dir),
+        load_signing_disabled_frames(specs_dir),
+        *load_dynamic_request_id_frames(specs_dir),
+        *load_invalid_metadata_frames(specs_dir),
+        *load_invalid_signing_request_frames(specs_dir),
+        *load_malformed_transport_frame_exchanges(specs_dir),
+        # Keep overlong frames last: the firmware rejects once the line exceeds
+        # the transport limit, then any remaining bytes are intentionally not
+        # used by later smoke exchanges.
+        *load_overlong_transport_frame_exchanges(specs_dir),
+    ]
+
+
 def run_serial_exchanges(device: object, exchanges: list[tuple[str, str]], timeout: float) -> list[str]:
     responses: list[str] = []
     for request_frame, expected_response_frame in exchanges:
@@ -204,15 +254,7 @@ def run_smoke(port: str, timeout: float, baudrate: int, specs_dir: Path = DEFAUL
     except ImportError as exc:
         raise RuntimeError("pyserial is required; export ESP-IDF before running this smoke test") from exc
 
-    exchanges = [
-        load_capability_frames(specs_dir),
-        load_signing_status_frames(specs_dir),
-        load_public_key_frames(specs_dir),
-        load_signing_disabled_frames(specs_dir),
-        *load_dynamic_request_id_frames(specs_dir),
-        *load_invalid_metadata_frames(specs_dir),
-        *load_invalid_signing_request_frames(specs_dir),
-    ]
+    exchanges = build_hardware_smoke_exchanges(specs_dir)
 
     with serial.Serial(port, baudrate=baudrate, timeout=0.1) as device:
         device.reset_input_buffer()

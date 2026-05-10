@@ -338,6 +338,12 @@ It reuses the manual review exerciser scenarios to verify serial response
 behavior on a flashed board while keeping visual display inspection and
 physical-button acceptance as separate manual evidence.
 
+Status note, 2026-05-10: `make idf-smoke-capabilities` now also sends shared
+malformed serial transport vectors for checksum mismatch, malformed base64url
+payload, and overlong frames. The expected hardware responses are deterministic
+`malformed_frame` or `overlong_frame` errors, while real `sign_event` still
+returns `signing_disabled`.
+
 Status note, 2026-05-10: the manual and non-interactive T-Display S3 review
 scenario set now includes `show-dense-tags`, a valid disabled `sign_event`
 fixture with enough structured tags to exercise multiple Tags scroll windows.
