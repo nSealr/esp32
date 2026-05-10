@@ -212,7 +212,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
     if scenario == "show-review":
         lines = [
             *common,
-            "Inspect the review page text for readable kind, type, and created_at fields.",
+            "Inspect the review page text for readable raw kind, raw created_at, and Author fields.",
         ]
     elif scenario == "show-tags":
         lines = [

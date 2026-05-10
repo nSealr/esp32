@@ -852,6 +852,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
             scenario="show-review",
             request_id="manual-review-test",
         )
+        checklist = manual_review_display.build_manual_observation_checklist("show-review")
 
         self.assertEqual(len(exchanges), 1)
         request = decode_serial_frame_payload(exchanges[0][0])
@@ -862,6 +863,10 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["request_id"], "manual-review-test")
         self.assertFalse(response["ok"])
         self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertIn("raw kind", checklist)
+        self.assertIn("Author", checklist)
+        self.assertNotIn("type", checklist)
+        self.assertNotIn("Short Text Note", checklist)
 
     def test_manual_review_display_builds_request_error_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
