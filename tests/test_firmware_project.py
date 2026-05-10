@@ -997,6 +997,18 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("U+00E8", checklist)
         self.assertIn("U+1F600", checklist)
 
+    def test_review_detail_styles_do_not_keep_obsolete_label_style(self) -> None:
+        header = (ROOT / "firmware/host_core/include/nostrseal/review_display.hpp").read_text()
+        renderer = (ROOT / "firmware/host_core/src/review_display.cpp").read_text()
+        raster = (ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp").read_text()
+        vector_generator = (ROOT / "scripts/generate_transport_vector_header.py").read_text()
+
+        self.assertNotIn("ReviewBodyLineStyle::Label", renderer)
+        self.assertNotIn("ReviewBodyLineStyle::Label", raster)
+        self.assertNotIn("ReviewBodyLineStyle::Label", vector_generator)
+        self.assertNotIn("Label,", header)
+        self.assertNotIn('style == "label"', vector_generator)
+
     def test_review_scenario_smoke_builds_noninteractive_review_exchanges(self) -> None:
         exchanges = smoke_review_scenarios.build_review_smoke_exchanges(
             scenarios=("show-tags", "show-unicode-review", "show-request-error"),

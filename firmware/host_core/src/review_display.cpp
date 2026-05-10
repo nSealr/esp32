@@ -25,7 +25,6 @@ void validate_display_limits(ReviewDisplayLimits limits) {
 
 bool compact_style(ReviewBodyLineStyle style) {
     return style == ReviewBodyLineStyle::Meta ||
-           style == ReviewBodyLineStyle::Label ||
            style == ReviewBodyLineStyle::Value;
 }
 

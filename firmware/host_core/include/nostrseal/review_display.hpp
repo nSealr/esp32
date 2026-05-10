@@ -15,7 +15,6 @@ enum class ReviewPageAction {
 enum class ReviewBodyLineStyle {
     Normal,
     Meta,
-    Label,
     Value,
 };
 

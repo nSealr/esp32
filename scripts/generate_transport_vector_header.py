@@ -69,8 +69,6 @@ def cpp_review_body_style(style: str) -> str:
         return "nostrseal::ReviewBodyLineStyle::Normal"
     if style == "meta":
         return "nostrseal::ReviewBodyLineStyle::Meta"
-    if style == "label":
-        return "nostrseal::ReviewBodyLineStyle::Label"
     if style == "value":
         return "nostrseal::ReviewBodyLineStyle::Value"
     raise ValueError(f"unsupported review body line style: {style}")
