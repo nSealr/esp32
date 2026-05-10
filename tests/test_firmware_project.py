@@ -914,6 +914,36 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
 
         self.assertEqual(frames, responses)
 
+    def test_smoke_script_reports_exchange_index_on_failure(self) -> None:
+        class WrongFrameDevice:
+            def __init__(self) -> None:
+                self._responses = [
+                    "nseal1f:response:first:1111111111111111\n",
+                    "nseal1f:error:wrong:2222222222222222\n",
+                ]
+
+            def write(self, _request: bytes) -> None:
+                return None
+
+            def flush(self) -> None:
+                return None
+
+            def read(self, _size: int) -> bytes:
+                if not self._responses:
+                    return b""
+                return self._responses.pop(0).encode("ascii")
+
+        with self.assertRaisesRegex(RuntimeError, "exchange 2/3 failed"):
+            smoke_capabilities.run_serial_exchanges(
+                WrongFrameDevice(),
+                [
+                    ("request-1\n", "nseal1f:response:first:1111111111111111\n"),
+                    ("request-2\n", "nseal1f:error:expected:2222222222222222\n"),
+                    ("request-3\n", "nseal1f:response:third:3333333333333333\n"),
+                ],
+                timeout=0.1,
+            )
+
 
 class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
     def test_manual_review_display_builds_dynamic_sign_event_exchange(self) -> None:

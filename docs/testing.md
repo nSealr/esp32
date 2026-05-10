@@ -180,6 +180,8 @@ tests with strict C++ warnings.
   prove the runtime drained the rejected line and recovered before processing
   the next request. By default the smoke prints a clean summary; raw protocol
   frames are available with `scripts/smoke_capabilities.py --verbose-frames`.
+  Failure messages include the failing exchange index so hardware logs can be
+  tied back to the smoke sequence without guessing.
 - Optional hardware review-scenario smoke test with
   `make idf-smoke-review-scenarios` after exporting ESP-IDF and flashing the
   current firmware. This non-interactive smoke sends the basic, tagged,

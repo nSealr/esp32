@@ -251,10 +251,14 @@ def build_hardware_smoke_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tupl
 
 def run_serial_exchanges(device: object, exchanges: list[tuple[str, str]], timeout: float) -> list[str]:
     responses: list[str] = []
-    for request_frame, expected_response_frame in exchanges:
+    exchange_count = len(exchanges)
+    for exchange_index, (request_frame, expected_response_frame) in enumerate(exchanges, start=1):
         device.write(request_frame.encode("ascii"))
         device.flush()
-        responses.append(read_expected_frame(device, expected_response_frame, time.monotonic() + timeout))
+        try:
+            responses.append(read_expected_frame(device, expected_response_frame, time.monotonic() + timeout))
+        except (RuntimeError, TimeoutError) as exc:
+            raise RuntimeError(f"exchange {exchange_index}/{exchange_count} failed: {exc}") from exc
     return responses
 
 
