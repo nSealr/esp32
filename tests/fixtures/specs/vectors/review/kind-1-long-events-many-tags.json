@@ -54,26 +54,50 @@
   },
   "review": {
     "kind": 1,
-    "kind_name": "Short Text Note",
     "created_at": 1710000120,
-    "content_preview": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...",
-    "content_length": 281,
+    "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "content_utf8_bytes": 281,
     "tag_count": 9,
-    "tag_summary": [
-      "e: aaaaaaaa...",
-      "t: nostrseal",
-      "t: hardware",
-      "t: review",
-      "t: security",
-      "t: qr",
-      "t: vault",
-      "t: companion",
-      "t: test"
-    ],
-    "warnings": [
-      "Long content.",
-      "Event references other events.",
-      "Many tags."
+    "tags": [
+      [
+        "e",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "",
+        "root"
+      ],
+      [
+        "t",
+        "nostrseal"
+      ],
+      [
+        "t",
+        "hardware"
+      ],
+      [
+        "t",
+        "review"
+      ],
+      [
+        "t",
+        "security"
+      ],
+      [
+        "t",
+        "qr"
+      ],
+      [
+        "t",
+        "vault"
+      ],
+      [
+        "t",
+        "companion"
+      ],
+      [
+        "t",
+        "test"
+      ]
     ]
   }
 }

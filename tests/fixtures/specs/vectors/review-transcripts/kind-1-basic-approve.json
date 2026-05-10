@@ -17,7 +17,7 @@
       }
     }
   },
-  "approval_digest": "10d93d266ec46780242669220c2b65dc45fd63ee91df04b8b7cee147d26717e3",
+  "approval_digest": "6115446825f03a7abf600a7e5746e2a28de33aff3088894e1b610c17a7bb685b",
   "buttons": [
     "next",
     "next",
@@ -31,8 +31,9 @@
         "page_indicator": "Page 1/4",
         "body_lines": [
           "Kind 1",
-          "Short Text Note",
-          "Created 1710000000"
+          "Created 1710000000",
+          "Author",
+          "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
         ],
         "action_hint": "Next"
       },

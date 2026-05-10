@@ -913,7 +913,7 @@ void test_review_controls_are_terminal_after_decision() {
 void test_review_display_renders_navigation_frame() {
     const nostrseal::ReviewPage page{
         "Event",
-        {"Kind 1", "Short Text Note", "Created 1710000000"},
+        {"Kind 1", "Created 1710000000", "Author"},
         nostrseal::ReviewPageAction::Next,
     };
 
@@ -921,7 +921,7 @@ void test_review_display_renders_navigation_frame() {
 
     assert(frame.title == "Event");
     assert(frame.page_indicator == "Page 1/4");
-    assert((frame.body_lines == std::vector<std::string>{"Kind 1", "Short Text Note", "Created 1710000000"}));
+    assert((frame.body_lines == std::vector<std::string>{"Kind 1", "Created 1710000000", "Author"}));
     assert(frame.action_hint == "Next");
 }
 
@@ -1083,12 +1083,13 @@ void test_trusted_review_session_keeps_rejection_terminal() {
     (void)session.handle_button(nostrseal::ReviewButton::Next);
     const nostrseal::ReviewDisplayFrame tags_frame = session.current_frame();
     assert(tags_frame.title == "Tags");
-    assert((tags_frame.body_lines == std::vector<std::string>{"2 tags", "p: 4f355bdc...", "t: nostrseal"}));
+    assert(lines_contain(tags_frame.body_lines, "Tag 1/2"));
+    assert(lines_contain(tags_frame.body_lines, "p"));
 
     (void)session.handle_button(nostrseal::ReviewButton::Next);
-    const nostrseal::ReviewDisplayFrame warnings_frame = session.current_frame();
-    assert(warnings_frame.title == "Warnings");
-    assert((warnings_frame.body_lines == std::vector<std::string>{"Event includes pubkey mentions."}));
+    const nostrseal::ReviewDisplayFrame decision_frame = session.current_frame();
+    assert(decision_frame.title == "Decision");
+    assert((decision_frame.body_lines == std::vector<std::string>{"Approve signing only if all pages match."}));
 
     const auto rejection = session.handle_button(nostrseal::ReviewButton::Reject);
 

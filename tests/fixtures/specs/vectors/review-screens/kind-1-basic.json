@@ -15,25 +15,25 @@
   },
   "review": {
     "kind": 1,
-    "kind_name": "Short Text Note",
     "created_at": 1710000000,
-    "content_preview": "NostrSeal fixture: basic kind 1 event.",
-    "content_length": 38,
+    "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "content": "NostrSeal fixture: basic kind 1 event.",
+    "content_utf8_bytes": 38,
     "tag_count": 0,
-    "tag_summary": [],
-    "warnings": []
+    "tags": []
   },
   "screen_review": {
     "format": "screen-pages",
     "request_id": "req-kind-1-basic",
-    "approval_digest": "10d93d266ec46780242669220c2b65dc45fd63ee91df04b8b7cee147d26717e3",
+    "approval_digest": "6115446825f03a7abf600a7e5746e2a28de33aff3088894e1b610c17a7bb685b",
     "pages": [
       {
         "title": "Event",
         "lines": [
           "Kind 1",
-          "Short Text Note",
-          "Created 1710000000"
+          "Created 1710000000",
+          "Author",
+          "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
         ],
         "action": "next"
       },

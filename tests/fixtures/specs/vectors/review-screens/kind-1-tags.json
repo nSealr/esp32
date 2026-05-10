@@ -26,30 +26,36 @@
   },
   "review": {
     "kind": 1,
-    "kind_name": "Short Text Note",
     "created_at": 1710000060,
-    "content_preview": "NostrSeal fixture: tagged kind 1 event.",
-    "content_length": 39,
+    "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "content": "NostrSeal fixture: tagged kind 1 event.",
+    "content_utf8_bytes": 39,
     "tag_count": 2,
-    "tag_summary": [
-      "p: 4f355bdc...",
-      "t: nostrseal"
-    ],
-    "warnings": [
-      "Event includes pubkey mentions."
+    "tags": [
+      [
+        "p",
+        "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+        "",
+        "mention"
+      ],
+      [
+        "t",
+        "nostrseal"
+      ]
     ]
   },
   "screen_review": {
     "format": "screen-pages",
     "request_id": "req-kind-1-tags",
-    "approval_digest": "9821ba776171db7a6b5e07c616e05b42daa6dee139c3560753ee29f23ca74e18",
+    "approval_digest": "08a2aa30855b0064ab598f6d2ee3bd05a64bb937c7d39c33490c9521f05a3665",
     "pages": [
       {
         "title": "Event",
         "lines": [
           "Kind 1",
-          "Short Text Note",
-          "Created 1710000060"
+          "Created 1710000060",
+          "Author",
+          "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
         ],
         "action": "next"
       },
@@ -63,16 +69,21 @@
       {
         "title": "Tags",
         "lines": [
-          "2 tags",
-          "p: 4f355bdc...",
-          "t: nostrseal"
+          "Tag 1/2",
+          "p",
+          "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+          "",
+          "mention",
+          "Tag 2/2",
+          "t",
+          "nostrseal"
         ],
         "action": "next"
       },
       {
-        "title": "Warnings",
+        "title": "Decision",
         "lines": [
-          "Event includes pubkey mentions."
+          "Approve signing only if all pages match."
         ],
         "action": "approve_or_reject"
       }

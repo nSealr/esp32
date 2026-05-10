@@ -15,13 +15,12 @@ namespace {
 
 struct QrReviewData {
     int kind;
-    std::string kind_name;
     std::uint64_t created_at;
-    std::string content_preview;
-    std::size_t content_length;
+    std::string author_pubkey;
+    std::string content;
+    std::size_t content_utf8_bytes;
     std::size_t tag_count;
-    std::vector<std::string> tag_summary;
-    std::vector<std::string> warnings;
+    std::vector<std::vector<std::string>> tags;
 };
 
 struct StyledReviewLines {
@@ -32,93 +31,15 @@ struct StyledReviewLines {
 constexpr std::string_view kDevelopmentReviewAuthorPubkey =
     "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
 
-std::string kind_name(int kind) {
-    switch (kind) {
-        case 0:
-            return "Metadata";
-        case 1:
-            return "Short Text Note";
-        case 3:
-            return "Contacts";
-        case 6:
-            return "Repost";
-        case 7:
-            return "Reaction";
-        case 9735:
-            return "Zap Receipt";
-        default:
-            return "Unknown";
-    }
-}
-
-std::string content_preview(const std::string& content) {
-    constexpr std::size_t kMaxPreview = 120;
-    if (content.size() <= kMaxPreview) {
-        return content;
-    }
-    return content.substr(0, kMaxPreview) + "...";
-}
-
-std::vector<std::string> summarize_tags(const std::vector<std::vector<std::string>>& tags) {
-    std::vector<std::string> summary;
-    for (const std::vector<std::string>& tag : tags) {
-        if (tag.empty()) {
-            continue;
-        }
-        const std::string& name = tag[0];
-        std::string value = tag.size() > 1U ? tag[1] : "";
-        if ((name == "p" || name == "e") && value.size() > 8U) {
-            value = value.substr(0, 8) + "...";
-        }
-        summary.push_back(value.empty() ? name : name + ": " + value);
-    }
-    return summary;
-}
-
-std::vector<std::string> build_warnings(const QrEventTemplate& event_template) {
-    std::vector<std::string> warnings;
-    if (kind_name(event_template.kind) == "Unknown") {
-        warnings.push_back("Unknown event kind.");
-    }
-    if (event_template.content.size() > 280U) {
-        warnings.push_back("Long content.");
-    }
-    if (event_template.content.empty()) {
-        warnings.push_back("Empty content.");
-    }
-    bool has_pubkey_mention = false;
-    bool has_event_reference = false;
-    for (const std::vector<std::string>& tag : event_template.tags) {
-        if (!tag.empty() && tag[0] == "p") {
-            has_pubkey_mention = true;
-        }
-        if (!tag.empty() && tag[0] == "e") {
-            has_event_reference = true;
-        }
-    }
-    if (has_pubkey_mention) {
-        warnings.push_back("Event includes pubkey mentions.");
-    }
-    if (has_event_reference) {
-        warnings.push_back("Event references other events.");
-    }
-    if (event_template.tags.size() > 8U) {
-        warnings.push_back("Many tags.");
-    }
-    return warnings;
-}
-
 QrReviewData review_data_for(const QrEventTemplate& event_template) {
-    const std::vector<std::string> summary = summarize_tags(event_template.tags);
     return QrReviewData{
         event_template.kind,
-        kind_name(event_template.kind),
         event_template.created_at,
-        content_preview(event_template.content),
+        std::string{kDevelopmentReviewAuthorPubkey},
+        event_template.content,
         event_template.content.size(),
         event_template.tags.size(),
-        summary,
-        build_warnings(event_template),
+        event_template.tags,
     };
 }
 
@@ -126,9 +47,16 @@ std::vector<std::string> tag_lines(const QrReviewData& review) {
     if (review.tag_count == 0U) {
         return {"No tags"};
     }
-    std::vector<std::string> lines{
-        review.tag_count == 1U ? "1 tag" : std::to_string(review.tag_count) + " tags"};
-    lines.insert(lines.end(), review.tag_summary.begin(), review.tag_summary.end());
+    std::vector<std::string> lines;
+    for (std::size_t tag_index = 0; tag_index < review.tags.size(); ++tag_index) {
+        const std::vector<std::string>& tag = review.tags[tag_index];
+        lines.push_back("Tag " + std::to_string(tag_index + 1U) + "/" + std::to_string(review.tag_count));
+        if (tag.empty()) {
+            lines.push_back("empty tag");
+            continue;
+        }
+        lines.insert(lines.end(), tag.begin(), tag.end());
+    }
     return lines;
 }
 
@@ -351,14 +279,15 @@ std::vector<TrustedReviewPage> review_pages_for(const QrReviewData& review) {
             "Event",
             {
                 "Kind " + std::to_string(review.kind),
-                review.kind_name,
                 "Created " + std::to_string(review.created_at),
+                "Author",
+                review.author_pubkey,
             },
             ReviewPageAction::Next,
         },
         TrustedReviewPage{
             "Content",
-            {review.content_preview},
+            {review.content},
             ReviewPageAction::Next,
         },
         TrustedReviewPage{
@@ -368,19 +297,11 @@ std::vector<TrustedReviewPage> review_pages_for(const QrReviewData& review) {
         },
     };
 
-    if (review.warnings.empty()) {
-        pages.push_back(TrustedReviewPage{
-            "Decision",
-            {"Approve signing only if all pages match."},
-            ReviewPageAction::ApproveOrReject,
-        });
-    } else {
-        pages.push_back(TrustedReviewPage{
-            "Warnings",
-            review.warnings,
-            ReviewPageAction::ApproveOrReject,
-        });
-    }
+    pages.push_back(TrustedReviewPage{
+        "Decision",
+        {"Approve signing only if all pages match."},
+        ReviewPageAction::ApproveOrReject,
+    });
     return pages;
 }
 
@@ -495,22 +416,20 @@ std::string canonical_approval_payload(
     out += ",\"request_id\":";
     out += json_string(request.request_id);
     out += ",\"review\":{";
-    out += "\"content_length\":";
-    out += std::to_string(review.content_length);
-    out += ",\"content_preview\":";
-    out += json_string(review.content_preview);
+    out += "\"author_pubkey\":";
+    out += json_string(review.author_pubkey);
+    out += ",\"content\":";
+    out += json_string(review.content);
+    out += ",\"content_utf8_bytes\":";
+    out += std::to_string(review.content_utf8_bytes);
     out += ",\"created_at\":";
     out += std::to_string(review.created_at);
     out += ",\"kind\":";
     out += std::to_string(review.kind);
-    out += ",\"kind_name\":";
-    out += json_string(review.kind_name);
     out += ",\"tag_count\":";
     out += std::to_string(review.tag_count);
-    out += ",\"tag_summary\":";
-    out += json_string_array(review.tag_summary);
-    out += ",\"warnings\":";
-    out += json_string_array(review.warnings);
+    out += ",\"tags\":";
+    out += json_tags(review.tags);
     out += "},\"version\":";
     out += std::to_string(request.version);
     out += "}";
