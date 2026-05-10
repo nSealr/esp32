@@ -99,7 +99,9 @@ board into a separate repository.
   persistent-secret or real-signing path can be claimed.
 - The security profile now also records manual development acceptance evidence
   for T-Display S3 trusted display and physical approve/reject controls, while
-  keeping those gates as production blockers.
+  keeping those gates as production blockers. Display-review protocol smoke
+  reports are tracked separately for review-rendering traceability and do not
+  replace production trusted-display acceptance.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens and display adapters a deterministic
   rendering oracle.

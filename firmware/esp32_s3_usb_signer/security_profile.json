@@ -39,6 +39,13 @@
       "NostrSeal/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
     ]
   },
+  "display_review_protocol_evidence": [
+    "NostrSeal/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
+    "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+    "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+    "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
+    "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json"
+  ],
   "physical_approval_controls": {
     "status": "manual_development_acceptance_passed",
     "required_before_signing": true,

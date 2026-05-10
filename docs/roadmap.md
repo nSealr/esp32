@@ -362,6 +362,13 @@ fixture with enough structured tags to exercise multiple Tags scroll windows.
 The scenario keeps tag display raw/grouped, avoids inferred tag meaning, avoids
 ellipses, and preserves the `signing_disabled` protocol expectation.
 
+Status note, 2026-05-10: `security_profile.json` now separates manual
+development acceptance reports from display-review protocol evidence. The
+trusted-display and physical-control gates remain production blockers, while
+detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and current-head
+smoke reports are tracked as development traceability for the review-rendering
+contract.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

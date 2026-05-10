@@ -63,6 +63,10 @@ tests with strict C++ warnings.
 - Security-profile validation requiring manual development acceptance evidence
   for trusted display and physical approval controls while keeping both gates as
   production blockers and disallowing touch approval.
+- Security-profile validation requiring separate display-review protocol
+  evidence for detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and
+  current-head smoke runs. These reports remain development traceability and do
+  not convert the trusted-display gate into a production acceptance claim.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.

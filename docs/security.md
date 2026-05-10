@@ -17,6 +17,10 @@ The current profile is `development_scaffold`:
 - companion signed-output verification gate: not ready
 - trusted review display: manual development acceptance passed on T-Display S3,
   but production claim remains blocked
+- display review protocol evidence: recorded separately for detail-page,
+  UTF-8 fallback, ASCII punctuation, dense-tags, and current-head smoke runs;
+  these reports support development traceability but do not replace production
+  trusted-display acceptance
 - physical approval controls: manual development acceptance passed on
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked

@@ -98,6 +98,16 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         )
         self.assertTrue(profile["trusted_review_display"]["evidence_reports"])
         self.assertEqual(
+            profile["display_review_protocol_evidence"],
+            [
+                "NostrSeal/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
+                "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+                "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
+                "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
+            ],
+        )
+        self.assertEqual(
             profile["physical_approval_controls"]["status"],
             "manual_development_acceptance_passed",
         )
@@ -151,6 +161,15 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             profile_path.write_text(json.dumps(missing_controls), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "physical_approval_controls"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_protocol_evidence = dict(profile)
+            missing_protocol_evidence.pop("display_review_protocol_evidence", None)
+            profile_path.write_text(json.dumps(missing_protocol_evidence), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "display_review_protocol_evidence"):
                 validate_firmware.validate_security_profile(profile_path)
 
     def test_firmware_validator_requires_serial_review_component(self) -> None:
