@@ -110,7 +110,8 @@ button, secure storage, and signing components.
 Host tests generate their transport-vector header from `NostrSeal/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion. The same generated header now includes review-screen approval
-digests, trusted review request factories, review-display-frame vectors, QR
+digests, trusted review request factories, directory-discovered
+review-display-frame vectors, QR
 review transcripts, the shared v0 limit profile, invalid serial-frame vectors,
 and invalid QR/signing-request hardening vectors, allowing the host-core
 parser, approval gate, and trusted-review session to reject unsafe input before

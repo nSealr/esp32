@@ -1034,6 +1034,28 @@ void test_review_display_matches_shared_long_content_frame_vector() {
     assert(frame.action_hint == expected.action_hint);
 }
 
+void test_review_display_matches_shared_utf8_boundary_frame_vector() {
+    const std::string text = std::string("abc") + "\xC3\xA8" + "def";
+    const nostrseal::ReviewPage page{
+        "Content",
+        {text},
+        nostrseal::ReviewPageAction::Next,
+    };
+
+    const nostrseal::ReviewDisplayFrame frame = nostrseal::render_review_page(
+        page,
+        1,
+        4,
+        nostrseal::test_vectors::kind_1_unicode_boundary_content_4x3_display_limits());
+    const nostrseal::ReviewDisplayFrame expected =
+        nostrseal::test_vectors::kind_1_unicode_boundary_content_4x3_display_frame();
+
+    assert(frame.title == expected.title);
+    assert(frame.page_indicator == expected.page_indicator);
+    assert(frame.body_lines == expected.body_lines);
+    assert(frame.action_hint == expected.action_hint);
+}
+
 void test_review_display_rejects_unsafe_frame_bounds() {
     const nostrseal::ReviewPage page{
         "Event",
@@ -1738,6 +1760,7 @@ int main() {
     test_review_display_wraps_and_truncates_long_body_lines();
     test_review_display_wraps_utf8_without_splitting_codepoints();
     test_review_display_matches_shared_long_content_frame_vector();
+    test_review_display_matches_shared_utf8_boundary_frame_vector();
     test_review_display_rejects_unsafe_frame_bounds();
     test_trusted_review_session_binds_display_navigation_and_approval();
     test_trusted_review_session_keeps_rejection_terminal();

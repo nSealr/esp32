@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import base64
 import hashlib
+import re
 from pathlib import Path
 
 
@@ -20,6 +21,13 @@ def default_specs_dir() -> Path:
 
 def cpp_string(value: str) -> str:
     return json.dumps(value)
+
+
+def cpp_identifier(value: str) -> str:
+    identifier = re.sub(r"[^A-Za-z0-9_]", "_", value)
+    if not identifier or identifier[0].isdigit():
+        identifier = f"_{identifier}"
+    return identifier
 
 
 def base64url_json(value: dict) -> str:
@@ -160,6 +168,17 @@ def review_display_frame_factory(name: str, frame: dict) -> list[str]:
     ]
 
 
+def review_display_vector_factories(vectors: list[dict]) -> list[str]:
+    lines: list[str] = []
+    for vector in vectors:
+        base_name = cpp_identifier(vector["name"])
+        lines.extend(review_display_limits_factory(f"{base_name}_display_limits", vector["limits"]))
+        lines.append("")
+        lines.extend(review_display_frame_factory(f"{base_name}_display_frame", vector["frame"]))
+        lines.append("")
+    return lines
+
+
 def limit_constants_factory(limits: dict) -> list[str]:
     return [
         f"constexpr std::size_t kMaxRequestIdLength = {limits['max_request_id_length']};",
@@ -229,11 +248,12 @@ def main() -> int:
     basic_review_reject_transcript = json.loads(
         (specs / "vectors/review-transcripts/kind-1-basic-reject.json").read_text(encoding="utf-8")
     )
-    long_content_display_frame = json.loads(
-        (specs / "vectors/review-display-frames/kind-1-long-content-page-1-20x3.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    review_display_frame_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/review-display-frames").glob("*.json"))
+    ]
+    display_frames_by_name = {vector["name"]: vector for vector in review_display_frame_vectors}
+    long_content_display_frame = display_frames_by_name["kind-1-long-content-page-1-20x3"]
     invalid_vectors = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/invalid").glob("*.json"))
@@ -311,6 +331,7 @@ def main() -> int:
                     long_content_display_frame["frame"],
                 ),
                 "",
+                *review_display_vector_factories(review_display_frame_vectors),
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",
                 *trusted_review_factory("tagged_trusted_review_request", tagged_review_screen["screen_review"]),

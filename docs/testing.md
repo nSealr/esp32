@@ -102,7 +102,9 @@ tests with strict C++ warnings.
   `NostrSeal/specs` review-transcript vectors.
 - Host test header generation from the shared `NostrSeal/specs` serial,
   review-screen, review-display-frame, review-transcript, limits, and invalid
-  hardening vectors.
+  hardening vectors. Review-display-frame generation is directory-driven, so
+  new shared display-frame vectors are consumed without adding one-off loader
+  code.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
   is still guarded by `NostrSeal/lab` integration checks.
