@@ -964,6 +964,29 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertNotIn("...", checklist)
         self.assertNotIn("Warnings", checklist)
 
+    def test_manual_review_display_builds_unicode_review_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-unicode-review",
+            request_id="manual-unicode",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-unicode-review")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-unicode")
+        self.assertEqual(response["request_id"], "manual-unicode")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertIn("\u00e8", event_template["content"])
+        self.assertIn("\U0001f600", event_template["content"])
+        self.assertIn("Author", checklist)
+        self.assertIn("no inferred kind label", checklist)
+        self.assertIn("U+00E8", checklist)
+        self.assertIn("U+1F600", checklist)
+
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
             scenario="button-approve",

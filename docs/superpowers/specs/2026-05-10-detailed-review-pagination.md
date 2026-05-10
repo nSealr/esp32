@@ -16,6 +16,8 @@ The ESP32 trusted-review display must let the user inspect the complete event be
 - Long KEY/GPIO14 can approve only on the Decision page.
 - Long BOOT/GPIO0 can reject at any point.
 - Event, Content, Tags, and Decision are the stable logical pages.
+- Event shows raw `kind`, raw `created_at`, and the signer author pubkey. It
+  does not display inferred kind labels such as `Short Text Note`.
 - Content and Tags may span scroll windows when they do not fit.
 - The header keeps the logical page stable, for example `Page 3/4` or
   `Page 3/4 Lines 1-9/18` for the first Tags scroll window.
@@ -39,6 +41,12 @@ The ESP32 trusted-review display must let the user inspect the complete event be
   indented with two spaces and keep the same body style as the first line of
   that item.
 - The final page uses neutral decision/check language, not subjective warnings.
+- On the current bitmap-font T-Display S3 path, unsupported UTF-8 codepoints are
+  rendered explicitly as `U+XXXX`/`U+XXXXX` fallback text instead of being
+  silently replaced by `?`. This is a safety fallback, not a claim of complete
+  Unicode glyph rendering.
+- QR and serial JSON parsers preserve `\uXXXX` escapes, including surrogate
+  pairs, before review display fallback is applied.
 
 ## Safety Rule
 
@@ -54,6 +62,12 @@ This pass updates ESP32 display pagination only. Real signing remains disabled. 
   tag items without `...`.
 - Host-core tests prove logical page indicators and body styles survive through
   rendering.
+- Host-core tests prove Event does not infer the kind meaning and includes the
+  signer author pubkey.
+- Host-core tests prove non-ASCII UTF-8 content and tag values are represented
+  by explicit fallback codepoints on the current bitmap-font display path.
+- Host-core tests prove escaped JSON Unicode content and tag values are not
+  degraded to `?` before review.
 - Serial/manual review sessions use the scroll-window pages.
 - Existing shared review vectors still pass.
 - Manual T-Display S3 smoke can exercise tagged and long-content events while signing remains disabled.

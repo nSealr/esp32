@@ -99,7 +99,9 @@ The first firmware foundation is host-buildable C++ under
   through the trusted-review request builder before the dispatcher returns
   `signing_disabled`; the live display session uses logical review pages plus
   compact scroll windows so content and grouped tag content can be inspected
-  without abbreviated warning heuristics. It does not sign events.
+  without abbreviated warning heuristics. The live Event page shows raw kind,
+  raw created_at, and the signer author pubkey rather than inferred kind
+  labels. It does not sign events.
 
 This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
@@ -131,12 +133,19 @@ approval, or signing semantics.
 Frames with additional scroll windows show `Next/Scroll` in the footer so the
 physical display exposes both navigation axes. Adjacent scroll windows do not
 repeat the boundary line; the next window starts at the next unread line.
+The current T-Display S3 bitmap-font path is conservative for Unicode:
+unsupported non-ASCII codepoints are represented as explicit `U+XXXX` fallback
+text before wrapping, so the display does not silently turn event content into
+ambiguous question marks. Complete Unicode glyph rendering remains a separate
+display-font acceptance task before production signing. QR and serial request
+parsing preserve JSON `\uXXXX` escapes, including surrogate pairs, before the
+display fallback is applied.
 
 The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share
 the same color-per-pixel functions for the boot pattern and review frame, so
 layout regressions in title, page indicator, body text, footer text, borders,
-and core colors are caught before flashing.
+lowercase glyphs, and core colors are caught before flashing.
 
 The T-Display S3 button adapter follows the same pattern: GPIO polling remains
 inside the ESP-IDF wrapper, while debounce timing, short/long press

@@ -1,6 +1,7 @@
 #include "nostrseal/qr_review.hpp"
 
 #include "nostrseal/sha256.hpp"
+#include "nostrseal/utf8.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -27,6 +28,9 @@ struct StyledReviewLines {
     std::vector<std::string> lines;
     std::vector<ReviewBodyLineStyle> styles;
 };
+
+constexpr std::string_view kDevelopmentReviewAuthorPubkey =
+    "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
 
 std::string kind_name(int kind) {
     switch (kind) {
@@ -149,6 +153,48 @@ std::vector<std::string> split_exact_display_lines(std::string_view text, std::s
     return lines;
 }
 
+bool display_glyph_ascii(char ch) {
+    return (ch >= 'A' && ch <= 'Z') ||
+           (ch >= 'a' && ch <= 'z') ||
+           (ch >= '0' && ch <= '9') ||
+           ch == ' ' || ch == '/' || ch == ':' || ch == '-' || ch == '_' || ch == '.' || ch == '+';
+}
+
+void append_codepoint_escape(std::string& out, std::uint32_t codepoint) {
+    constexpr char kHex[] = "0123456789ABCDEF";
+    char buffer[8]{};
+    std::size_t size = 0;
+    std::uint32_t value = codepoint;
+    do {
+        buffer[size++] = kHex[value & 0x0fU];
+        value >>= 4U;
+    } while (value > 0U);
+    while (size < 4U) {
+        buffer[size++] = '0';
+    }
+    out += "U+";
+    while (size > 0U) {
+        out.push_back(buffer[--size]);
+    }
+}
+
+std::string display_safe_text(std::string_view text) {
+    std::string out;
+    std::size_t offset = 0;
+    while (offset < text.size()) {
+        std::uint32_t codepoint = 0;
+        if (!decode_next_utf8_codepoint(text, offset, codepoint)) {
+            codepoint = kReplacementCodepoint;
+        }
+        if (codepoint <= 0x7fU && display_glyph_ascii(static_cast<char>(codepoint))) {
+            out.push_back(static_cast<char>(codepoint));
+        } else {
+            append_codepoint_escape(out, codepoint);
+        }
+    }
+    return out;
+}
+
 void append_styled_line(StyledReviewLines& out, std::string line, ReviewBodyLineStyle style) {
     out.lines.push_back(std::move(line));
     out.styles.push_back(style);
@@ -171,12 +217,13 @@ StyledReviewLines detailed_content_lines(const std::string& content, ReviewDispl
         append_styled_line(out, "empty content", ReviewBodyLineStyle::Meta);
         return out;
     }
-    if (content.size() <= limits.max_compact_line_chars) {
-        append_styled_line(out, content, ReviewBodyLineStyle::Normal);
+    std::string safe_content = display_safe_text(content);
+    if (safe_content.size() <= limits.max_compact_line_chars) {
+        append_styled_line(out, std::move(safe_content), ReviewBodyLineStyle::Normal);
         return out;
     }
     append_styled_line(out, "bytes: " + std::to_string(content.size()), ReviewBodyLineStyle::Meta);
-    append_split_value_lines(out, content, limits.max_compact_line_chars);
+    append_split_value_lines(out, safe_content, limits.max_compact_line_chars);
     return out;
 }
 
@@ -191,12 +238,13 @@ void append_tag_item_lines(
     constexpr std::string_view kContinuationIndent = "  ";
     const std::size_t continuation_width =
         width > kContinuationIndent.size() ? width - kContinuationIndent.size() : width;
+    const std::string safe_value = display_safe_text(value);
     std::size_t position = 0;
     bool first_line = true;
-    while (position < value.size()) {
+    while (position < safe_value.size()) {
         const std::size_t line_width = first_line ? width : continuation_width;
-        const std::size_t count = std::min(line_width, value.size() - position);
-        std::string line = value.substr(position, count);
+        const std::size_t count = std::min(line_width, safe_value.size() - position);
+        std::string line = safe_value.substr(position, count);
         if (!first_line && width > kContinuationIndent.size()) {
             line = std::string{kContinuationIndent} + line;
         }
@@ -204,6 +252,15 @@ void append_tag_item_lines(
         position += count;
         first_line = false;
     }
+}
+
+StyledReviewLines detailed_event_lines(const QrEventTemplate& event_template, ReviewDisplayLimits limits) {
+    StyledReviewLines out;
+    append_styled_line(out, "Kind " + std::to_string(event_template.kind), ReviewBodyLineStyle::Meta);
+    append_styled_line(out, "Created " + std::to_string(event_template.created_at), ReviewBodyLineStyle::Meta);
+    append_styled_line(out, "Author", ReviewBodyLineStyle::Meta);
+    append_tag_item_lines(out, std::string{kDevelopmentReviewAuthorPubkey}, limits.max_compact_line_chars);
+    return out;
 }
 
 StyledReviewLines detailed_tag_lines(
@@ -472,20 +529,8 @@ std::vector<TrustedReviewPage> build_qr_display_review_pages(
     validate_display_page_limits(limits);
 
     const QrEventTemplate& event_template = request.event_template;
-    std::vector<TrustedReviewPage> pages{
-        TrustedReviewPage{
-            "Event",
-            {
-                "Kind " + std::to_string(event_template.kind),
-                kind_name(event_template.kind),
-                "Created " + std::to_string(event_template.created_at),
-            },
-            ReviewPageAction::Next,
-            logical_page_indicator(1, 4),
-            {},
-            "Event",
-        },
-    };
+    std::vector<TrustedReviewPage> pages;
+    append_display_pages(pages, "Event", detailed_event_lines(event_template, limits), limits, 1, 4);
 
     append_display_pages(pages, "Content", detailed_content_lines(event_template.content, limits), limits, 2, 4);
     append_display_pages(pages, "Tags", detailed_tag_lines(event_template.tags, limits), limits, 3, 4);

@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "nostrseal/json_unicode.hpp"
 #include "nostrseal/limits.hpp"
+#include "nostrseal/utf8.hpp"
 
 namespace nostrseal {
 namespace {
@@ -39,54 +41,6 @@ bool is_base64url_payload(const std::string& value) {
         return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
                ch == '-';
     });
-}
-
-bool is_valid_utf8(const std::string& value) {
-    std::size_t offset = 0;
-    while (offset < value.size()) {
-        const auto byte = static_cast<unsigned char>(value[offset]);
-        if (byte <= 0x7fU) {
-            ++offset;
-            continue;
-        }
-
-        std::size_t expected_continuations = 0;
-        std::uint32_t codepoint = 0;
-        if ((byte & 0xe0U) == 0xc0U) {
-            expected_continuations = 1;
-            codepoint = byte & 0x1fU;
-            if (codepoint == 0U) {
-                return false;
-            }
-        } else if ((byte & 0xf0U) == 0xe0U) {
-            expected_continuations = 2;
-            codepoint = byte & 0x0fU;
-        } else if ((byte & 0xf8U) == 0xf0U) {
-            expected_continuations = 3;
-            codepoint = byte & 0x07U;
-        } else {
-            return false;
-        }
-
-        if (offset + expected_continuations >= value.size()) {
-            return false;
-        }
-        for (std::size_t index = 0; index < expected_continuations; ++index) {
-            const auto continuation = static_cast<unsigned char>(value[++offset]);
-            if ((continuation & 0xc0U) != 0x80U) {
-                return false;
-            }
-            codepoint = (codepoint << 6U) | (continuation & 0x3fU);
-        }
-        if ((expected_continuations == 2U && codepoint < 0x800U) ||
-            (expected_continuations == 3U && codepoint < 0x10000U) ||
-            codepoint > 0x10ffffU ||
-            (codepoint >= 0xd800U && codepoint <= 0xdfffU)) {
-            return false;
-        }
-        ++offset;
-    }
-    return true;
 }
 
 std::array<char, 256> base64url_decode_table() {
@@ -191,37 +145,6 @@ void skip_ws(const std::string& json, std::size_t& offset) {
     }
 }
 
-int hex_value(char ch) {
-    if (ch >= '0' && ch <= '9') {
-        return ch - '0';
-    }
-    if (ch >= 'a' && ch <= 'f') {
-        return ch - 'a' + 10;
-    }
-    if (ch >= 'A' && ch <= 'F') {
-        return ch - 'A' + 10;
-    }
-    return -1;
-}
-
-char parse_json_ascii_unicode_escape(const std::string& json, std::size_t& offset) {
-    if (offset + 4U > json.size()) {
-        throw QrEnvelopeError("QR signing request JSON unicode escape is truncated");
-    }
-    int codepoint = 0;
-    for (int index = 0; index < 4; ++index) {
-        const int nibble = hex_value(json[offset++]);
-        if (nibble < 0) {
-            throw QrEnvelopeError("QR signing request JSON unicode escape is invalid");
-        }
-        codepoint = (codepoint << 4) | nibble;
-    }
-    if (codepoint > 0x7f) {
-        return '?';
-    }
-    return static_cast<char>(codepoint);
-}
-
 std::string parse_simple_json_string(const std::string& json, std::size_t& offset) {
     if (offset >= json.size() || json[offset] != '"') {
         throw QrEnvelopeError("QR signing request JSON string is required");
@@ -260,7 +183,12 @@ std::string parse_simple_json_string(const std::string& json, std::size_t& offse
                     value.push_back('\t');
                     break;
                 case 'u':
-                    value.push_back(parse_json_ascii_unicode_escape(json, offset));
+                    append_json_unicode_escape<QrEnvelopeError>(
+                        value,
+                        json,
+                        offset,
+                        "QR signing request JSON unicode escape is truncated",
+                        "QR signing request JSON unicode escape is invalid");
                     break;
                 default:
                     throw QrEnvelopeError("QR signing request JSON string escape is invalid");

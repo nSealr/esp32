@@ -28,6 +28,7 @@ MANUAL_REVIEW_SCENARIOS = (
     "show-tags",
     "show-long-content",
     "show-scroll-review",
+    "show-unicode-review",
     "show-request-error",
     "button-approve",
     "button-reject",
@@ -146,6 +147,26 @@ def build_scroll_review_exchange(
     return _review_exchange_from_request(request, request_id, specs_dir)
 
 
+def build_unicode_review_exchange(
+    request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-unicode",
+    specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
+) -> tuple[str, str]:
+    request = {
+        "version": 1,
+        "request_id": request_id,
+        "method": "sign_event",
+        "params": {
+            "event_template": {
+                "created_at": 1710000360,
+                "kind": 1,
+                "tags": [["t", "caff\u00e8"], ["emoji", "\U0001f600"]],
+                "content": "NostrSeal unicode review: caff\u00e8 \U0001f600",
+            }
+        },
+    }
+    return _review_exchange_from_request(request, request_id, specs_dir)
+
+
 def build_request_error_exchange(
     request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-invalid",
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
@@ -173,6 +194,8 @@ def build_manual_review_exchanges(
         return [build_long_content_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-scroll-review":
         return [build_scroll_review_exchange(request_id=request_id, specs_dir=specs_dir)]
+    if scenario == "show-unicode-review":
+        return [build_unicode_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-request-error":
         return [
             review_exchange,
@@ -183,7 +206,7 @@ def build_manual_review_exchanges(
 
 def build_manual_observation_checklist(scenario: str) -> str:
     common = [
-        "Confirm the display starts on Event / Page 1/4.",
+        "Confirm the display starts on Event / Page 1/4 with raw kind, created_at, Author, and no inferred kind label.",
         "Confirm real signing remains disabled in the serial response.",
     ]
     if scenario == "show-review":
@@ -193,7 +216,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
         ]
     elif scenario == "show-tags":
         lines = [
-            "Confirm the display starts on Event / Page 1/4.",
+            common[0],
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 until the Tags section is shown as Page 3/4.",
             "Confirm the Tags body shows tag content grouped by tag, not interpreted tag labels.",
@@ -206,7 +229,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
         ]
     elif scenario == "show-long-content":
         lines = [
-            "Confirm the display starts on Event / Page 1/4.",
+            common[0],
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 until the Content section is shown as Page 2/4.",
             "Confirm the Content body uses compact text and shows the full long content without ellipses.",
@@ -218,7 +241,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
         ]
     elif scenario == "show-scroll-review":
         lines = [
-            "Confirm the display starts on Event / Page 1/4.",
+            common[0],
             "Confirm real signing remains disabled in the serial response.",
             "Press short KEY/GPIO14 once to reach Content / Page 2/4 Lines 1-9/N.",
             "Confirm the Content body is readable and has no ellipses.",
@@ -227,6 +250,16 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm the Tags body shows grouped tag values and has no ellipses.",
             "Press short BOOT/GPIO0 to scroll within Tags to the next line range without repeating the last line.",
             "Press short KEY/GPIO14 from any scroll window to Decision / Page 4/4.",
+        ]
+    elif scenario == "show-unicode-review":
+        lines = [
+            common[0],
+            "Confirm real signing remains disabled in the serial response.",
+            "Press short KEY/GPIO14 once to reach Content / Page 2/4.",
+            "Confirm unsupported UTF-8 glyphs are shown explicitly as U+00E8 and U+1F600, not as silent question marks.",
+            "Press short KEY/GPIO14 to reach Tags / Page 3/4.",
+            "Confirm tag values also show U+00E8 and U+1F600 where those codepoints appear.",
+            "Press short KEY/GPIO14 to reach Decision / Page 4/4.",
         ]
     elif scenario == "show-request-error":
         lines = [
@@ -294,6 +327,7 @@ def main() -> int:
             "show-tags shows a tagged event with grouped tag content; "
             "show-long-content shows compact full content plus many tags; "
             "show-scroll-review shows content and tags with scroll windows; "
+            "show-unicode-review shows display-safe UTF-8 fallback codepoints; "
             "show-request-error first shows that review and then sends an invalid request; "
             "button-approve and button-reject print physical-control acceptance steps"
         ),

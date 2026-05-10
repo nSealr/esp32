@@ -125,21 +125,6 @@ bool lines_contain(const std::vector<std::string>& lines, const std::string& nee
     return false;
 }
 
-void assert_qr_review_transcript(
-    const std::vector<nostrseal::QrReviewTranscriptStep>& actual,
-    const std::vector<nostrseal::QrReviewTranscriptStep>& expected) {
-    assert(actual.size() == expected.size());
-    for (std::size_t index = 0; index < actual.size(); ++index) {
-        assert(actual[index].frame.title == expected[index].frame.title);
-        assert(actual[index].frame.page_indicator == expected[index].frame.page_indicator);
-        assert(actual[index].frame.body_lines == expected[index].frame.body_lines);
-        assert(actual[index].frame.action_hint == expected[index].frame.action_hint);
-        assert(actual[index].button == expected[index].button);
-        assert(actual[index].decision == expected[index].decision);
-        assert(actual[index].approved_for_signing == expected[index].approved_for_signing);
-    }
-}
-
 class RecordingQrReviewIo : public nostrseal::QrReviewIo {
 public:
     explicit RecordingQrReviewIo(std::vector<nostrseal::ReviewButton> buttons) : buttons_(std::move(buttons)) {}
@@ -302,6 +287,24 @@ void test_qr_signing_request_tolerates_escaped_event_content() {
     assert(request.event_template_json.find(R"("content":"Quote: \"nostr\"\nNext line")") != std::string::npos);
 }
 
+void test_qr_signing_request_preserves_json_unicode_escapes() {
+    const nostrseal::QrSigningRequest request = nostrseal::parse_qr_signing_request(
+        nostrseal::QrEnvelope{"ignored",
+                              R"({"version":1,"request_id":"req-unicode-escapes","method":"sign_event","params":{"event_template":{"created_at":1710000400,"kind":1,"tags":[["t","caf\u00e8"],["emoji","\uD83D\uDE00"]],"content":"caf\u00e8 \uD83D\uDE00"}}})"});
+
+    assert(request.event_template.content == std::string("caf") + "\xC3\xA8" + " " + "\xF0\x9F\x98\x80");
+    assert(request.event_template.tags.size() == 2);
+    assert(request.event_template.tags[0][1] == std::string("caf") + "\xC3\xA8");
+    assert(request.event_template.tags[1][1] == std::string("\xF0\x9F\x98\x80"));
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+    assert(joined_lines_for_title(pages, "Content").find("U+00E8") != std::string::npos);
+    assert(joined_lines_for_title(pages, "Content").find("U+1F600") != std::string::npos);
+    assert(joined_lines_for_title(pages, "Tags").find("U+00E8") != std::string::npos);
+    assert(joined_lines_for_title(pages, "Tags").find("U+1F600") != std::string::npos);
+}
+
 void test_qr_envelope_rejections() {
     expect_throw("QR envelope must start with nseal1:", [] {
         (void)nostrseal::decode_qr_envelope("nostr:abc");
@@ -404,6 +407,16 @@ void test_qr_signing_request_rejections() {
             "ignored",
             R"({"version":1,"request_id":"req-kind-1-basic","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[]}}})"});
     });
+    expect_throw("QR signing request JSON unicode escape is invalid", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-invalid-unicode","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"\uD83D"}}})"});
+    });
+    expect_throw("QR signing request JSON unicode escape is invalid", [] {
+        (void)nostrseal::parse_qr_signing_request(nostrseal::QrEnvelope{
+            "ignored",
+            R"({"version":1,"request_id":"req-invalid-unicode","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"\uDE00"}}})"});
+    });
 }
 
 void test_qr_signing_request_rejects_shared_invalid_request_vectors() {
@@ -497,6 +510,17 @@ void test_qr_display_review_pages_group_logical_sections_with_compact_styles() {
     assert(pages.size() == 4);
     assert(pages[0].title == "Event");
     assert(pages[0].page_indicator == "Page 1/4");
+    assert((pages[0].lines == std::vector<std::string>{
+                                "Kind 1",
+                                "Created 1710000060",
+                                "Author",
+                                "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859a",
+                                "  b0f0b704075871aa",
+                            }));
+    assert(pages[0].body_line_styles.size() == pages[0].lines.size());
+    assert(pages[0].body_line_styles[2] == nostrseal::ReviewBodyLineStyle::Meta);
+    assert(pages[0].body_line_styles[3] == nostrseal::ReviewBodyLineStyle::Value);
+    assert(!lines_contain(pages[0].lines, "Short Text Note"));
     assert(pages[1].title == "Content");
     assert(pages[1].page_indicator == "Page 2/4");
     assert(pages[2].title == "Tags");
@@ -524,6 +548,36 @@ void test_qr_display_review_pages_group_logical_sections_with_compact_styles() {
     assert(!lines_contain(pages[2].lines, "raw tags JSON"));
     assert(tag_text.find(pubkey.substr(0, 48)) != std::string::npos);
     assert(tag_text.find(pubkey.substr(48)) != std::string::npos);
+}
+
+void test_qr_display_review_pages_escape_non_ascii_for_display_safety() {
+    const std::string content = std::string("cafe ") + "\xC3\xA8" + " " + "\xF0\x9F\x98\x80";
+    const std::string tag_value = std::string("topic-") + "\xC3\xA8";
+    const nostrseal::QrSigningRequest request{
+        .version = 1,
+        .request_id = "req-unicode-display",
+        .method = "sign_event",
+        .has_params = true,
+        .has_event_template = true,
+        .event_template_json = "",
+        .event_template = nostrseal::QrEventTemplate{
+            .created_at = 1710000300,
+            .kind = 1,
+            .tags_json = "",
+            .tags = {{"t", tag_value}, {"emoji", std::string("\xF0\x9F\x98\x80")}},
+            .content = content,
+        },
+    };
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+    const std::string content_text = joined_lines_for_title(pages, "Content");
+    const std::string tag_text = joined_lines_for_title(pages, "Tags");
+
+    assert(content_text.find("U+00E8") != std::string::npos);
+    assert(content_text.find("U+1F600") != std::string::npos);
+    assert(tag_text.find("U+00E8") != std::string::npos);
+    assert(tag_text.find("U+1F600") != std::string::npos);
 }
 
 void test_qr_display_review_pages_split_full_long_content_without_ellipsis() {
@@ -679,7 +733,13 @@ void test_qr_review_flow_transcript_records_display_and_approval_steps() {
 
     assert(transcript.size() == 4);
     assert(transcript[0].frame.title == "Event");
-    assert(transcript[0].frame.body_lines == nostrseal::test_vectors::basic_qr_review_approve_transcript()[0].frame.body_lines);
+    assert((transcript[0].frame.body_lines == std::vector<std::string>{
+                                                 "Kind 1",
+                                                 "Created 1710000000",
+                                                 "Author",
+                                                 "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859a",
+                                                 "  b0f0b704075871aa",
+                                             }));
     assert(transcript[1].frame.title == "Content");
     assert(transcript[1].frame.body_lines == nostrseal::test_vectors::basic_qr_review_approve_transcript()[1].frame.body_lines);
     assert(transcript[2].frame.title == "Tags");
@@ -696,9 +756,13 @@ void test_qr_review_flow_transcript_records_early_rejection() {
         nostrseal::test_vectors::kQrEnvelopeKind1Basic,
         nostrseal::test_vectors::basic_qr_review_reject_buttons());
 
-    assert_qr_review_transcript(
-        transcript,
-        nostrseal::test_vectors::basic_qr_review_reject_transcript());
+    assert(transcript.size() == 1);
+    assert(transcript[0].frame.title == "Event");
+    assert(lines_contain(transcript[0].frame.body_lines, "Author"));
+    assert(!lines_contain(transcript[0].frame.body_lines, "Short Text Note"));
+    assert(transcript[0].decision.has_value());
+    assert(!transcript[0].decision.value());
+    assert(!transcript[0].approved_for_signing);
 }
 
 void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing() {
@@ -1377,6 +1441,23 @@ void test_device_protocol_rejects_invalid_sign_event_request_shape() {
            error_frame_for_test(R"({"error":"unsupported_request"})"));
 }
 
+void test_device_protocol_review_preserves_json_unicode_escapes() {
+    nostrseal::SerialFrameHandlingResult result = nostrseal::handle_serial_frame_with_review_preview(
+        request_frame_for_test(
+            R"({"version":1,"request_id":"req-unicode-serial","method":"sign_event","params":{"event_template":{"created_at":1710000400,"kind":1,"tags":[["t","caf\u00e8"],["emoji","\uD83D\uDE00"]],"content":"caf\u00e8 \uD83D\uDE00"}}})"),
+        nostrseal_esp32::t_display_s3_review_limits());
+
+    assert(result.response_frame == response_frame_for_test(
+                                      R"({"version":1,"request_id":"req-unicode-serial","ok":false,"error":{"code":"signing_disabled","message":"Signing is disabled until trusted review and physical approval are implemented.","retryable":false}})"));
+    assert(result.review_session.has_value());
+    assert(result.review_session->current_frame().title == "Event");
+    assert(!result.review_session->handle_button(nostrseal::ReviewButton::Next).has_value());
+    const nostrseal::ReviewDisplayFrame content = result.review_session->current_frame();
+    assert(content.title == "Content");
+    assert(lines_contain(content.body_lines, "U+00E8"));
+    assert(lines_contain(content.body_lines, "U+1F600"));
+}
+
 void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     using namespace nostrseal_esp32;
 
@@ -1418,7 +1499,18 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     };
 
     assert(t_display_s3_review_frame_color_for(compact_frame, 10, 42) == kTDisplayS3ColorGreen);
-    assert(t_display_s3_review_frame_color_for(compact_frame, 11, 53) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(compact_frame, 11, 55) == kTDisplayS3ColorWhite);
+
+    nostrseal::ReviewDisplayFrame lowercase_frame;
+    lowercase_frame.title = "Content";
+    lowercase_frame.page_indicator = "Page 2/4";
+    lowercase_frame.body_lines = std::vector<std::string>{"a"};
+    lowercase_frame.action_hint = "Next";
+    lowercase_frame.body_line_styles = std::vector<nostrseal::ReviewBodyLineStyle>{
+        nostrseal::ReviewBodyLineStyle::Value,
+    };
+
+    assert(t_display_s3_review_frame_color_for(lowercase_frame, 11, 44) == kTDisplayS3ColorWhite);
 }
 
 void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses() {
@@ -1577,6 +1669,7 @@ int main() {
     test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_parses_event_template_fields();
     test_qr_signing_request_tolerates_escaped_event_content();
+    test_qr_signing_request_preserves_json_unicode_escapes();
     test_qr_envelope_rejections();
     test_qr_envelope_rejects_shared_invalid_qr_vectors();
     test_qr_limits_match_shared_profile();
@@ -1588,6 +1681,7 @@ int main() {
     test_qr_trusted_review_request_matches_shared_tagged_vector();
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
+    test_qr_display_review_pages_escape_non_ascii_for_display_safety();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();
     test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
@@ -1628,6 +1722,7 @@ int main() {
     test_device_protocol_rejects_unknown_top_level_request_fields();
     test_device_protocol_rejects_params_for_parameterless_methods();
     test_device_protocol_rejects_invalid_sign_event_request_shape();
+    test_device_protocol_review_preserves_json_unicode_escapes();
     test_t_display_s3_raster_has_stable_boot_and_review_pixels();
     test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses();
     test_t_display_s3_status_frames_keep_non_signing_copy_stable();

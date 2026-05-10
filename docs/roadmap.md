@@ -308,6 +308,12 @@ long BOOT/GPIO0 can reject from any page. This removes forced traversal through
 every content/tag scroll window while still allowing complete inspection
 before a non-signing approval UI action.
 
+Status note, 2026-05-10: the live T-Display S3 Event page now shows raw kind,
+raw created_at, and the signer author pubkey instead of inferred kind labels.
+The display path also converts unsupported non-ASCII UTF-8 content and tag
+values into explicit `U+XXXX` fallback text before wrapping, avoiding silent
+`?` substitution while a complete Unicode font remains a later acceptance task.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

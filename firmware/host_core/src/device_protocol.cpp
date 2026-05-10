@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "nostrseal/json_unicode.hpp"
 #include "nostrseal/limits.hpp"
 #include "nostrseal/qr_envelope.hpp"
 #include "nostrseal/serial_frame.hpp"
 #include "nostrseal/serial_review.hpp"
 #include "nostrseal/signing_policy.hpp"
+#include "nostrseal/utf8.hpp"
 
 namespace nostrseal {
 namespace {
@@ -138,11 +140,12 @@ std::string parse_json_string(const std::string& json, std::size_t& offset) {
                     value.push_back('\t');
                     break;
                 case 'u':
-                    if (offset + 4U > json.size()) {
-                        throw SerialFrameError("request JSON unicode escape is truncated");
-                    }
-                    offset += 4U;
-                    value.push_back('?');
+                    append_json_unicode_escape<SerialFrameError>(
+                        value,
+                        json,
+                        offset,
+                        "request JSON unicode escape is truncated",
+                        "request JSON unicode escape is invalid");
                     break;
                 default:
                     throw SerialFrameError("request JSON string escape is invalid");
@@ -351,6 +354,9 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
 
     const std::string request_json = decode_base64url(request.payload_base64url);
     if (request_json.size() > kMaxDecodedRequestJsonBytes) {
+        return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
+    }
+    if (!is_valid_utf8(request_json)) {
         return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }
     const RequestMetadata metadata = parse_request_metadata(request_json);

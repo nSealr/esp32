@@ -210,6 +210,12 @@ request id so the test request stays under the v0 decoded-request limit:
 python3 scripts/manual_review_display.py show-scroll-review --port /dev/cu.<device> --request-id manual-scroll
 ```
 
+To inspect the display-safe UTF-8 fallback path, send:
+
+```sh
+python3 scripts/manual_review_display.py show-unicode-review --port /dev/cu.<device> --request-id manual-unicode
+```
+
 To exercise the request-error display state, send a valid review request
 followed by an invalid signing-request vector:
 
