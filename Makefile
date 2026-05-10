@@ -17,6 +17,7 @@ host-core-test: generate-host-vectors
 		-Ibuild/host_core \
 		firmware/esp32_s3_usb_signer/main/t_display_s3_button_logic.cpp \
 		firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp \
+		firmware/esp32_s3_usb_signer/main/t_display_s3_serial_input.cpp \
 		firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp \
 		firmware/host_core/src/approval_gate.cpp \
 		firmware/host_core/src/device_protocol.cpp \

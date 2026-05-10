@@ -138,6 +138,9 @@ tests with strict C++ warnings.
 - Host-compiled T-Display S3 review-state helper tests proving timeout math,
   activity refresh, clear behavior, and unsigned tick wraparound outside the
   ESP-IDF runtime loop.
+- Host-compiled T-Display S3 serial-input helper tests proving overlong input
+  emits one `overlong_frame` event, drains bytes until the next newline, and
+  then accepts the next complete request line without tail-byte contamination.
 - Device protocol tests proving the shared ESP32-S3 scaffold capability request
   returns the shared scaffold capability response.
 - Device protocol tests proving the shared ESP32-S3 scaffold

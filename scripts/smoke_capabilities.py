@@ -153,10 +153,13 @@ def load_malformed_transport_frame_exchanges(specs_dir: Path = DEFAULT_SPECS) ->
 
 def load_overlong_transport_frame_exchanges(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:
     expected_error_frame = encode_serial_frame("error", base64url_json(OVERLONG_FRAME_ERROR))
-    return [
-        (_load_invalid_serial_frame_vector(specs_dir, vector_name)["frame"], expected_error_frame)
-        for vector_name in OVERLONG_TRANSPORT_VECTOR_NAMES
-    ]
+    frames: list[tuple[str, str]] = []
+    for vector_name in OVERLONG_TRANSPORT_VECTOR_NAMES:
+        frame = _load_invalid_serial_frame_vector(specs_dir, vector_name)["frame"]
+        if not frame.endswith("\n"):
+            frame += "\n"
+        frames.append((frame, expected_error_frame))
+    return frames
 
 
 def load_invalid_signing_request_frames(specs_dir: Path = DEFAULT_SPECS) -> list[tuple[str, str]]:

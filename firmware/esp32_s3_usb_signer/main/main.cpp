@@ -17,6 +17,7 @@
 #include "t_display_s3_buttons.hpp"
 #include "t_display_s3_display.hpp"
 #include "t_display_s3_review_state.hpp"
+#include "t_display_s3_serial_input.hpp"
 #include "t_display_s3_status_frames.hpp"
 
 namespace {
@@ -178,8 +179,8 @@ extern "C" void app_main(void) {
         ESP_LOGW(kTag, "T-Display S3 button input unavailable: %s", esp_err_to_name(button_status));
     }
 
-    std::string line;
-    line.reserve(512);
+    nostrseal_esp32::TDisplayS3SerialInput serial_input;
+    serial_input.line.reserve(512);
     ActiveReviewState active_review;
 
     while (true) {
@@ -190,21 +191,21 @@ extern "C" void app_main(void) {
             vTaskDelay(pdMS_TO_TICKS(10));
             continue;
         }
-        if (ch == '\r') {
+        const nostrseal_esp32::TDisplayS3SerialInputEvent serial_event =
+            nostrseal_esp32::update_t_display_s3_serial_input(
+                serial_input,
+                static_cast<char>(ch),
+                nostrseal::kMaxSerialFrameBytes);
+        if (serial_event.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::None) {
             continue;
         }
-        line.push_back(static_cast<char>(ch));
-        if (line.size() > nostrseal::kMaxSerialFrameBytes) {
+        if (serial_event.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::OverlongFrame) {
             ESP_LOGW(kTag, "Rejected overlong serial frame");
-            line.clear();
             clear_active_review(active_review);
             display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame());
             write_transport_error("eyJlcnJvciI6Im92ZXJsb25nX2ZyYW1lIn0");
             continue;
         }
-        if (ch == '\n') {
-            process_frame_line(line, display, active_review);
-            line.clear();
-        }
+        process_frame_line(serial_event.line, display, active_review);
     }
 }

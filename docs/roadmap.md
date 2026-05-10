@@ -344,6 +344,12 @@ payload, and overlong frames. The expected hardware responses are deterministic
 `malformed_frame` or `overlong_frame` errors, while real `sign_event` still
 returns `signing_disabled`.
 
+Status note, 2026-05-10: the T-Display S3 runtime serial reader now uses a
+host-buildable input helper that emits one overlong-frame event and drains the
+rest of that line until newline before accepting new frames. This removes the
+tail-byte contamination risk discovered while adding overlong transport smoke;
+real signing remains disabled.
+
 Status note, 2026-05-10: the manual and non-interactive T-Display S3 review
 scenario set now includes `show-dense-tags`, a valid disabled `sign_event`
 fixture with enough structured tags to exercise multiple Tags scroll windows.

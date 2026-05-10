@@ -21,6 +21,7 @@
 #include "nostrseal/utf8.hpp"
 #include "t_display_s3_button_logic.hpp"
 #include "t_display_s3_raster.hpp"
+#include "t_display_s3_serial_input.hpp"
 #include "t_display_s3_status_frames.hpp"
 #include "transport_vector.hpp"
 
@@ -1784,6 +1785,36 @@ void test_t_display_s3_status_frames_keep_non_signing_copy_stable() {
     assert(error.action_hint == "Waiting");
 }
 
+void test_t_display_s3_serial_input_drains_after_overlong_frame() {
+    nostrseal_esp32::TDisplayS3SerialInput input;
+    for (char ch : std::string("12345678")) {
+        const nostrseal_esp32::TDisplayS3SerialInputEvent event =
+            nostrseal_esp32::update_t_display_s3_serial_input(input, ch, 8);
+        assert(event.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::None);
+    }
+
+    const nostrseal_esp32::TDisplayS3SerialInputEvent overlong =
+        nostrseal_esp32::update_t_display_s3_serial_input(input, '9', 8);
+    assert(overlong.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::OverlongFrame);
+    assert(overlong.line.empty());
+
+    for (char ch : std::string("tail")) {
+        const nostrseal_esp32::TDisplayS3SerialInputEvent event =
+            nostrseal_esp32::update_t_display_s3_serial_input(input, ch, 8);
+        assert(event.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::None);
+    }
+    const nostrseal_esp32::TDisplayS3SerialInputEvent drained =
+        nostrseal_esp32::update_t_display_s3_serial_input(input, '\n', 8);
+    assert(drained.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::None);
+
+    nostrseal_esp32::TDisplayS3SerialInputEvent ready;
+    for (char ch : std::string("ok\r\n")) {
+        ready = nostrseal_esp32::update_t_display_s3_serial_input(input, ch, 8);
+    }
+    assert(ready.kind == nostrseal_esp32::TDisplayS3SerialInputEventKind::FrameReady);
+    assert(ready.line == "ok\n");
+}
+
 }  // namespace
 
 int main() {
@@ -1856,6 +1887,7 @@ int main() {
     test_t_display_s3_raster_has_stable_boot_and_review_pixels();
     test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses();
     test_t_display_s3_status_frames_keep_non_signing_copy_stable();
+    test_t_display_s3_serial_input_drains_after_overlong_frame();
     std::cout << "host core tests passed\n";
     return 0;
 }

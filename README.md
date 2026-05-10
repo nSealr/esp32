@@ -131,6 +131,9 @@ board into a separate repository.
   approve/reject-closed, timeout, and request-error frames shown by the runtime
   display loop, keeping user-visible safety copy out of untested `main.cpp`
   branches.
+- Host-buildable T-Display S3 serial-input tests cover overlong-frame refusal
+  and drain-until-newline behavior so a rejected transport frame cannot leave
+  tail bytes to contaminate the next request line.
 - Board profile for the LILYGO T-Display S3 Pro with OV5640 camera as the
   primary ESP32 stateless QR vault candidate. The profile documents display, camera,
   touch, physical-approval, wireless-disabled, and debug-lock constraints; it
@@ -144,8 +147,9 @@ for valid `sign_event` requests, initializes the T-Display S3 display only far
 enough to draw a Ready/No request frame and live trusted-review pages, polls the
 two onboard physical buttons for local review navigation, shows closed review
 decisions as `Not signed`, clears active review state on rejected serial
-requests, and keeps real signing disabled until storage, production hardening,
-and signing tests are implemented.
+requests, drains overlong serial input until the next newline, and keeps real
+signing disabled until storage, production hardening, and signing tests are
+implemented.
 An active T-Display S3 review session is RAM-only and expires after five
 minutes of inactivity; expiry clears the session and shows `Review Timeout` /
 `Expired` / `Not signed` rather than leaving stale event content on screen.

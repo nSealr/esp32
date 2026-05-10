@@ -748,7 +748,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             self.assertTrue(request_frame.startswith("nseal1f:"))
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "malformed_frame"})
         self.assertEqual(decode_serial_frame_payload(overlong_exchanges[0][1]), {"error": "overlong_frame"})
-        self.assertFalse(overlong_exchanges[0][0].endswith("\n"))
+        self.assertTrue(overlong_exchanges[0][0].endswith("\n"))
 
     def test_smoke_script_keeps_overlong_transport_frame_last(self) -> None:
         exchanges = smoke_capabilities.build_hardware_smoke_exchanges()
@@ -758,7 +758,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             )
         )["frame"]
 
-        self.assertEqual(exchanges[-1][0], overlong_frame)
+        self.assertEqual(exchanges[-1][0], f"{overlong_frame}\n")
         self.assertEqual(decode_serial_frame_payload(exchanges[-1][1]), {"error": "overlong_frame"})
 
     def test_smoke_script_wraps_invalid_signing_request_vectors(self) -> None:
