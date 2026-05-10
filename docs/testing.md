@@ -172,6 +172,13 @@ tests with strict C++ warnings.
   expecting deterministic `unsupported_request` rejections. By default the
   smoke prints a clean summary; raw protocol frames are available with
   `scripts/smoke_capabilities.py --verbose-frames`.
+- Optional hardware review-scenario smoke test with
+  `make idf-smoke-review-scenarios` after exporting ESP-IDF and flashing the
+  current firmware. This non-interactive smoke sends the basic, tagged,
+  long-content, scroll-window, Unicode fallback, and request-error review
+  scenarios used by the manual display exerciser and verifies the protocol
+  still returns `signing_disabled` or deterministic `unsupported_request`
+  frames. It does not replace human visual inspection of the display.
 - Manual T-Display S3 display exerciser tests proving
   `scripts/manual_review_display.py` builds dynamic disabled `sign_event`
   exchanges, composes tagged-event and long-content review scenarios from

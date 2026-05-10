@@ -223,6 +223,17 @@ followed by an invalid signing-request vector:
 python3 scripts/manual_review_display.py show-request-error --port /dev/cu.<device>
 ```
 
+To run the non-interactive protocol smoke for all review-display scenarios
+without requiring button input, use:
+
+```sh
+make IDF_PORT=/dev/cu.<device> idf-smoke-review-scenarios
+```
+
+This verifies the serial responses for the same basic, tagged, long-content,
+scroll-window, Unicode fallback, and request-error review requests. It does
+not replace visual inspection of the physical display.
+
 To exercise the physical-control acceptance path with a human observer, send a
 valid review request and follow the printed checklist:
 

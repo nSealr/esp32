@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from scripts import detect_esp32_s3
 from scripts import manual_review_display
 from scripts import smoke_capabilities
+from scripts import smoke_review_scenarios
 from scripts import validate_firmware
 from scripts.validate_firmware import validate_firmware_project
 
@@ -50,6 +51,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("idf-flash:", makefile)
         self.assertIn("idf-monitor:", makefile)
         self.assertIn("idf-smoke-capabilities:", makefile)
+        self.assertIn("idf-smoke-review-scenarios:", makefile)
         self.assertIn("idf-env-check:", makefile)
 
     def test_esp32_s3_usb_signer_builds_host_core_protocol(self) -> None:
@@ -994,6 +996,42 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("no inferred kind label", checklist)
         self.assertIn("U+00E8", checklist)
         self.assertIn("U+1F600", checklist)
+
+    def test_review_scenario_smoke_builds_noninteractive_review_exchanges(self) -> None:
+        exchanges = smoke_review_scenarios.build_review_smoke_exchanges(
+            scenarios=("show-tags", "show-unicode-review", "show-request-error"),
+            request_id_prefix="unit-review",
+        )
+        decoded_requests = [decode_serial_frame_payload(request_frame) for request_frame, _ in exchanges]
+        decoded_responses = [decode_serial_frame_payload(response_frame) for _, response_frame in exchanges]
+
+        self.assertEqual(len(exchanges), 4)
+        self.assertEqual(decoded_requests[0]["request_id"], "unit-review-show-tags")
+        self.assertEqual(decoded_requests[1]["request_id"], "unit-review-show-unicode-review")
+        self.assertEqual(decoded_requests[2]["request_id"], "unit-review-show-request-error")
+        self.assertEqual(decoded_requests[3]["request_id"], "unit-review-show-request-error-invalid")
+        self.assertEqual(decoded_responses[0]["error"]["code"], "signing_disabled")
+        self.assertEqual(decoded_responses[1]["error"]["code"], "signing_disabled")
+        self.assertEqual(decoded_responses[2]["error"]["code"], "signing_disabled")
+        self.assertEqual(decoded_responses[3]["error"], "unsupported_request")
+
+    def test_review_scenario_smoke_summary_counts_protocol_outcomes(self) -> None:
+        response_frame = smoke_capabilities.load_signing_disabled_frames()[1]
+        rejection_frame = smoke_capabilities.encode_serial_frame(
+            "error",
+            smoke_capabilities.base64url_json(smoke_capabilities.UNSUPPORTED_REQUEST_ERROR),
+        )
+
+        summary = smoke_review_scenarios.format_review_smoke_summary(
+            [response_frame, rejection_frame],
+            scenarios=("show-review", "show-request-error"),
+        )
+
+        self.assertIn("ESP32 review scenario smoke passed", summary)
+        self.assertIn("scenarios: 2", summary)
+        self.assertIn("verified exchanges: 2", summary)
+        self.assertIn("response frames: 1", summary)
+        self.assertIn("expected rejection frames: 1", summary)
 
     def test_manual_review_display_builds_button_approval_acceptance_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(

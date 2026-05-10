@@ -326,6 +326,13 @@ converts unsupported non-ASCII UTF-8 content and tag values into explicit
 `U+XXXX` fallback text before wrapping, avoiding silent `?` substitution while
 a complete Unicode font remains a later acceptance task.
 
+Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
+non-interactive hardware protocol smoke for the basic, tagged, long-content,
+scroll-window, Unicode fallback, and request-error review requests. It reuses
+the manual review exerciser scenarios to verify serial response behavior on a
+flashed board while keeping visual display inspection and physical-button
+acceptance as separate manual evidence.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
