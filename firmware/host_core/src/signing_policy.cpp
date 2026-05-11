@@ -20,6 +20,9 @@ SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readin
     if (!readiness.approval_digest_binding_verified) {
         status.missing_gates.push_back("approval_digest_binding");
     }
+    if (!readiness.unicode_review_rendering_accepted) {
+        status.missing_gates.push_back("unicode_review_rendering");
+    }
     if (!readiness.key_provisioning_ready) {
         status.missing_gates.push_back("key_provisioning");
     }

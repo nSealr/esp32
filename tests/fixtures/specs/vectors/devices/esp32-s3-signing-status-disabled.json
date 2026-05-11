@@ -15,6 +15,7 @@
           "runtime_signing_feature",
           "trusted_review_display",
           "physical_approval_controls",
+          "unicode_review_rendering",
           "key_provisioning",
           "secure_boot",
           "flash_encryption",

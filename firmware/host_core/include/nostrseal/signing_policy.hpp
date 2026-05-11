@@ -11,6 +11,7 @@ struct SigningReadiness {
     bool trusted_review_display_accepted = false;
     bool physical_approval_controls_accepted = false;
     bool approval_digest_binding_verified = false;
+    bool unicode_review_rendering_accepted = false;
     bool key_provisioning_ready = false;
     bool secure_boot_enabled = false;
     bool flash_encryption_enabled = false;

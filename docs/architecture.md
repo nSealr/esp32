@@ -70,9 +70,10 @@ The first firmware foundation is host-buildable C++ under
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `signing_policy`: host-buildable runtime-signing readiness gate. It requires
   the explicit runtime feature flag, parser limits, trusted display acceptance,
-  physical approval controls, approval-digest binding, key provisioning, secure
-  boot, flash encryption, debug lock, and companion signed-output verification
-  before firmware can be considered ready to connect a signing backend.
+  physical approval controls, approval-digest binding, Unicode review rendering
+  acceptance, key provisioning, secure boot, flash encryption, debug lock, and
+  companion signed-output verification before firmware can be considered ready
+  to connect a signing backend.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `NostrSeal/specs` review-screen vectors.
 - `review_controls`: page-by-page review button state machine for future
@@ -247,8 +248,9 @@ device scaffold starts from that policy and exposes
 `development_accepted_gates` for parser limits, trusted display, physical
 controls, and approval-digest binding. Signing still remains disabled because
 runtime feature enablement, production acceptance for trusted display and
-physical controls, key provisioning, secure boot, flash encryption, debug lock,
-and companion signed-output verification remain open.
+physical controls, Unicode review rendering acceptance, key provisioning,
+secure boot, flash encryption, debug lock, and companion signed-output
+verification remain open.
 
 `firmware/esp32_s3_usb_signer/security_profile.json` is the matching
 machine-readable security posture for the ESP-IDF scaffold. The v0 profile is

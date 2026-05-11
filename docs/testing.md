@@ -54,8 +54,9 @@ tests with strict C++ warnings.
   decoded request JSON without adding a signing backend.
 - Signing-policy tests proving runtime signing remains disabled until every M8
   gate is present: runtime feature flag, parser limits, trusted display,
-  physical controls, approval-digest binding, key provisioning, secure boot,
-  flash encryption, debug lock, and companion signed-output verification.
+  physical controls, approval-digest binding, Unicode review rendering
+  acceptance, key provisioning, secure boot, flash encryption, debug lock, and
+  companion signed-output verification.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, trusted display, physical controls,
@@ -168,8 +169,8 @@ tests with strict C++ warnings.
   remaining real-signing readiness gates for the current scaffold profile,
   while also exposing `development_accepted_gates` for parser limits,
   trusted-review display, physical approval controls, and approval-digest
-  binding. Trusted display and physical controls still remain in
-  `missing_gates` until production acceptance is complete.
+  binding. Trusted display, physical controls, and Unicode review rendering
+  still remain in `missing_gates` until production acceptance is complete.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
 - Device protocol tests proving the shared `sign_event` fixture returns the

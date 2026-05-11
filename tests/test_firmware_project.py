@@ -732,6 +732,10 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             "flash_encryption",
             signing_status["missing_gates"],
         )
+        self.assertIn(
+            "unicode_review_rendering",
+            signing_status["missing_gates"],
+        )
         self.assertIn("trusted_review_display", signing_status["development_accepted_gates"])
         self.assertIn("physical_approval_controls", signing_status["development_accepted_gates"])
 
