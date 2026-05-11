@@ -369,6 +369,13 @@ detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and current-head
 smoke reports are tracked as development traceability for the review-rendering
 contract.
 
+Status note, 2026-05-11: `security_profile.json` now also separates companion
+transport evidence from companion signed-output verification. The direct
+serial-line hardware smokes prove request-bound host/device exchange and the
+expected `signing_disabled` refusal on the attached T-Display S3, but the
+`companion_signed_output_verification` blocker remains uncleared until real
+signing output exists and is verified.
+
 ## M7: Firmware Foundation
 
 - Board profiles.

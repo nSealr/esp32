@@ -21,6 +21,10 @@ The current profile is `development_scaffold`:
   UTF-8 fallback, ASCII punctuation, dense-tags, and current-head smoke runs;
   these reports support development traceability but do not replace production
   trusted-display acceptance
+- companion transport evidence: recorded separately for direct serial-line
+  capability and `signing_disabled` smokes; these reports prove request-bound
+  host/device exchange only and do not replace companion signed-output
+  verification for real signatures
 - physical approval controls: manual development acceptance passed on
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked

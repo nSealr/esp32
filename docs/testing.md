@@ -67,6 +67,10 @@ tests with strict C++ warnings.
   evidence for detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and
   current-head smoke runs. These reports remain development traceability and do
   not convert the trusted-display gate into a production acceptance claim.
+- Security-profile validation requiring companion transport evidence to remain
+  separate from companion signed-output verification. Serial-line capability
+  and `signing_disabled` smokes are transport traceability only and do not
+  clear the signed-output production blocker.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.
