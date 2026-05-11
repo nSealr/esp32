@@ -66,7 +66,8 @@
     "NostrSeal/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json"
+    "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
+    "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json"
   ],
   "security_fuse_audit_evidence": [
     "NostrSeal/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"

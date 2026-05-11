@@ -170,6 +170,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
                 "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
                 "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
                 "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
+                "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(
