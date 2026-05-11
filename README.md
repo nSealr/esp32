@@ -26,8 +26,8 @@ board into a separate repository.
 - `nseal1f:` serial frame encode/decode compatible with the companion serial
   framing draft. The decoder mirrors the shared v0 `max_serial_frame_bytes`
   limit, accepts common serial line endings, and rejects shared invalid
-  serial-frame vectors for oversized frames, checksum mismatch, and malformed
-  base64url payloads.
+  serial-frame vectors for unsupported frame types, oversized frames, checksum
+  mismatch, and malformed base64url payloads.
 - `nseal1:` static QR envelope decode boundary plus `nseal1a:` animated QR
   frame reconstruction compatible with the shared transport vectors. The host
   core rejects malformed, padded, invalid UTF-8, oversized, missing-frame, and
@@ -218,10 +218,11 @@ and disabled `sign_event` handling. It also sends invalid dynamic metadata reque
 shared specs vectors plus serial-wrapped invalid signing-request vectors,
 including unknown top-level request fields, and expects deterministic
 `unsupported_request` rejections. It also exercises shared malformed serial
-transport vectors for checksum mismatch, malformed base64url payload, and
-overlong frame handling, expecting deterministic `malformed_frame` or
-`overlong_frame` errors, then sends a fresh valid capability request to prove
-the runtime drained the overlong line and recovered before the next request.
+transport vectors for checksum mismatch, malformed base64url payload,
+unsupported frame type, and overlong frame handling, expecting deterministic
+`malformed_frame` or `overlong_frame` errors, then sends a fresh valid
+capability request to prove the runtime drained the overlong line and recovered
+before the next request.
 The default smoke output summarizes expected rejections instead of printing raw
 protocol error frames; use
 `scripts/smoke_capabilities.py --verbose-frames` when raw frames are needed.

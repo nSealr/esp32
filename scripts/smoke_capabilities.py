@@ -43,6 +43,7 @@ INVALID_METADATA_VECTOR_NAMES = (
 MALFORMED_TRANSPORT_VECTOR_NAMES = (
     "serial-frame-checksum-mismatch",
     "serial-frame-malformed-payload",
+    "serial-frame-unsupported-type",
 )
 OVERLONG_TRANSPORT_VECTOR_NAMES = ("serial-frame-oversized",)
 UNSUPPORTED_REQUEST_ERROR = {"error": "unsupported_request"}

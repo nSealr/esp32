@@ -855,6 +855,16 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+            invalid_dir.joinpath("serial-frame-unsupported-type.json").write_text(
+                json.dumps(
+                    {
+                        "name": "serial-frame-unsupported-type",
+                        "category": "serial-frame",
+                        "frame": "nseal1f:command:payload:0000000000000000\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
             invalid_dir.joinpath("serial-frame-oversized.json").write_text(
                 json.dumps(
                     {
@@ -869,7 +879,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             malformed_exchanges = smoke_capabilities.load_malformed_transport_frame_exchanges(specs_dir)
             overlong_exchanges = smoke_capabilities.load_overlong_transport_frame_exchanges(specs_dir)
 
-        self.assertEqual(len(malformed_exchanges), 2)
+        self.assertEqual(len(malformed_exchanges), 3)
         self.assertEqual(len(overlong_exchanges), 1)
         for request_frame, error_frame in malformed_exchanges:
             self.assertTrue(request_frame.startswith("nseal1f:"))

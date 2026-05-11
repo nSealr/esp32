@@ -17,8 +17,8 @@ tests with strict C++ warnings.
 - Serial frame rejection tests for unsupported types, checksum mismatch, and
   invalid base64url payloads.
 - Shared invalid serial-frame vector tests for oversized frames, checksum
-  mismatch, and malformed payloads, plus a host-core assertion that
-  `kMaxSerialFrameBytes` matches the shared v0 limit profile.
+  mismatch, malformed payloads, and unsupported frame types, plus a host-core
+  assertion that `kMaxSerialFrameBytes` matches the shared v0 limit profile.
 - QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
   unpadded base64url rejection, invalid UTF-8 rejection, oversized decoded
   payload rejection, and non-JSON payload rejection.
@@ -208,11 +208,12 @@ tests with strict C++ warnings.
   vectors plus serial-wrapped invalid signing-request vectors, including
   unknown top-level request fields, expecting deterministic
   `unsupported_request` rejections. Shared malformed transport vectors for
-  checksum mismatch, malformed base64url payload, and overlong frame handling
-  must return deterministic `malformed_frame` or `overlong_frame` errors. The
-  smoke then sends a fresh valid capability request after the overlong frame to
-  prove the runtime drained the rejected line and recovered before processing
-  the next request. By default the smoke prints a clean summary; raw protocol
+  checksum mismatch, malformed base64url payload, unsupported frame type, and
+  overlong frame handling must return deterministic `malformed_frame` or
+  `overlong_frame` errors. The smoke then sends a fresh valid capability
+  request after the overlong frame to prove the runtime drained the rejected
+  line and recovered before processing the next request. By default the smoke
+  prints a clean summary; raw protocol
   frames are available with `scripts/smoke_capabilities.py --verbose-frames`.
   Failure messages include the failing exchange index so hardware logs can be
   tied back to the smoke sequence without guessing.

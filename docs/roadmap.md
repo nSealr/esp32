@@ -16,7 +16,8 @@
 - Local ESP-IDF `v5.5.4` build, flash, boot-log smoke test, and
   capability/public-key/signing-disabled protocol smoke test.
 - Shared v0 serial-frame byte limit and invalid serial-frame vector rejection
-  for oversized frames, checksum mismatch, and malformed payloads.
+  for unsupported frame types, oversized frames, checksum mismatch, and
+  malformed payloads.
 - Shared-spec `get_capabilities` response through host-core protocol handling.
 - Shared-spec `get_signing_status` response through host-core protocol
   handling, exposing `signing_enabled: false` and the remaining runtime
@@ -131,9 +132,9 @@ can begin.
 
 Status note, 2026-05-08: the host-core serial decoder now mirrors the shared v0
 `max_serial_frame_bytes` limit and rejects the shared invalid serial-frame
-vectors for oversized frames, checksum mismatch, and malformed base64url
-payloads. The ESP-IDF input loop uses the same limit before dispatching a frame
-to host-core.
+vectors for unsupported frame types, oversized frames, checksum mismatch, and
+malformed base64url payloads. The ESP-IDF input loop uses the same limit before
+dispatching a frame to host-core.
 
 Status note, 2026-05-09: the host-core serial decoder now accepts common
 `LF`/`CRLF`/`CR` line endings before checksum validation, matching the companion
@@ -351,9 +352,9 @@ physical-button acceptance as separate manual evidence.
 
 Status note, 2026-05-10: `make idf-smoke-capabilities` now also sends shared
 malformed serial transport vectors for checksum mismatch, malformed base64url
-payload, and overlong frames. The expected hardware responses are deterministic
-`malformed_frame` or `overlong_frame` errors, while real `sign_event` still
-returns `signing_disabled`.
+payload, unsupported frame type, and overlong frames. The expected hardware
+responses are deterministic `malformed_frame` or `overlong_frame` errors, while
+real `sign_event` still returns `signing_disabled`.
 
 Status note, 2026-05-10: the T-Display S3 runtime serial reader now uses a
 host-buildable input helper that emits one overlong-frame event and drains the

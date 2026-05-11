@@ -424,6 +424,7 @@ def main() -> int:
                 f"constexpr const char* kInvalidSerialFrameOversized = {cpp_string(invalid_by_name['serial-frame-oversized']['frame'])};",
                 f"constexpr const char* kInvalidSerialFrameChecksumMismatch = {cpp_string(invalid_by_name['serial-frame-checksum-mismatch']['frame'])};",
                 f"constexpr const char* kInvalidSerialFrameMalformedPayload = {cpp_string(invalid_by_name['serial-frame-malformed-payload']['frame'])};",
+                f"constexpr const char* kInvalidSerialFrameUnsupportedType = {cpp_string(invalid_by_name['serial-frame-unsupported-type']['frame'])};",
                 "",
                 *invalid_signing_request_factory(invalid_signing_requests),
                 "",

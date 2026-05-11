@@ -246,6 +246,9 @@ void test_serial_frame_rejects_shared_invalid_vectors() {
     expect_throw("serial frame payload", [] {
         (void)nostrseal::decode_serial_frame(nostrseal::test_vectors::kInvalidSerialFrameMalformedPayload);
     });
+    expect_throw("unsupported serial frame type", [] {
+        (void)nostrseal::decode_serial_frame(nostrseal::test_vectors::kInvalidSerialFrameUnsupportedType);
+    });
 }
 
 void test_qr_envelope_decodes_shared_vector() {
