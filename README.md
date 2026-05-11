@@ -24,6 +24,13 @@ test grant `grant-esp32-usb-kind-1-session`. The USB route does not clear any
 production signing gate yet; signing remains disabled until provisioning,
 storage, review, hardening, and signed-output verification are accepted.
 
+Feature targets and current status are tracked in `NostrSeal/specs`
+`vectors/features/signer-feature-matrix-v0.json`. ESP32 may implement both QR
+vault and USB/NIP-46 features, but each shared feature must keep the same
+behavior as other implementations by using the shared `contract_id`. The ESP32
+stateless QR vault is a parity target with the Raspberry QR vault; current
+hardware readiness can differ, final vault behavior must converge.
+
 ## Current Capabilities
 
 - Host-buildable C++ firmware core foundation.

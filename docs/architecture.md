@@ -58,6 +58,13 @@ runtime signing disabled until provisioning/storage, display review,
 physical controls, Unicode review rendering, secure boot, flash encryption,
 debug lock, and companion signed-output verification are accepted.
 
+Feature target and current status are tracked in `NostrSeal/specs`
+`vectors/features/signer-feature-matrix-v0.json`. ESP32-specific firmware can
+have board-specific drivers, but any shared feature such as request validation,
+trusted review, approval digest binding, QR transport, serial transport, or
+response verification must match the shared `contract_id` instead of becoming a
+board-local behavior.
+
 ## Implemented Host Core
 
 The first firmware foundation is host-buildable C++ under
