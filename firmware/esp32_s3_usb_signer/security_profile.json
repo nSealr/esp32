@@ -47,7 +47,8 @@
     "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
     "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
     "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json"
+    "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
+    "NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
   ],
   "unicode_review_rendering": {
     "status": "ascii_safe_codepoint_fallback_only",
@@ -57,7 +58,8 @@
       "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
       "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
       "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-      "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json"
+      "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
+      "NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
     ]
   },
   "companion_transport_evidence": [

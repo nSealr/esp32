@@ -172,6 +172,9 @@ tests with strict C++ warnings.
   `294a77e` built, flashed, and preserved capability/review-scenario protocol
   behavior after the host-core renderer change. It is not human visual
   acceptance and does not clear the production Unicode review blocker.
+- The control-escape scenario smoke report records that the default
+  non-interactive review-scenario smoke now includes `show-control-escapes` and
+  passes with 8 scenarios against the already flashed `294a77e` firmware image.
 - Firmware scaffold tests requiring T-Display S3 terminal review decisions to
   show closed non-signing status frames with `Not signed` and
   `Signing disabled` after approve/reject UI input.

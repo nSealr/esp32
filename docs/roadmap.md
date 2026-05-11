@@ -366,6 +366,13 @@ passed with 40 verified exchanges and review-scenario smoke passed with 7
 scenarios. This records protocol/rendering traceability only; it does not
 replace human trusted-display acceptance or enable signing.
 
+Status note, 2026-05-11: after adding the `show-control-escapes` manual review
+scenario to the default non-interactive smoke set, the already flashed
+`294a77e` firmware image passed `make IDF_PORT=/dev/cu.usbmodem1101
+idf-smoke-review-scenarios` with 8 scenarios, 9 verified exchanges, 8 response
+frames, and 1 expected rejection frame. The report is
+`NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json`.
+
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
 scroll-window, dense-tags, Unicode fallback, control-escape, and request-error
