@@ -658,7 +658,7 @@ void test_qr_display_review_pages_escape_non_ascii_for_display_safety() {
 }
 
 void test_qr_display_review_pages_preserve_supported_ascii_punctuation() {
-    const std::string content = "hello, nostr! #tag? @alice & key=value";
+    const std::string content = "hello, nostr! #tag? @alice & key=value `code` ^caret";
     const nostrseal::QrSigningRequest request{
         .version = 1,
         .request_id = "req-ascii-punctuation-display",
@@ -684,6 +684,8 @@ void test_qr_display_review_pages_preserve_supported_ascii_punctuation() {
     assert(content_text.find("U+002C") == std::string::npos);
     assert(content_text.find("U+0021") == std::string::npos);
     assert(content_text.find("U+003F") == std::string::npos);
+    assert(content_text.find("U+005E") == std::string::npos);
+    assert(content_text.find("U+0060") == std::string::npos);
     assert(tag_text.find("nseal/esp32-v0") != std::string::npos);
     assert(tag_text.find("a+b=c?") != std::string::npos);
 }
@@ -1694,6 +1696,14 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     };
 
     assert(t_display_s3_review_frame_color_for(comma_frame, 12, 47) == kTDisplayS3ColorWhite);
+
+    nostrseal::ReviewDisplayFrame ascii_frame;
+    ascii_frame.title = "ASCII";
+    ascii_frame.page_indicator = "Page 1/1";
+    ascii_frame.body_lines = {"^`"};
+    ascii_frame.action_hint = "Next";
+    assert(t_display_s3_review_frame_color_for(ascii_frame, 12, 44) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(ascii_frame, 28, 46) == kTDisplayS3ColorWhite);
 }
 
 void test_t_display_s3_button_logic_classifies_debounced_short_and_long_presses() {

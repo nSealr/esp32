@@ -55,7 +55,8 @@ board into a separate repository.
   `NostrSeal/specs` review-detail-page vectors. These pin complete
   Event/Content/Tags/Decision pages, scroll windows, compact line styles, long
   value continuations, and explicit `U+XXXX` fallback for unsupported display
-  glyphs without changing the `approval_digest` contract.
+  glyphs without changing the `approval_digest` contract. Supported printable
+  ASCII punctuation remains literal in review text.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
@@ -136,7 +137,8 @@ board into a separate repository.
   disabled.
 - Host-buildable T-Display S3 raster tests cover the same boot and review-frame
   pixel-color function used by the ESP-IDF ST7789/i80 draw path, including
-  border, boot pattern, title, page indicator, body, and footer samples.
+  border, boot pattern, title, page indicator, body, footer samples, and
+  representative printable ASCII punctuation glyphs.
 - T-Display S3 onboard button polling for manual review navigation after a live
   `sign_event` request. Short GPIO14 cycles the stable Event, Content, Tags,
   and Decision pages; short GPIO0 scrolls within Content or Tags when that

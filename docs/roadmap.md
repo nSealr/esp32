@@ -337,6 +337,11 @@ converts unsupported non-ASCII UTF-8 content and tag values into explicit
 `U+XXXX` fallback text before wrapping, avoiding silent `?` substitution while
 a complete Unicode font remains a later acceptance task.
 
+Status note, 2026-05-11: the printable ASCII review path now explicitly keeps
+backtick and caret literal in host-core display-safe text and in the T-Display
+S3 bitmap font. This tightens the current ASCII-safe subset without changing
+the `unicode_review_rendering` production blocker or enabling signing.
+
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
 scroll-window, dense-tags, Unicode fallback, and request-error review requests.

@@ -41,10 +41,11 @@ tests with strict C++ warnings.
   remains unchanged and signing stays disabled.
 - ESP32 display-review safety tests proving the live Event page shows raw kind,
   raw created_at, and signer author pubkey without inferred kind labels, and
-  that supported printable ASCII punctuation remains readable while non-ASCII
-  UTF-8 content/tag values are rendered as explicit fallback codepoints on the
-  current bitmap-font path. Parser tests also cover JSON `\uXXXX` escape
-  preservation, including surrogate pairs, for QR and serial review requests.
+  that supported printable ASCII punctuation, including backtick and caret,
+  remains readable while non-ASCII UTF-8 content/tag values are rendered as
+  explicit fallback codepoints on the current bitmap-font path. Parser tests
+  also cover JSON `\uXXXX` escape preservation, including surrogate pairs, for
+  QR and serial review requests.
 - Serial/USB `sign_event` trusted-review tests proving decoded request JSON
   produces the same shared review contract and `approval_digest` as QR, while
   physical review sessions can use compact full-review logical pages and the
@@ -95,7 +96,8 @@ tests with strict C++ warnings.
   pixel-color functions used by the ESP-IDF display driver keep stable samples
   for the white border, blue boot header, green/black boot checkerboard, review
   title text, page indicator, body text, footer background, and footer action
-  text, including lowercase body glyphs and common punctuation glyphs.
+  text, including lowercase body glyphs and representative printable ASCII
+  punctuation glyphs.
 - Firmware button-driver tests proving the T-Display S3 scaffold maps vendor
   documented GPIO0/GPIO14 physical controls to Scroll/Next short presses in
   logical sign-event reviews and Reject/Approve long presses, while keeping

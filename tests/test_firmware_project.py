@@ -111,6 +111,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
                 "NostrSeal/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
                 "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
                 "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
                 "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
                 "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
             ],
@@ -128,6 +129,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
                 "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
                 "NostrSeal/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
                 "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
+                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(
@@ -1019,6 +1021,10 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
 
 
 class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
+    def assert_no_duplicate_checklist_lines(self, checklist: str) -> None:
+        lines = [line for line in checklist.splitlines() if line.strip()]
+        self.assertEqual(len(lines), len(set(lines)))
+
     def test_manual_review_display_builds_dynamic_sign_event_exchange(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(
             scenario="show-review",
@@ -1143,6 +1149,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertNotIn("detail screen", checklist)
         self.assertNotIn("...", checklist)
         self.assertNotIn("Warnings", checklist)
+        self.assert_no_duplicate_checklist_lines(checklist)
 
     def test_manual_review_display_builds_dense_tags_scroll_scenario(self) -> None:
         exchanges = manual_review_display.build_manual_review_exchanges(

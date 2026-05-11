@@ -112,6 +112,8 @@ bool display_glyph_ascii(char ch) {
         case '[':
         case '\\':
         case ']':
+        case '^':
+        case '`':
         case '_':
         case '{':
         case '|':
