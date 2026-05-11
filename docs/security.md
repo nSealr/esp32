@@ -32,7 +32,8 @@ The current profile is `development_scaffold`:
   firmware revisions that build, flash, answer capability/status/public-key
   requests, reject invalid frames deterministically, and still return
   `signing_disabled` for valid `sign_event` requests; the current evidence now
-  includes the Unicode review signing-gate smoke
+  includes the Unicode review signing-gate smoke and signing-status gate
+  de-duplication smoke
 - physical approval controls: manual development acceptance passed on
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked

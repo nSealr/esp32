@@ -500,7 +500,10 @@ the production blockers intact. The field is diagnostic evidence for the
 development scaffold, not permission to connect a signing backend. The
 host-core signing policy now also normalizes duplicate development gate entries
 before `get_signing_status` serialization so firmware diagnostics remain
-compatible with the shared response contract.
+compatible with the shared response contract. Revision `311368a` was rebuilt
+with ESP-IDF `v5.5.4`, flashed to the attached T-Display S3 on
+`/dev/cu.usbmodem1101`, and passed the 39-exchange disabled-signing protocol
+smoke after that change.
 
 Hardware note, 2026-05-10: revision `8307c4b` was rebuilt with ESP-IDF
 `v5.5.4`, flashed on the attached LILYGO T-Display S3 at
