@@ -395,6 +395,11 @@ expected `signing_disabled` refusal on the attached T-Display S3, but the
 `companion_signed_output_verification` blocker remains uncleared until real
 signing output exists and is verified.
 
+Status note, 2026-05-11: `security_profile.json` now tracks the T-Display S3
+unsupported serial-frame type smoke report as firmware protocol evidence. The
+report covers deterministic `malformed_frame` behavior for a shared negative
+transport vector and keeps `sign_event` in `signing_disabled`.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
