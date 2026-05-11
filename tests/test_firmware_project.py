@@ -356,22 +356,23 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             {"approve", "reject"},
         )
 
-    def test_waveshare_esp32_s3_touch_lcd_3_5_board_profile_documents_qr_constraints(self) -> None:
+    def test_waveshare_esp32_s3_touch_lcd_3_5b_c_board_profile_documents_qr_constraints(self) -> None:
         profile_path = ROOT / "boards/waveshare_esp32_s3_touch_lcd_3_5.json"
 
-        self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-S3 Touch LCD 3.5 board profile")
+        self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-S3 Touch LCD 3.5B-C board profile")
         validate_firmware.validate_board_profile(profile_path)
 
         profile = json.loads(profile_path.read_text(encoding="utf-8"))
         self.assertEqual(profile["target"], "esp32s3")
         self.assertEqual(profile["status"], "secondary_qr_vault_candidate")
         self.assertEqual(profile["variant"], "case_with_ov5640_camera")
-        self.assertEqual(profile["accepted_skus"], ["ESP32-S3-Touch-LCD-3.5-C", "ESP32-S3-Touch-LCD-3.5B-C"])
+        self.assertEqual(profile["accepted_skus"], ["ESP32-S3-Touch-LCD-3.5B-C"])
         self.assertEqual(profile["camera"]["module"], "OV5640")
         self.assertTrue(profile["camera"]["required_for_qr"])
         self.assertEqual(profile["display"]["resolution"]["short_edge"], 320)
         self.assertEqual(profile["display"]["resolution"]["long_edge"], 480)
-        self.assertEqual(profile["display"]["driver_candidates"], ["ST7796", "AXS15231B"])
+        self.assertEqual(profile["display"]["driver"], "AXS15231B")
+        self.assertEqual(profile["display"]["connection"], "QSPI")
         self.assertFalse(profile["display"]["touch"]["approval_allowed"])
         self.assertIn("Wireless must be disabled", profile["wireless_policy"])
         self.assertEqual(

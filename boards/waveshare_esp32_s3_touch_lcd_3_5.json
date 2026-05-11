@@ -1,11 +1,10 @@
 {
-  "name": "Waveshare ESP32-S3 Touch LCD 3.5 Family",
+  "name": "Waveshare ESP32-S3 Touch LCD 3.5B-C",
   "target": "esp32s3",
   "native_usb": true,
   "status": "secondary_qr_vault_candidate",
   "variant": "case_with_ov5640_camera",
   "accepted_skus": [
-    "ESP32-S3-Touch-LCD-3.5-C",
     "ESP32-S3-Touch-LCD-3.5B-C"
   ],
   "source": "https://www.waveshare.com/esp32-s3-touch-lcd-3.5.htm",
@@ -18,19 +17,15 @@
   },
   "display": {
     "required_for_signing": true,
-    "driver": "variant_dependent",
-    "driver_candidates": [
-      "ST7796",
-      "AXS15231B"
-    ],
-    "connection": "SPI_or_QSPI_variant_dependent",
+    "driver": "AXS15231B",
+    "connection": "QSPI",
     "resolution": {
       "short_edge": 320,
       "long_edge": 480
     },
     "touch": {
-      "driver": "FT6336_or_AXS15231B_variant_dependent",
-      "connection": "I2C_or_variant_dependent",
+      "driver": "to_validate_on_3_5b_c",
+      "connection": "to_validate_on_3_5b_c",
       "approval_allowed": false,
       "notes": "Touch may be used for page navigation experiments, not final approve/reject signing consent."
     },
@@ -40,8 +35,8 @@
     "module": "OV5640",
     "required_for_qr": true,
     "connection": "integrated_camera_interface",
-    "pinout_status": "resolve 3.5-C versus 3.5B-C before driver work",
-    "notes": "Only case-plus-OV5640 variants are accepted for this target. Historical SeedSigner MicroPython prior art references a 3.5B display path."
+    "pinout_status": "3.5B-C selected; verify camera pinout on physical hardware before driver acceptance",
+    "notes": "Only the case-plus-OV5640 3.5B-C variant is accepted for this target. Historical SeedSigner MicroPython prior art references a 3.5B display path."
   },
   "approval_inputs": [
     {
@@ -61,6 +56,6 @@
   "reference_notes": [
     "Preferred secondary ESP32 stateless QR vault target after LILYGO T-Display S3 Pro.",
     "Do not treat historical seedsigner-micropython comments as current official SeedSigner support.",
-    "Exact display/touch drivers must be split into a concrete board profile once 3.5-C versus 3.5B-C hardware is selected."
+    "The confirmed implementation SKU is ESP32-S3-Touch-LCD-3.5B-C, with AXS15231B/QSPI display work pending."
   ]
 }

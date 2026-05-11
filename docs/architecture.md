@@ -13,7 +13,8 @@
   and physical controls, while production signing acceptance for those gates
   remains blocked.
 - ESP32 stateless QR vault target, with T-Display S3 Pro OV5640 as the primary
-  camera/display target.
+  camera/display target and Waveshare ESP32-S3 Touch LCD 3.5B-C as the
+  confirmed secondary case-plus-OV5640 target.
 - Classic ESP32/TTGO compatibility target under the USB/NIP-46 family.
 - ESP32-S3 plus TROPIC01 prototype only under the custom persistent-secret
   hardware-wallet research family.
