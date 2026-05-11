@@ -1331,6 +1331,29 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("U+00E8", checklist)
         self.assertIn("U+1F600", checklist)
 
+    def test_manual_review_display_builds_control_escape_review_scenario(self) -> None:
+        exchanges = manual_review_display.build_manual_review_exchanges(
+            scenario="show-control-escapes",
+            request_id="manual-control-escapes",
+        )
+        checklist = manual_review_display.build_manual_observation_checklist("show-control-escapes")
+
+        self.assertEqual(len(exchanges), 1)
+        request = decode_serial_frame_payload(exchanges[0][0])
+        response = decode_serial_frame_payload(exchanges[0][1])
+        event_template = request["params"]["event_template"]
+
+        self.assertEqual(request["method"], "sign_event")
+        self.assertEqual(request["request_id"], "manual-control-escapes")
+        self.assertEqual(response["request_id"], "manual-control-escapes")
+        self.assertEqual(response["error"]["code"], "signing_disabled")
+        self.assertIn("\n", event_template["content"])
+        self.assertIn("\t", event_template["content"])
+        self.assertIn(["t", "line\nbreak"], event_template["tags"])
+        self.assertIn("\\n", checklist)
+        self.assertIn("\\t", checklist)
+        self.assertIn("not as actual spacing", checklist)
+
     def test_review_detail_styles_do_not_keep_obsolete_label_style(self) -> None:
         header = (ROOT / "firmware/host_core/include/nostrseal/review_display.hpp").read_text()
         renderer = (ROOT / "firmware/host_core/src/review_display.cpp").read_text()
@@ -1345,23 +1368,31 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
 
     def test_review_scenario_smoke_builds_noninteractive_review_exchanges(self) -> None:
         exchanges = smoke_review_scenarios.build_review_smoke_exchanges(
-            scenarios=("show-tags", "show-dense-tags", "show-unicode-review", "show-request-error"),
+            scenarios=(
+                "show-tags",
+                "show-dense-tags",
+                "show-unicode-review",
+                "show-control-escapes",
+                "show-request-error",
+            ),
             request_id_prefix="unit-review",
         )
         decoded_requests = [decode_serial_frame_payload(request_frame) for request_frame, _ in exchanges]
         decoded_responses = [decode_serial_frame_payload(response_frame) for _, response_frame in exchanges]
 
-        self.assertEqual(len(exchanges), 5)
+        self.assertEqual(len(exchanges), 6)
         self.assertEqual(decoded_requests[0]["request_id"], "unit-review-show-tags")
         self.assertEqual(decoded_requests[1]["request_id"], "unit-review-show-dense-tags")
         self.assertEqual(decoded_requests[2]["request_id"], "unit-review-show-unicode-review")
-        self.assertEqual(decoded_requests[3]["request_id"], "unit-review-show-request-error")
-        self.assertEqual(decoded_requests[4]["request_id"], "unit-review-show-request-error-invalid")
+        self.assertEqual(decoded_requests[3]["request_id"], "unit-review-show-control-escapes")
+        self.assertEqual(decoded_requests[4]["request_id"], "unit-review-show-request-error")
+        self.assertEqual(decoded_requests[5]["request_id"], "unit-review-show-request-error-invalid")
         self.assertEqual(decoded_responses[0]["error"]["code"], "signing_disabled")
         self.assertEqual(decoded_responses[1]["error"]["code"], "signing_disabled")
         self.assertEqual(decoded_responses[2]["error"]["code"], "signing_disabled")
         self.assertEqual(decoded_responses[3]["error"]["code"], "signing_disabled")
-        self.assertEqual(decoded_responses[4]["error"], "unsupported_request")
+        self.assertEqual(decoded_responses[4]["error"]["code"], "signing_disabled")
+        self.assertEqual(decoded_responses[5]["error"], "unsupported_request")
 
     def test_review_scenario_smoke_summary_counts_protocol_outcomes(self) -> None:
         response_frame = smoke_capabilities.load_signing_disabled_frames()[1]

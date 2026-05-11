@@ -234,9 +234,9 @@ tests with strict C++ warnings.
 - Optional hardware review-scenario smoke test with
   `make idf-smoke-review-scenarios` after exporting ESP-IDF and flashing the
   current firmware. This non-interactive smoke sends the basic, tagged,
-  long-content, scroll-window, dense-tags, Unicode fallback, and request-error
-  review scenarios used by the manual display exerciser and verifies the
-  protocol still returns `signing_disabled` or deterministic
+  long-content, scroll-window, dense-tags, Unicode fallback, control-escape,
+  and request-error review scenarios used by the manual display exerciser and
+  verifies the protocol still returns `signing_disabled` or deterministic
   `unsupported_request` frames. It does not replace human visual inspection of
   the display.
 - Current-head T-Display S3 smoke evidence recorded for revision `8307c4b` on

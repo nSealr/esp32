@@ -225,6 +225,12 @@ To inspect the display-safe UTF-8 fallback path, send:
 python3 scripts/manual_review_display.py show-unicode-review --port /dev/cu.<device> --request-id manual-unicode
 ```
 
+To inspect decoded JSON control characters as visible review escapes, send:
+
+```sh
+python3 scripts/manual_review_display.py show-control-escapes --port /dev/cu.<device> --request-id manual-control-escapes
+```
+
 To exercise the request-error display state, send a valid review request
 followed by an invalid signing-request vector:
 
@@ -240,8 +246,8 @@ make IDF_PORT=/dev/cu.<device> idf-smoke-review-scenarios
 ```
 
 This verifies the serial responses for the same basic, tagged, long-content,
-scroll-window, dense-tags, Unicode fallback, and request-error review requests.
-It does not replace visual inspection of the physical display.
+scroll-window, dense-tags, Unicode fallback, control-escape, and request-error
+review requests. It does not replace visual inspection of the physical display.
 
 To exercise the physical-control acceptance path with a human observer, send a
 valid review request and follow the printed checklist:

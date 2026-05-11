@@ -21,9 +21,9 @@ The current profile is `development_scaffold`:
 - trusted review display: manual development acceptance passed on T-Display S3,
   but production claim remains blocked
 - display review protocol evidence: recorded separately for detail-page,
-  UTF-8 fallback, ASCII punctuation, dense-tags, and current-head smoke runs;
-  these reports support development traceability but do not replace production
-  trusted-display acceptance
+  UTF-8 fallback, ASCII punctuation, dense-tags, control-escape, and
+  current-head smoke runs; these reports support development traceability but
+  do not replace production trusted-display acceptance
 - Unicode review rendering: development uses explicit `U+XXXX` fallback for
   unsupported non-ASCII glyphs and visible JSON-style escapes for decoded
   control characters; production remains blocked until full Unicode review

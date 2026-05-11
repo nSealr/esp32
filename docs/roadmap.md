@@ -368,10 +368,10 @@ replace human trusted-display acceptance or enable signing.
 
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
-scroll-window, dense-tags, Unicode fallback, and request-error review requests.
-It reuses the manual review exerciser scenarios to verify serial response
-behavior on a flashed board while keeping visual display inspection and
-physical-button acceptance as separate manual evidence.
+scroll-window, dense-tags, Unicode fallback, control-escape, and request-error
+review requests. It reuses the manual review exerciser scenarios to verify
+serial response behavior on a flashed board while keeping visual display
+inspection and physical-button acceptance as separate manual evidence.
 
 Status note, 2026-05-10: `make idf-smoke-capabilities` now also sends shared
 malformed serial transport vectors for checksum mismatch, malformed base64url

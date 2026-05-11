@@ -22,6 +22,7 @@ DEFAULT_REVIEW_SMOKE_SCENARIOS = (
     "show-scroll-review",
     "show-dense-tags",
     "show-unicode-review",
+    "show-control-escapes",
     "show-request-error",
 )
 DEFAULT_REQUEST_ID_PREFIX = "review-smoke"

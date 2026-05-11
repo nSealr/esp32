@@ -30,6 +30,7 @@ MANUAL_REVIEW_SCENARIOS = (
     "show-scroll-review",
     "show-dense-tags",
     "show-unicode-review",
+    "show-control-escapes",
     "show-request-error",
     "button-approve",
     "button-reject",
@@ -201,6 +202,17 @@ def build_unicode_review_exchange(
     return _review_exchange_from_request(request, request_id, specs_dir)
 
 
+def build_control_escape_review_exchange(
+    request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-control-escapes",
+    specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
+) -> tuple[str, str]:
+    return _review_exchange_from_request(
+        _load_review_request(specs_dir, "vectors/review/kind-1-control-escapes.json"),
+        request_id,
+        specs_dir,
+    )
+
+
 def build_request_error_exchange(
     request_id: str = f"{DEFAULT_REVIEW_REQUEST_ID}-invalid",
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
@@ -232,6 +244,8 @@ def build_manual_review_exchanges(
         return [build_dense_tags_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-unicode-review":
         return [build_unicode_review_exchange(request_id=request_id, specs_dir=specs_dir)]
+    if scenario == "show-control-escapes":
+        return [build_control_escape_review_exchange(request_id=request_id, specs_dir=specs_dir)]
     if scenario == "show-request-error":
         return [
             review_exchange,
@@ -308,6 +322,17 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm tag values also show U+00E8 and U+1F600 where those codepoints appear.",
             "Press short KEY/GPIO14 to reach Decision / Page 4/4.",
         ]
+    elif scenario == "show-control-escapes":
+        lines = [
+            common[0],
+            "Confirm real signing remains disabled in the serial response.",
+            "Press short KEY/GPIO14 once to reach Content / Page 2/4.",
+            "Confirm decoded control characters are shown as visible \\n, \\t, \\r, \\b, and \\f text, not as actual spacing.",
+            "Press short KEY/GPIO14 to reach Tags / Page 3/4.",
+            "Confirm tag values show line\\nbreak, tab\\tvalue, and carriage\\rreturn literally.",
+            "Confirm no control character is shown as U+000A or U+0009 fallback text.",
+            "Press short KEY/GPIO14 to reach Decision / Page 4/4.",
+        ]
     elif scenario == "show-request-error":
         lines = [
             *common,
@@ -376,6 +401,7 @@ def main() -> int:
             "show-scroll-review shows content and tags with scroll windows; "
             "show-dense-tags stresses multi-window structured tag review; "
             "show-unicode-review shows display-safe UTF-8 fallback codepoints; "
+            "show-control-escapes shows visible JSON-style control escapes; "
             "show-request-error first shows that review and then sends an invalid request; "
             "button-approve and button-reject print physical-control acceptance steps"
         ),
