@@ -40,6 +40,11 @@ The current profile is `development_scaffold`:
 - physical approval controls: manual development acceptance passed on
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked
+- identity/policy descriptors: `esp32_usb_nip46`,
+  `policy-scoped-automation-daily-use`, and
+  `grant-esp32-usb-kind-1-session` are shared conformance contracts only;
+  they do not enable persistent grants or signatures on this development
+  scaffold
 
 This is intentional for development. It is not a production custody profile and
 must not be used to claim a finished hardware wallet.

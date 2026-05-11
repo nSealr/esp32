@@ -58,6 +58,11 @@ tests with strict C++ warnings.
   physical controls, approval-digest binding, Unicode review rendering
   acceptance, key provisioning, secure boot, flash encryption, debug lock, and
   companion signed-output verification.
+- Identity/policy route-split tests proving shared descriptors keep
+  `esp32_qr_vault` stateless/manual-only with `persistent_grants: false`, while
+  `esp32_usb_nip46`, `policy-scoped-automation-daily-use`, and
+  `grant-esp32-usb-kind-1-session` remain future persistent-route contracts
+  that do not enable signing.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, trusted display, physical controls,
@@ -151,7 +156,7 @@ tests with strict C++ warnings.
 - Review display-frame tests requiring deterministic title, page indicator,
   body lines, action hints, body-line wrapping/truncation, UTF-8 codepoint
   boundary preservation during wrapping, and rejection of unsafe display bounds.
-- Trusted review-session tests requiring display navigation, legacy backward
+- Trusted review-session tests requiring display navigation, generic backward
   review for generic pages, logical top-level/scroll navigation for sign-event
   display pages, final-page approval, request/digest-bound `can_sign`, and
   rejection as a terminal non-signing decision. These tests consume generated

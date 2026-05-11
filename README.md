@@ -16,6 +16,14 @@ board into a separate repository.
 - Future ESP32-S3 plus TROPIC01 prototype only under the custom
   persistent-secret hardware-wallet research family.
 
+The shared identity/policy route split is explicit: `esp32_qr_vault` remains a
+stateless, manual-only QR route with `persistent_grants: false`, while
+`esp32_usb_nip46` is the future persistent daily-use route described by
+`nseal-account-descriptor-v0`, `policy-scoped-automation-daily-use`, and the
+test grant `grant-esp32-usb-kind-1-session`. The USB route does not clear any
+production signing gate yet; signing remains disabled until provisioning,
+storage, review, hardening, and signed-output verification are accepted.
+
 ## Current Capabilities
 
 - Host-buildable C++ firmware core foundation.
@@ -98,6 +106,10 @@ board into a separate repository.
   binding, Unicode review rendering acceptance, key provisioning, secure boot,
   flash encryption, debug lock, companion verification, and an explicit runtime
   feature flag are all present.
+- Shared identity/policy descriptors are tracked without enabling signing:
+  `esp32_usb_nip46` is a persistent-slot route for future scoped automation,
+  and `esp32_qr_vault` remains manual-only/stateless with
+  `persistent_grants: false` and no TROPIC01 dependency.
 - Machine-readable ESP32-S3 USB signer security profile that records the
   current development-only hardening state and production blockers before any
   persistent-secret or real-signing path can be claimed.

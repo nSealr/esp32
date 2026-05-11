@@ -1,0 +1,31 @@
+{
+  "format": "nseal-policy-profile-v0",
+  "policy_id": "policy-scoped-automation-daily-use",
+  "label": "Scoped automation for daily-use persistent signers",
+  "route_types": ["esp32_usb_nip46", "smartcard", "custom_hardware_wallet", "external_nip46"],
+  "mode": "scoped_automation",
+  "grants_allowed": true,
+  "manual_review_required": [
+    "connect",
+    "nip04_decrypt",
+    "nip44_decrypt",
+    "switch_relays",
+    "delete_event",
+    "unknown_method"
+  ],
+  "forbidden_permissions": ["wildcard", "export_secret", "decrypt_without_review"],
+  "grant_constraints": {
+    "expiry_required": true,
+    "rate_limit_required": true,
+    "revocation_required": true,
+    "audit_log_required": true,
+    "device_confirmation_required": true
+  },
+  "risk_tiers": {
+    "kind:1": "low_scoped",
+    "profile": "manual",
+    "delete": "manual",
+    "decrypt": "manual",
+    "unknown": "manual"
+  }
+}

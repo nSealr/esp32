@@ -527,6 +527,13 @@ scenarios. A lab companion serial smoke then generated a `sign_event` request
 from the shared basic kind `1` fixture and verified the request-matched
 `signing_disabled` response. Production signing remains disabled.
 
+Status note, 2026-05-11: the ESP32 route split now references the shared
+identity/policy descriptors. `esp32_qr_vault` remains a stateless manual-only
+QR route with `persistent_grants: false`, while `esp32_usb_nip46` is the future
+persistent-slot route for `policy-scoped-automation-daily-use` and
+`grant-esp32-usb-kind-1-session`. These are conformance inputs only; signing
+remains disabled until the M8 production gates pass.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

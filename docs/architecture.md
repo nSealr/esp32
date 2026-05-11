@@ -36,6 +36,27 @@ and signing vectors while implementing camera/display/button handling with
 ESP32 firmware components. It must not add persistent-secret storage or
 TROPIC01 dependencies.
 
+## Identity And Policy Boundary
+
+The shared identity contracts intentionally split the ESP32 family into two
+route types:
+
+- `esp32_qr_vault`: stateless QR route, transport `qr`, custody
+  `stateless_session`, manual-only policy support, no persistent key-at-rest
+  design, no policy automation, no TROPIC01 dependency, and
+  `persistent_grants: false`.
+- `esp32_usb_nip46`: future persistent daily-use route, transport `usb`,
+  custody `device_persistent`, trusted review `device_display`, and
+  `policy-scoped-automation-daily-use`.
+
+The current `nseal-account-descriptor-v0` USB vector
+`esp32-usb-device-slot-0` and grant vector `grant-esp32-usb-kind-1-session`
+are conformance contracts only. They do not authorize persistent grants on the
+current firmware and do not enable real signing. The firmware must still keep
+runtime signing disabled until provisioning/storage, display review,
+physical controls, Unicode review rendering, secure boot, flash encryption,
+debug lock, and companion signed-output verification are accepted.
+
 ## Implemented Host Core
 
 The first firmware foundation is host-buildable C++ under

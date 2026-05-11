@@ -1,0 +1,24 @@
+{
+  "format": "nseal-grant-descriptor-v0",
+  "grant_id": "grant-esp32-usb-kind-1-session",
+  "account_id": "acct-esp32-usb-slot-0",
+  "route_type": "esp32_usb_nip46",
+  "client": {
+    "pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "label": "local companion test client"
+  },
+  "permission": {
+    "method": "sign_event",
+    "parameter": "1",
+    "event_kind": 1
+  },
+  "decision": "allow_until_expiry",
+  "expires_at": 1710003600,
+  "rate_limit": {
+    "max_uses": 5,
+    "window_seconds": 60
+  },
+  "requires_device_policy_confirmation": true,
+  "revocable": true,
+  "audit_event_format": "nseal-grant-audit-event-v0"
+}
