@@ -88,6 +88,9 @@ tests with strict C++ warnings.
   read-only `espefuse.py summary` command and converts development-board fuse
   state into explicit secure boot, flash encryption, download-mode, and
   debug-lock blockers.
+- Security-profile validation requiring security eFuse audit evidence to remain
+  separate from firmware protocol evidence, display evidence, and companion
+  transport evidence.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.

@@ -558,4 +558,5 @@ read-only M9 audit path for attached ESP32-S3 boards. It runs `espefuse.py
 summary`, parses secure boot, flash-encryption, download-mode, and debug-lock
 fuses into JSON blockers, and intentionally performs no eFuse burn or setup
 change. This measures the production hardening gap only; it does not clear any
-signing blocker.
+signing blocker. `security_profile.json` tracks those reports separately as
+`security_fuse_audit_evidence`.

@@ -124,7 +124,8 @@ board into a separate repository.
   `make idf-audit-security-fuses`. The audit reports secure boot, flash
   encryption, download-mode, and debug-lock fuse state without burning or
   modifying eFuses; it measures the M9 hardening gap and does not clear any
-  production signing blocker.
+  production signing blocker. The security profile tracks these reports in a
+  separate `security_fuse_audit_evidence` field.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens and display adapters a deterministic
   rendering oracle.

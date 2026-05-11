@@ -172,6 +172,10 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             ],
         )
         self.assertEqual(
+            profile["security_fuse_audit_evidence"],
+            ["NostrSeal/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"],
+        )
+        self.assertEqual(
             profile["physical_approval_controls"]["status"],
             "manual_development_acceptance_passed",
         )
@@ -252,6 +256,15 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             profile_path.write_text(json.dumps(missing_firmware_protocol_evidence), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "firmware_protocol_evidence"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_security_fuse_audit_evidence = dict(profile)
+            missing_security_fuse_audit_evidence.pop("security_fuse_audit_evidence", None)
+            profile_path.write_text(json.dumps(missing_security_fuse_audit_evidence), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "security_fuse_audit_evidence"):
                 validate_firmware.validate_security_profile(profile_path)
 
         with TemporaryDirectory() as tmp:

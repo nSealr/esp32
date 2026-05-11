@@ -274,6 +274,9 @@ machine-readable posture and an attached ESP32-S3 board. It runs only
 boot, flash-encryption, download-mode, and debug-lock fuses, and emits JSON
 blockers. It deliberately does not burn eFuses or modify the board, because M9
 production hardening needs a separate irreversible provisioning procedure.
+Security-fuse reports are linked from the profile through
+`security_fuse_audit_evidence` instead of being mixed with firmware protocol or
+display-review evidence.
 
 ## ESP-IDF Scaffold
 

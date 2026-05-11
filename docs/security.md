@@ -13,7 +13,8 @@ The current profile is `development_scaffold`:
 - flash encryption: disabled
 - USB/JTAG debug access: unlocked for bring-up
 - security eFuse audit: read-only `espefuse.py summary` reporting is available
-  through `make idf-audit-security-fuses`
+  through `make idf-audit-security-fuses` and tracked separately as
+  `security_fuse_audit_evidence`
 - key provisioning: not implemented
 - persistent secret storage: not implemented
 - companion signed-output verification gate: not ready
