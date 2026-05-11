@@ -13,7 +13,7 @@
 - LILYGO T-Display S3 Pro OV5640 board profile for the future ESP32-S3 QR
   vault target.
 - Waveshare ESP32-S3 Touch LCD 3.5 family board profile for the preferred
-  secondary ESP32-S3 QR vault target, with exact SKU still pending.
+  secondary ESP32-S3 QR vault target, restricted to case-plus-OV5640 variants.
 - Physical ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, boot-log smoke test, and
   capability/public-key/signing-disabled protocol smoke test.
@@ -531,10 +531,11 @@ from the shared basic kind `1` fixture and verified the request-matched
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
   camera is the primary board-profile candidate. Waveshare ESP32-S3 Touch LCD
-  3.5 is the preferred secondary board family, with exact `3.5`, `3.5B`, or
-  `3.5-C` SKU selection still pending. Jade is tracked only as custom-firmware
-  feasibility research; do not target production Jade hardware until a safe
-  flashing and recovery path is proven.
+  3.5 is the preferred secondary board family, restricted to case-plus-OV5640
+  variants (`ESP32-S3-Touch-LCD-3.5-C` or `ESP32-S3-Touch-LCD-3.5B-C`). The
+  remaining selection is driver-specific: ST7796/SPI versus AXS15231B/QSPI.
+  Jade is tracked only as custom-firmware feasibility research; do not target
+  production Jade hardware until a safe flashing and recovery path is proven.
 - QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
   Status: host-core `nseal1:` envelope decoding, `nseal1a:` animated frame
   reconstruction, top-level `sign_event` metadata parsing, and raw

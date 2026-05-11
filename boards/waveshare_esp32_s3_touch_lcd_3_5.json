@@ -3,7 +3,11 @@
   "target": "esp32s3",
   "native_usb": true,
   "status": "secondary_qr_vault_candidate",
-  "variant": "3.5_family_exact_sku_pending",
+  "variant": "case_with_ov5640_camera",
+  "accepted_skus": [
+    "ESP32-S3-Touch-LCD-3.5-C",
+    "ESP32-S3-Touch-LCD-3.5B-C"
+  ],
   "source": "https://www.waveshare.com/esp32-s3-touch-lcd-3.5.htm",
   "firmware_targets": [
     "esp32_s3_qr_vault"
@@ -14,14 +18,18 @@
   },
   "display": {
     "required_for_signing": true,
-    "driver": "ST7796_or_AXS15231B_variant_dependent",
+    "driver": "variant_dependent",
+    "driver_candidates": [
+      "ST7796",
+      "AXS15231B"
+    ],
     "connection": "SPI_or_QSPI_variant_dependent",
     "resolution": {
       "short_edge": 320,
       "long_edge": 480
     },
     "touch": {
-      "driver": "FT6336_or_variant_dependent",
+      "driver": "FT6336_or_AXS15231B_variant_dependent",
       "connection": "I2C_or_variant_dependent",
       "approval_allowed": false,
       "notes": "Touch may be used for page navigation experiments, not final approve/reject signing consent."
@@ -29,11 +37,11 @@
     "notes": "The 3.5 inch 320x480 display is the reason this board family is preferred as the secondary ESP32 QR vault target for local Nostr event review."
   },
   "camera": {
-    "module": "OV5640_or_OV2640_variant_dependent",
+    "module": "OV5640",
     "required_for_qr": true,
     "connection": "integrated_camera_interface",
-    "pinout_status": "resolve exact 3.5, 3.5B, or 3.5-C SKU before driver work",
-    "notes": "The 3.5-C variant advertises bundled OV5640 camera and case; historical SeedSigner MicroPython prior art references a 3.5B display path."
+    "pinout_status": "resolve 3.5-C versus 3.5B-C before driver work",
+    "notes": "Only case-plus-OV5640 variants are accepted for this target. Historical SeedSigner MicroPython prior art references a 3.5B display path."
   },
   "approval_inputs": [
     {
@@ -49,10 +57,10 @@
   ],
   "wireless_policy": "Wireless must be disabled or excluded in high-assurance QR vault builds; no Wi-Fi or BLE path may participate in signing approval.",
   "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
-  "production_signing": "disabled until exact SKU, camera, display, physical controls, storage, provisioning, and signing tests pass",
+  "production_signing": "disabled until exact case-plus-OV5640 SKU, camera, display, physical controls, storage, provisioning, and signing tests pass",
   "reference_notes": [
     "Preferred secondary ESP32 stateless QR vault target after LILYGO T-Display S3 Pro.",
     "Do not treat historical seedsigner-micropython comments as current official SeedSigner support.",
-    "Exact display/touch/camera drivers must be split into a concrete board profile once hardware is selected."
+    "Exact display/touch drivers must be split into a concrete board profile once 3.5-C versus 3.5B-C hardware is selected."
   ]
 }
