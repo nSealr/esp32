@@ -1,7 +1,7 @@
 IDF_PROJECT := firmware/esp32_s3_usb_signer
 IDF_PORT ?= /dev/cu.usbmodem1101
 
-.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios
+.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses
 
 setup:
 	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
@@ -55,6 +55,9 @@ idf-smoke-capabilities: idf-env-check
 
 idf-smoke-review-scenarios: idf-env-check
 	python scripts/smoke_review_scenarios.py --port $(IDF_PORT)
+
+idf-audit-security-fuses: idf-env-check
+	python scripts/audit_security_fuses.py --port $(IDF_PORT)
 
 test:
 	python3 scripts/verify_repo.py

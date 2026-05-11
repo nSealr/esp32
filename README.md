@@ -120,6 +120,11 @@ board into a separate repository.
   rendering gate, normalizes duplicate signing-status development gates, and
   refuses valid `sign_event` requests with `signing_disabled`; they do not
   clear real-signing blockers.
+- Read-only ESP32-S3 security eFuse audit support through
+  `make idf-audit-security-fuses`. The audit reports secure boot, flash
+  encryption, download-mode, and debug-lock fuse state without burning or
+  modifying eFuses; it measures the M9 hardening gap and does not clear any
+  production signing blocker.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens and display adapters a deterministic
   rendering oracle.
@@ -203,6 +208,7 @@ Physical board detection can be checked with:
 ```sh
 make detect-board
 make idf-smoke-capabilities
+make idf-audit-security-fuses
 ```
 
 The hardware smoke sends the shared fixture requests and additional dynamic
@@ -219,6 +225,9 @@ The default smoke output summarizes expected rejections instead of printing raw
 protocol error frames; use
 `scripts/smoke_capabilities.py --verbose-frames` when raw frames are needed.
 Real signing is still expected to return `signing_disabled`.
+The security-fuse audit is read-only. It calls `espefuse.py summary` and prints
+JSON describing current secure boot, flash encryption, download-mode, and
+debug-lock state.
 
 For manual T-Display S3 display inspection after flashing, use:
 

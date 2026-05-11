@@ -12,6 +12,8 @@ The current profile is `development_scaffold`:
 - secure boot: disabled
 - flash encryption: disabled
 - USB/JTAG debug access: unlocked for bring-up
+- security eFuse audit: read-only `espefuse.py summary` reporting is available
+  through `make idf-audit-security-fuses`
 - key provisioning: not implemented
 - persistent secret storage: not implemented
 - companion signed-output verification gate: not ready
@@ -40,6 +42,11 @@ The current profile is `development_scaffold`:
 
 This is intentional for development. It is not a production custody profile and
 must not be used to claim a finished hardware wallet.
+
+The eFuse audit target is intentionally observational. It does not burn keys,
+enable secure boot, enable flash encryption, disable download mode, or lock
+debug access. It reports whether those irreversible production-hardening steps
+are still blockers.
 
 Before any real signing path can be enabled, the production profile must prove:
 

@@ -256,3 +256,17 @@ do not persist keys, and still expect the serial protocol to return
 `signing_disabled` for valid `sign_event` requests. Terminal request-error,
 approve, and reject screens should also show `Send new request` as the final
 prompt after `Signing disabled`.
+
+## Security Fuse Audit
+
+After exporting ESP-IDF, inspect the attached board's current security eFuse
+state without modifying it:
+
+```sh
+make IDF_PORT=/dev/cu.<device> idf-audit-security-fuses
+```
+
+This target runs only `espefuse.py --chip esp32s3 --port <port> summary` and
+prints JSON for secure boot, flash encryption, download-mode, and debug-lock
+state. It is an M9 gap measurement tool, not a provisioning command. It must
+not be treated as production hardening and does not enable signing.

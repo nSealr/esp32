@@ -84,6 +84,10 @@ tests with strict C++ warnings.
   Unicode review rendering gate, keeps signing-status gate lists
   duplicate-free, and refuses valid `sign_event` requests with
   `signing_disabled`.
+- Security eFuse audit parser tests proving the M9 audit target uses only the
+  read-only `espefuse.py summary` command and converts development-board fuse
+  state into explicit secure boot, flash encryption, download-mode, and
+  debug-lock blockers.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.

@@ -552,3 +552,10 @@ display, GPIO, and review acceptance gates are complete.
 - Flash encryption.
 - Firmware update policy.
 - Debug lock policy.
+
+Status note, 2026-05-11: `make idf-audit-security-fuses` now provides a
+read-only M9 audit path for attached ESP32-S3 boards. It runs `espefuse.py
+summary`, parses secure boot, flash-encryption, download-mode, and debug-lock
+fuses into JSON blockers, and intentionally performs no eFuse burn or setup
+change. This measures the production hardening gap only; it does not clear any
+signing blocker.

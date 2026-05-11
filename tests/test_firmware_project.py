@@ -52,7 +52,46 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("idf-monitor:", makefile)
         self.assertIn("idf-smoke-capabilities:", makefile)
         self.assertIn("idf-smoke-review-scenarios:", makefile)
+        self.assertIn("idf-audit-security-fuses:", makefile)
         self.assertIn("idf-env-check:", makefile)
+
+    def test_security_fuse_audit_parses_development_board_state(self) -> None:
+        from scripts import audit_security_fuses
+
+        sample_summary = """
+SECURE_BOOT_EN (BLOCK0)                            Set this bit to enable secure boot                 = False R/W (0b0)
+SPI_BOOT_CRYPT_CNT (BLOCK0)                        Enables flash encryption when 1 or 3 bits are set  = Disable R/W (0b000)
+DIS_PAD_JTAG (BLOCK0)                              Set this bit to disable JTAG in the hard way. JTAG = False R/W (0b0)
+DIS_USB_JTAG (BLOCK0)                              Set this bit to disable function of usb switch to  = False R/W (0b0)
+DIS_USB_SERIAL_JTAG (BLOCK0)                       Set this bit to disable usb device                 = False R/W (0b0)
+DIS_DOWNLOAD_MODE (BLOCK0)                         Set this bit to disable download mode              = False R/W (0b0)
+DIS_DOWNLOAD_MANUAL_ENCRYPT (BLOCK0)               Set this bit to disable flash encryption when in d = False R/W (0b0)
+ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure UART download mode   = False R/W (0b0)
+"""
+
+        audit = audit_security_fuses.parse_espefuse_summary(sample_summary, port="/dev/cu.usbmodem1101")
+
+        self.assertEqual(audit["schema"], "nseal-esp32-security-fuse-audit-v0")
+        self.assertEqual(audit["target"], "esp32s3")
+        self.assertEqual(audit["port"], "/dev/cu.usbmodem1101")
+        self.assertFalse(audit["secure_boot_enabled"])
+        self.assertFalse(audit["flash_encryption_enabled"])
+        self.assertFalse(audit["download_mode_disabled"])
+        self.assertFalse(audit["manual_flash_encryption_download_disabled"])
+        self.assertFalse(audit["debug_access_locked"])
+        self.assertTrue(audit["development_usb_jtag_available"])
+        self.assertIn("secure_boot", audit["production_blockers"])
+        self.assertIn("flash_encryption", audit["production_blockers"])
+        self.assertIn("debug_lock", audit["production_blockers"])
+
+    def test_security_fuse_audit_uses_read_only_espefuse_summary(self) -> None:
+        from scripts import audit_security_fuses
+
+        command = audit_security_fuses.build_espefuse_summary_command("/dev/cu.usbmodem1101")
+
+        self.assertEqual(command, ["espefuse.py", "--chip", "esp32s3", "--port", "/dev/cu.usbmodem1101", "summary"])
+        self.assertNotIn("burn_efuse", command)
+        self.assertNotIn("burn_key", command)
 
     def test_esp32_s3_usb_signer_builds_host_core_protocol(self) -> None:
         cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(encoding="utf-8")

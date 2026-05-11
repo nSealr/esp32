@@ -268,6 +268,13 @@ bitmap-font path is `ascii_safe_codepoint_fallback_only`, so unsupported
 non-ASCII glyphs are shown as explicit `U+XXXX` codepoints. That is acceptable
 development traceability, not full production Unicode review acceptance.
 
+`scripts/audit_security_fuses.py` is the read-only bridge between that
+machine-readable posture and an attached ESP32-S3 board. It runs only
+`espefuse.py --chip esp32s3 --port <port> summary`, parses the relevant secure
+boot, flash-encryption, download-mode, and debug-lock fuses, and emits JSON
+blockers. It deliberately does not burn eFuses or modify the board, because M9
+production hardening needs a separate irreversible provisioning procedure.
+
 ## ESP-IDF Scaffold
 
 `firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the
