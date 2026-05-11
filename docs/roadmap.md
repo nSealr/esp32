@@ -351,7 +351,8 @@ raw created_at, and the signer author pubkey instead of inferred kind labels.
 The display path renders supported printable ASCII punctuation directly and
 converts unsupported non-ASCII UTF-8 content and tag values into explicit
 `U+XXXX` fallback text before wrapping, avoiding silent `?` substitution while
-a complete Unicode font remains a later acceptance task.
+a complete Unicode font remains a later acceptance task. Decoded control
+characters now render as visible JSON-style escapes instead of display spacing.
 
 Status note, 2026-05-11: the printable ASCII review path now explicitly keeps
 backtick and caret literal in host-core display-safe text and in the T-Display
@@ -400,8 +401,9 @@ Status note, 2026-05-11: `security_profile.json` now also tracks Unicode review
 rendering as `ascii_safe_codepoint_fallback_only` with
 `unicode_review_rendering` kept in the production blocker list. The current
 T-Display S3 bitmap-font path renders unsupported non-ASCII glyphs as explicit
-`U+XXXX` codepoints, which is safer than silent substitution but is not a full
-Unicode review acceptance claim.
+`U+XXXX` codepoints and decoded control characters as visible JSON-style
+escapes, which is safer than silent substitution or invisible spacing but is
+not a full Unicode review acceptance claim.
 
 Status note, 2026-05-11: `security_profile.json` now also separates companion
 transport evidence from companion signed-output verification. The direct

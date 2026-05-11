@@ -151,7 +151,17 @@ std::string display_safe_text(std::string_view text) {
         if (!decode_next_utf8_codepoint(text, offset, codepoint)) {
             codepoint = kReplacementCodepoint;
         }
-        if (codepoint <= 0x7fU && display_glyph_ascii(static_cast<char>(codepoint))) {
+        if (codepoint == '\n') {
+            out += "\\n";
+        } else if (codepoint == '\t') {
+            out += "\\t";
+        } else if (codepoint == '\r') {
+            out += "\\r";
+        } else if (codepoint == '\b') {
+            out += "\\b";
+        } else if (codepoint == '\f') {
+            out += "\\f";
+        } else if (codepoint <= 0x7fU && display_glyph_ascii(static_cast<char>(codepoint))) {
             out.push_back(static_cast<char>(codepoint));
         } else {
             append_codepoint_escape(out, codepoint);

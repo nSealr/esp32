@@ -46,6 +46,9 @@ The ESP32 trusted-review display must let the user inspect the complete event be
   Unsupported UTF-8 codepoints are rendered explicitly as `U+XXXX`/`U+XXXXX`
   fallback text instead of being silently replaced by `?`. This is a safety
   fallback, not a claim of complete Unicode glyph rendering.
+- Decoded JSON control characters in event strings render as visible
+  JSON-style escapes such as `\n` and `\t`, not as actual spacing on the
+  trusted display.
 - QR and serial JSON parsers preserve `\uXXXX` escapes, including surrogate
   pairs, before review display fallback is applied.
 

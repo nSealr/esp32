@@ -1,0 +1,86 @@
+{
+  "name": "kind-1-control-escapes-t-display-s3",
+  "format": "review-detail-pages-v0",
+  "display_profile": "ascii-safe-codepoint-fallback-v0",
+  "source_review_vector": "kind-1-control-escapes",
+  "approval_digest": "cda9c032d45f37c28c70f78541849a7dec1ec488000b8058e9d46d34f588e347",
+  "limits": {
+    "max_title_chars": 18,
+    "max_body_lines": 5,
+    "max_line_chars": 26,
+    "max_compact_body_lines": 9,
+    "max_compact_line_chars": 48
+  },
+  "pages": [
+    {
+      "title": "Event",
+      "lines": [
+        "Kind 1",
+        "Created 1710000480",
+        "Author",
+        "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859a",
+        "  b0f0b704075871aa"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/4",
+      "body_line_styles": [
+        "meta",
+        "meta",
+        "meta",
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Event"
+    },
+    {
+      "title": "Content",
+      "lines": [
+        "bytes: 48",
+        "line 1\\nline 2\\tTabbed\\rCarriage\\bBackspace\\fFor",
+        "mfeed"
+      ],
+      "action": "next",
+      "page_indicator": "Page 2/4",
+      "body_line_styles": [
+        "meta",
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Content"
+    },
+    {
+      "title": "Tags",
+      "lines": [
+        "Tag 1/2",
+        "t",
+        "line\\nbreak",
+        "Tag 2/2",
+        "subject",
+        "tab\\tvalue",
+        "carriage\\rreturn"
+      ],
+      "action": "next",
+      "page_indicator": "Page 3/4",
+      "body_line_styles": [
+        "meta",
+        "value",
+        "value",
+        "meta",
+        "value",
+        "value",
+        "value"
+      ],
+      "logical_page_id": "Tags"
+    },
+    {
+      "title": "Decision",
+      "lines": [
+        "Approve signing only if all pages match."
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 4/4",
+      "body_line_styles": [],
+      "logical_page_id": "Decision"
+    }
+  ]
+}

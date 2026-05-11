@@ -25,8 +25,9 @@ The current profile is `development_scaffold`:
   these reports support development traceability but do not replace production
   trusted-display acceptance
 - Unicode review rendering: development uses explicit `U+XXXX` fallback for
-  unsupported non-ASCII glyphs; production remains blocked until full Unicode
-  review acceptance or a reviewed equivalent policy exists
+  unsupported non-ASCII glyphs and visible JSON-style escapes for decoded
+  control characters; production remains blocked until full Unicode review
+  acceptance or a reviewed equivalent policy exists
 - companion transport evidence: recorded separately for direct serial-line
   capability and `signing_disabled` smokes; these reports prove request-bound
   host/device exchange only and do not replace companion signed-output

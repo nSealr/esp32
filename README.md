@@ -62,9 +62,10 @@ storage, review, hardening, and signed-output verification are accepted.
 - T-Display S3 sized QR review detail pages checked against shared
   `NostrSeal/specs` review-detail-page vectors. These pin complete
   Event/Content/Tags/Decision pages, scroll windows, compact line styles, long
-  value continuations, and explicit `U+XXXX` fallback for unsupported display
-  glyphs without changing the `approval_digest` contract. Supported printable
-  ASCII punctuation remains literal in review text.
+  value continuations, visible JSON-style escapes for decoded control
+  characters, and explicit `U+XXXX` fallback for unsupported display glyphs
+  without changing the `approval_digest` contract. Supported printable ASCII
+  punctuation remains literal in review text.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
@@ -120,7 +121,8 @@ storage, review, hardening, and signed-output verification are accepted.
   replace production trusted-display acceptance.
 - Unicode review rendering is tracked as its own blocker: the development
   display path uses explicit `U+XXXX` fallback for unsupported non-ASCII glyphs,
-  and this does not count as full production Unicode review acceptance.
+  renders decoded control characters as visible JSON-style escapes, and this
+  does not count as full production Unicode review acceptance.
 - Companion transport evidence is tracked separately from companion
   signed-output verification. Direct serial-line smokes prove request-bound
   USB host/device exchange and the expected `signing_disabled` refusal; they do

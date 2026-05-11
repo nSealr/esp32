@@ -164,6 +164,9 @@ supported printable ASCII, including common event punctuation, is rendered
 directly by explicit glyphs, while unsupported non-ASCII codepoints are
 represented as explicit `U+XXXX` fallback text before wrapping. This keeps the
 display from silently turning event content into ambiguous question marks.
+Decoded JSON control characters in event strings are rendered as visible
+JSON-style escapes such as `\n`, `\t`, and `\r`, never as actual display
+spacing.
 Complete Unicode glyph rendering remains a separate display-font acceptance
 task before production signing. QR and serial request
 parsing preserve JSON `\uXXXX` escapes, including surrogate pairs, before the
@@ -288,7 +291,8 @@ those blockers to stay explicit until a later production profile is designed
 and tested.
 The profile also tracks Unicode review rendering separately: the current
 bitmap-font path is `ascii_safe_codepoint_fallback_only`, so unsupported
-non-ASCII glyphs are shown as explicit `U+XXXX` codepoints. That is acceptable
+non-ASCII glyphs are shown as explicit `U+XXXX` codepoints and decoded control
+characters are shown as visible JSON-style escapes. That is acceptable
 development traceability, not full production Unicode review acceptance.
 
 `scripts/audit_security_fuses.py` is the read-only bridge between that

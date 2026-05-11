@@ -676,6 +676,41 @@ void test_qr_display_review_pages_escape_non_ascii_for_display_safety() {
     assert(tag_text.find("U+1F600") != std::string::npos);
 }
 
+void test_qr_display_review_pages_render_control_escapes_visibly() {
+    const std::string content = "line 1\nline 2\tTabbed\rCarriage\bBackspace\fFormfeed";
+    const nostrseal::QrSigningRequest request{
+        .version = 1,
+        .request_id = "req-control-escapes-display",
+        .method = "sign_event",
+        .has_params = true,
+        .has_event_template = true,
+        .event_template_json = "",
+        .event_template = nostrseal::QrEventTemplate{
+            .created_at = 1710000480,
+            .kind = 1,
+            .tags_json = "",
+            .tags = {{"t", "line\nbreak"}, {"subject", "tab\tvalue", "carriage\rreturn"}},
+            .content = content,
+        },
+    };
+
+    const std::vector<nostrseal::TrustedReviewPage> pages =
+        nostrseal::build_qr_display_review_pages(request, nostrseal_esp32::t_display_s3_review_limits());
+    const std::string content_text = joined_lines_for_title(pages, "Content");
+    const std::string tag_text = joined_lines_for_title(pages, "Tags");
+
+    assert(content_text.find("\\n") != std::string::npos);
+    assert(content_text.find("\\t") != std::string::npos);
+    assert(content_text.find("\\r") != std::string::npos);
+    assert(content_text.find("\\b") != std::string::npos);
+    assert(content_text.find("\\f") != std::string::npos);
+    assert(tag_text.find("line\\nbreak") != std::string::npos);
+    assert(tag_text.find("tab\\tvalue") != std::string::npos);
+    assert(tag_text.find("carriage\\rreturn") != std::string::npos);
+    assert(content_text.find("U+000A") == std::string::npos);
+    assert(tag_text.find("U+0009") == std::string::npos);
+}
+
 void test_qr_display_review_pages_preserve_supported_ascii_punctuation() {
     const std::string content = "hello, nostr! #tag? @alice & key=value `code` ^caret";
     const nostrseal::QrSigningRequest request{
@@ -1941,6 +1976,7 @@ int main() {
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
     test_qr_display_review_pages_match_shared_detail_page_vectors();
     test_qr_display_review_pages_escape_non_ascii_for_display_safety();
+    test_qr_display_review_pages_render_control_escapes_visibly();
     test_qr_display_review_pages_preserve_supported_ascii_punctuation();
     test_qr_display_review_pages_split_full_long_content_without_ellipsis();
     test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();

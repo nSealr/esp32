@@ -166,7 +166,8 @@ tests with strict C++ warnings.
 - QR display-review tests now also consume shared review-detail-page vectors
   for T-Display S3 sized pages, proving complete Event/Content/Tags/Decision
   physical pages, scroll-window indicators, compact line styles, continuation
-  indentation, and `U+XXXX` display fallback match `NostrSeal/specs`.
+  indentation, visible JSON-style control escapes, and `U+XXXX` display
+  fallback match `NostrSeal/specs`.
 - Firmware scaffold tests requiring T-Display S3 terminal review decisions to
   show closed non-signing status frames with `Not signed` and
   `Signing disabled` after approve/reject UI input.

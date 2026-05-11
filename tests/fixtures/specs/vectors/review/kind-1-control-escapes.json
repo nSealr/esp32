@@ -1,0 +1,45 @@
+{
+  "name": "kind-1-control-escapes",
+  "request": {
+    "version": 1,
+    "request_id": "req-kind-1-control-escapes",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000480,
+        "kind": 1,
+        "tags": [
+          [
+            "t",
+            "line\nbreak"
+          ],
+          [
+            "subject",
+            "tab\tvalue",
+            "carriage\rreturn"
+          ]
+        ],
+        "content": "line 1\nline 2\tTabbed\rCarriage\bBackspace\fFormfeed"
+      }
+    }
+  },
+  "review": {
+    "kind": 1,
+    "created_at": 1710000480,
+    "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "content": "line 1\nline 2\tTabbed\rCarriage\bBackspace\fFormfeed",
+    "content_utf8_bytes": 48,
+    "tag_count": 2,
+    "tags": [
+      [
+        "t",
+        "line\nbreak"
+      ],
+      [
+        "subject",
+        "tab\tvalue",
+        "carriage\rreturn"
+      ]
+    ]
+  }
+}
