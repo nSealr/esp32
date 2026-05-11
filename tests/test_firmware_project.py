@@ -193,6 +193,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
                 "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
                 "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
                 "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
+                "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(

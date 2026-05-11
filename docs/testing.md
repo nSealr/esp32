@@ -168,6 +168,10 @@ tests with strict C++ warnings.
   physical pages, scroll-window indicators, compact line styles, continuation
   indentation, visible JSON-style control escapes, and `U+XXXX` display
   fallback match `NostrSeal/specs`.
+- The control-escape renderer smoke report records that firmware revision
+  `294a77e` built, flashed, and preserved capability/review-scenario protocol
+  behavior after the host-core renderer change. It is not human visual
+  acceptance and does not clear the production Unicode review blocker.
 - Firmware scaffold tests requiring T-Display S3 terminal review decisions to
   show closed non-signing status frames with `Not signed` and
   `Signing disabled` after approve/reject UI input.

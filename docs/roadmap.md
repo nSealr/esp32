@@ -359,6 +359,13 @@ backtick and caret literal in host-core display-safe text and in the T-Display
 S3 bitmap font. This tightens the current ASCII-safe subset without changing
 the `unicode_review_rendering` production blocker or enabling signing.
 
+Status note, 2026-05-11: firmware revision `294a77e` was built with ESP-IDF
+`v5.5.4`, flashed to `/dev/cu.usbmodem1101`, and smoke-tested after decoded
+JSON control characters were mapped to visible review escapes. Capability smoke
+passed with 40 verified exchanges and review-scenario smoke passed with 7
+scenarios. This records protocol/rendering traceability only; it does not
+replace human trusted-display acceptance or enable signing.
+
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
 scroll-window, dense-tags, Unicode fallback, and request-error review requests.
