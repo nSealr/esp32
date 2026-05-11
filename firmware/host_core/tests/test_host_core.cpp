@@ -1464,6 +1464,12 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
     assert(ready_status.signing_enabled);
     assert(ready_status.missing_gates.empty());
     assert((ready_status.development_accepted_gates == safety_status.development_accepted_gates));
+
+    safety_gates.development_accepted_gates.push_back("parser_limits");
+    const nostrseal::SigningReadinessStatus duplicate_gate_status =
+        nostrseal::evaluate_signing_readiness(safety_gates);
+
+    assert((duplicate_gate_status.development_accepted_gates == safety_status.development_accepted_gates));
 }
 
 void test_device_protocol_reports_scaffold_capabilities() {

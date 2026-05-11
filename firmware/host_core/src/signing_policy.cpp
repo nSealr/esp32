@@ -1,10 +1,26 @@
 #include "nostrseal/signing_policy.hpp"
 
+#include <algorithm>
+
 namespace nostrseal {
+
+namespace {
+
+std::vector<std::string> unique_gates(const std::vector<std::string>& gates) {
+    std::vector<std::string> output;
+    for (const std::string& gate : gates) {
+        if (std::find(output.begin(), output.end(), gate) == output.end()) {
+            output.push_back(gate);
+        }
+    }
+    return output;
+}
+
+}  // namespace
 
 SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readiness) {
     SigningReadinessStatus status;
-    status.development_accepted_gates = readiness.development_accepted_gates;
+    status.development_accepted_gates = unique_gates(readiness.development_accepted_gates);
     if (!readiness.runtime_signing_feature_enabled) {
         status.missing_gates.push_back("runtime_signing_feature");
     }

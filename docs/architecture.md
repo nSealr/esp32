@@ -246,11 +246,13 @@ before a later signing backend can be wired into the USB or QR flows. The
 default readiness state is disabled and reports every missing gate. The current
 device scaffold starts from that policy and exposes
 `development_accepted_gates` for parser limits, trusted display, physical
-controls, and approval-digest binding. Signing still remains disabled because
-runtime feature enablement, production acceptance for trusted display and
-physical controls, Unicode review rendering acceptance, key provisioning,
-secure boot, flash encryption, debug lock, and companion signed-output
-verification remain open.
+controls, and approval-digest binding. The policy normalizes duplicated
+development gate entries before serialization so the `get_signing_status`
+diagnostic stays compatible with the shared response contract. Signing still
+remains disabled because runtime feature enablement, production acceptance for
+trusted display and physical controls, Unicode review rendering acceptance, key
+provisioning, secure boot, flash encryption, debug lock, and companion
+signed-output verification remain open.
 
 `firmware/esp32_s3_usb_signer/security_profile.json` is the matching
 machine-readable security posture for the ESP-IDF scaffold. The v0 profile is

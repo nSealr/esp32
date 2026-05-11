@@ -497,7 +497,10 @@ not enable signing.
 Status note, 2026-05-10: `get_signing_status` now mirrors that distinction by
 adding `development_accepted_gates` while keeping `signing_enabled: false` and
 the production blockers intact. The field is diagnostic evidence for the
-development scaffold, not permission to connect a signing backend.
+development scaffold, not permission to connect a signing backend. The
+host-core signing policy now also normalizes duplicate development gate entries
+before `get_signing_status` serialization so firmware diagnostics remain
+compatible with the shared response contract.
 
 Hardware note, 2026-05-10: revision `8307c4b` was rebuilt with ESP-IDF
 `v5.5.4`, flashed on the attached LILYGO T-Display S3 at

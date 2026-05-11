@@ -169,8 +169,10 @@ tests with strict C++ warnings.
   remaining real-signing readiness gates for the current scaffold profile,
   while also exposing `development_accepted_gates` for parser limits,
   trusted-review display, physical approval controls, and approval-digest
-  binding. Trusted display, physical controls, and Unicode review rendering
-  still remain in `missing_gates` until production acceptance is complete.
+  binding. The signing-policy tests also keep those diagnostic gate lists
+  duplicate-free before they are serialized. Trusted display, physical
+  controls, and Unicode review rendering still remain in `missing_gates` until
+  production acceptance is complete.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
 - Device protocol tests proving the shared `sign_event` fixture returns the
