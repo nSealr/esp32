@@ -111,6 +111,12 @@ board into a separate repository.
   signed-output verification. Direct serial-line smokes prove request-bound
   USB host/device exchange and the expected `signing_disabled` refusal; they do
   not clear the signed-output production blocker.
+- Firmware protocol evidence is tracked separately from display/control
+  acceptance and signed-output verification. Current T-Display S3 hardware
+  smokes prove the flashed firmware still answers valid protocol requests,
+  rejects invalid protocol input deterministically, and refuses valid
+  `sign_event` requests with `signing_disabled`; they do not clear real-signing
+  blockers.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens and display adapters a deterministic
   rendering oracle.

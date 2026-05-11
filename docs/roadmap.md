@@ -84,6 +84,11 @@
   explicitly blocking production signing until runtime signing, trusted
   display, physical controls, key provisioning, secure boot, flash encryption,
   debug lock, and companion signed-output verification are complete.
+- Machine-readable firmware protocol evidence in that profile, kept separate
+  from display/control acceptance and signed-output verification, so current
+  hardware smokes can prove valid protocol handling, deterministic invalid
+  input rejection, and continued `signing_disabled` refusal without implying
+  production signing readiness.
 
 Status: implemented as the first firmware-core, ESP-IDF scaffold, hardware
 detection, capability-response, development public-key response, and local

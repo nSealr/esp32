@@ -28,6 +28,10 @@ The current profile is `development_scaffold`:
   capability and `signing_disabled` smokes; these reports prove request-bound
   host/device exchange only and do not replace companion signed-output
   verification for real signatures
+- firmware protocol evidence: recorded separately for current T-Display S3
+  firmware revisions that build, flash, answer capability/status/public-key
+  requests, reject invalid frames deterministically, and still return
+  `signing_disabled` for valid `sign_event` requests
 - physical approval controls: manual development acceptance passed on
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked

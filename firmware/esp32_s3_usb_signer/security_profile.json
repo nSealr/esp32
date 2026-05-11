@@ -59,6 +59,9 @@
     "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json"
   ],
+  "firmware_protocol_evidence": [
+    "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json"
+  ],
   "physical_approval_controls": {
     "status": "manual_development_acceptance_passed",
     "required_before_signing": true,

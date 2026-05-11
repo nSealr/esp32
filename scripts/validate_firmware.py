@@ -180,6 +180,11 @@ def validate_security_profile(path: Path) -> None:
         path,
         "companion_transport_evidence",
     )
+    _require_non_empty_string_list(
+        profile.get("firmware_protocol_evidence"),
+        path,
+        "firmware_protocol_evidence",
+    )
     physical_controls = _validate_manual_acceptance_evidence(path, profile, "physical_approval_controls")
     if physical_controls.get("touch_approval_allowed") is not False:
         raise ValueError(f"{path}: physical_approval_controls.touch_approval_allowed must be false")

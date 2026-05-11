@@ -123,6 +123,12 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             ],
         )
         self.assertEqual(
+            profile["firmware_protocol_evidence"],
+            [
+                "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
+            ],
+        )
+        self.assertEqual(
             profile["physical_approval_controls"]["status"],
             "manual_development_acceptance_passed",
         )
@@ -194,6 +200,15 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             profile_path.write_text(json.dumps(missing_companion_transport_evidence), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "companion_transport_evidence"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_firmware_protocol_evidence = dict(profile)
+            missing_firmware_protocol_evidence.pop("firmware_protocol_evidence", None)
+            profile_path.write_text(json.dumps(missing_firmware_protocol_evidence), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "firmware_protocol_evidence"):
                 validate_firmware.validate_security_profile(profile_path)
 
         with TemporaryDirectory() as tmp:
