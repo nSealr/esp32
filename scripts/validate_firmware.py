@@ -25,6 +25,7 @@ REQUIRED_SECURITY_BLOCKERS = {
     "runtime_signing_feature",
     "trusted_review_display",
     "physical_approval_controls",
+    "unicode_review_rendering",
     "key_provisioning",
     "secure_boot",
     "flash_encryption",
@@ -56,6 +57,25 @@ def _validate_manual_acceptance_evidence(path: Path, profile: dict, field: str) 
         raise ValueError(f"{path}: {field}.production_claim must remain blocked_until_production_acceptance")
     _require_non_empty_string_list(value.get("evidence_reports"), path, f"{field}.evidence_reports")
     return value
+
+
+def _validate_unicode_review_rendering(path: Path, profile: dict) -> None:
+    value = profile.get("unicode_review_rendering")
+    if not isinstance(value, dict):
+        raise ValueError(f"{path}: unicode_review_rendering must be an object")
+    if value.get("status") != "ascii_safe_codepoint_fallback_only":
+        raise ValueError(f"{path}: unicode_review_rendering.status must be ascii_safe_codepoint_fallback_only")
+    if value.get("required_before_signing") is not True:
+        raise ValueError(f"{path}: unicode_review_rendering.required_before_signing must be true")
+    if value.get("production_claim") != "blocked_until_full_unicode_review_acceptance":
+        raise ValueError(
+            f"{path}: unicode_review_rendering.production_claim must remain blocked_until_full_unicode_review_acceptance"
+        )
+    _require_non_empty_string_list(
+        value.get("evidence_reports"),
+        path,
+        "unicode_review_rendering.evidence_reports",
+    )
 
 
 def validate_firmware_project(project: Path) -> None:
@@ -154,6 +174,7 @@ def validate_security_profile(path: Path) -> None:
         path,
         "display_review_protocol_evidence",
     )
+    _validate_unicode_review_rendering(path, profile)
     _require_non_empty_string_list(
         profile.get("companion_transport_evidence"),
         path,

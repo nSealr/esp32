@@ -21,6 +21,9 @@ The current profile is `development_scaffold`:
   UTF-8 fallback, ASCII punctuation, dense-tags, and current-head smoke runs;
   these reports support development traceability but do not replace production
   trusted-display acceptance
+- Unicode review rendering: development uses explicit `U+XXXX` fallback for
+  unsupported non-ASCII glyphs; production remains blocked until full Unicode
+  review acceptance or a reviewed equivalent policy exists
 - companion transport evidence: recorded separately for direct serial-line
   capability and `signing_disabled` smokes; these reports prove request-bound
   host/device exchange only and do not replace companion signed-output
@@ -35,6 +38,8 @@ must not be used to claim a finished hardware wallet.
 Before any real signing path can be enabled, the production profile must prove:
 
 - trusted display acceptance
+- full Unicode review rendering acceptance or a reviewed equivalent display
+  policy
 - separate physical approve/reject controls
 - request and `approval_digest` binding
 - production key provisioning and recovery policy

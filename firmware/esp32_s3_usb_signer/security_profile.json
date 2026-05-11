@@ -46,6 +46,15 @@
     "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
     "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json"
   ],
+  "unicode_review_rendering": {
+    "status": "ascii_safe_codepoint_fallback_only",
+    "required_before_signing": true,
+    "production_claim": "blocked_until_full_unicode_review_acceptance",
+    "evidence_reports": [
+      "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+      "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json"
+    ]
+  },
   "companion_transport_evidence": [
     "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json"
@@ -66,6 +75,7 @@
     "runtime_signing_feature",
     "trusted_review_display",
     "physical_approval_controls",
+    "unicode_review_rendering",
     "key_provisioning",
     "secure_boot",
     "flash_encryption",

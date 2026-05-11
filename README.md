@@ -104,6 +104,9 @@ board into a separate repository.
   keeping those gates as production blockers. Display-review protocol smoke
   reports are tracked separately for review-rendering traceability and do not
   replace production trusted-display acceptance.
+- Unicode review rendering is tracked as its own blocker: the development
+  display path uses explicit `U+XXXX` fallback for unsupported non-ASCII glyphs,
+  and this does not count as full production Unicode review acceptance.
 - Companion transport evidence is tracked separately from companion
   signed-output verification. Direct serial-line smokes prove request-bound
   USB host/device exchange and the expected `signing_disabled` refusal; they do

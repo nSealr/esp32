@@ -259,6 +259,10 @@ Trusted display and physical controls have manual development evidence recorded
 in the profile, but they remain production blockers. The validator requires
 those blockers to stay explicit until a later production profile is designed
 and tested.
+The profile also tracks Unicode review rendering separately: the current
+bitmap-font path is `ascii_safe_codepoint_fallback_only`, so unsupported
+non-ASCII glyphs are shown as explicit `U+XXXX` codepoints. That is acceptable
+development traceability, not full production Unicode review acceptance.
 
 ## ESP-IDF Scaffold
 

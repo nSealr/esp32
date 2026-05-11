@@ -67,6 +67,9 @@ tests with strict C++ warnings.
   evidence for detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and
   current-head smoke runs. These reports remain development traceability and do
   not convert the trusted-display gate into a production acceptance claim.
+- Security-profile validation requiring Unicode review rendering to remain an
+  explicit production blocker while the current display path uses
+  `ascii_safe_codepoint_fallback_only`.
 - Security-profile validation requiring companion transport evidence to remain
   separate from companion signed-output verification. Serial-line capability
   and `signing_disabled` smokes are transport traceability only and do not

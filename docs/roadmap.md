@@ -369,6 +369,13 @@ detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and current-head
 smoke reports are tracked as development traceability for the review-rendering
 contract.
 
+Status note, 2026-05-11: `security_profile.json` now also tracks Unicode review
+rendering as `ascii_safe_codepoint_fallback_only` with
+`unicode_review_rendering` kept in the production blocker list. The current
+T-Display S3 bitmap-font path renders unsupported non-ASCII glyphs as explicit
+`U+XXXX` codepoints, which is safer than silent substitution but is not a full
+Unicode review acceptance claim.
+
 Status note, 2026-05-11: `security_profile.json` now also separates companion
 transport evidence from companion signed-output verification. The direct
 serial-line hardware smokes prove request-bound host/device exchange and the

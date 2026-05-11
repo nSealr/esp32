@@ -88,6 +88,14 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("key_provisioning", profile["production_blockers"])
         self.assertIn("trusted_review_display", profile["production_blockers"])
         self.assertIn("physical_approval_controls", profile["production_blockers"])
+        self.assertIn("unicode_review_rendering", profile["production_blockers"])
+        self.assertEqual(profile["unicode_review_rendering"]["status"], "ascii_safe_codepoint_fallback_only")
+        self.assertTrue(profile["unicode_review_rendering"]["required_before_signing"])
+        self.assertEqual(
+            profile["unicode_review_rendering"]["production_claim"],
+            "blocked_until_full_unicode_review_acceptance",
+        )
+        self.assertTrue(profile["unicode_review_rendering"]["evidence_reports"])
         self.assertEqual(
             profile["trusted_review_display"]["status"],
             "manual_development_acceptance_passed",
@@ -186,6 +194,15 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             profile_path.write_text(json.dumps(missing_companion_transport_evidence), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "companion_transport_evidence"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_unicode_rendering = dict(profile)
+            missing_unicode_rendering.pop("unicode_review_rendering", None)
+            profile_path.write_text(json.dumps(missing_unicode_rendering), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "unicode_review_rendering"):
                 validate_firmware.validate_security_profile(profile_path)
 
     def test_firmware_validator_requires_serial_review_component(self) -> None:
