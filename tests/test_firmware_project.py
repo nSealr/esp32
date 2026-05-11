@@ -313,6 +313,26 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             {"approve", "reject"},
         )
 
+    def test_waveshare_esp32_s3_touch_lcd_3_5_board_profile_documents_qr_constraints(self) -> None:
+        profile_path = ROOT / "boards/waveshare_esp32_s3_touch_lcd_3_5.json"
+
+        self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-S3 Touch LCD 3.5 board profile")
+        validate_firmware.validate_board_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        self.assertEqual(profile["target"], "esp32s3")
+        self.assertEqual(profile["status"], "secondary_qr_vault_candidate")
+        self.assertEqual(profile["camera"]["module"], "OV5640_or_OV2640_variant_dependent")
+        self.assertTrue(profile["camera"]["required_for_qr"])
+        self.assertEqual(profile["display"]["resolution"]["short_edge"], 320)
+        self.assertEqual(profile["display"]["resolution"]["long_edge"], 480)
+        self.assertFalse(profile["display"]["touch"]["approval_allowed"])
+        self.assertIn("Wireless must be disabled", profile["wireless_policy"])
+        self.assertEqual(
+            {approval_input["name"] for approval_input in profile["approval_inputs"]},
+            {"approve", "reject"},
+        )
+
     def test_lilygo_t_display_s3_board_profile_documents_usb_display_constraints(self) -> None:
         profile_path = ROOT / "boards/lilygo_t_display_s3.json"
 

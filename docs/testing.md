@@ -94,6 +94,9 @@ tests with strict C++ warnings.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.
+- Board-profile validation for the Waveshare ESP32-S3 Touch LCD 3.5 family as
+  a secondary QR vault candidate, keeping exact SKU selection and real driver
+  work blocked until hardware is chosen.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
