@@ -102,6 +102,22 @@ void assert_detailed_trusted_review_pages(
     }
 }
 
+void assert_qr_review_transcript_equals(
+    const std::vector<nostrseal::QrReviewTranscriptStep>& actual,
+    const std::vector<nostrseal::QrReviewTranscriptStep>& expected) {
+    assert(actual.size() == expected.size());
+    for (std::size_t index = 0; index < actual.size(); ++index) {
+        assert(actual[index].frame.title == expected[index].frame.title);
+        assert(actual[index].frame.page_indicator == expected[index].frame.page_indicator);
+        assert(actual[index].frame.body_lines == expected[index].frame.body_lines);
+        assert(actual[index].frame.action_hint == expected[index].frame.action_hint);
+        assert(actual[index].frame.body_line_styles == expected[index].frame.body_line_styles);
+        assert(actual[index].button == expected[index].button);
+        assert(actual[index].decision == expected[index].decision);
+        assert(actual[index].approved_for_signing == expected[index].approved_for_signing);
+    }
+}
+
 std::size_t page_count_with_title(
     const std::vector<nostrseal::TrustedReviewPage>& pages,
     const std::string& title) {
@@ -876,6 +892,20 @@ void test_qr_review_flow_transcript_records_early_rejection() {
     assert(transcript[0].decision.has_value());
     assert(!transcript[0].decision.value());
     assert(!transcript[0].approved_for_signing);
+}
+
+void test_qr_review_flow_transcript_matches_shared_detail_scroll_vector() {
+    const std::vector<nostrseal::QrReviewTranscriptStep> transcript = nostrseal::run_qr_review_transcript(
+        nostrseal::test_vectors::kQrEnvelopeKind1LongEventsManyTags,
+        nostrseal::test_vectors::long_events_many_tags_detail_scroll_approve_buttons(),
+        nostrseal::test_vectors::long_events_many_tags_detail_scroll_approve_display_limits());
+
+    assert_qr_review_transcript_equals(
+        transcript,
+        nostrseal::test_vectors::long_events_many_tags_detail_scroll_approve_transcript());
+    assert(transcript[2].frame.action_hint == "Next/Scroll");
+    assert(transcript[2].button == nostrseal::ReviewButton::Back);
+    assert(transcript.back().approved_for_signing);
 }
 
 void test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing() {
@@ -1919,6 +1949,7 @@ int main() {
     test_qr_review_flow_rejects_unsafe_scanned_qr();
     test_qr_review_flow_transcript_records_display_and_approval_steps();
     test_qr_review_flow_transcript_records_early_rejection();
+    test_qr_review_flow_transcript_matches_shared_detail_scroll_vector();
     test_qr_review_io_flow_drives_scanner_display_and_buttons_without_signing();
     test_qr_review_io_flow_rejects_non_terminal_button_stream();
     test_qr_review_io_flow_requires_nonzero_step_limit();

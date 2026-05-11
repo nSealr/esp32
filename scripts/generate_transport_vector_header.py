@@ -57,6 +57,8 @@ def cpp_review_action(action: str) -> str:
 def cpp_review_button(button: str) -> str:
     if button == "next":
         return "nostrseal::ReviewButton::Next"
+    if button == "scroll":
+        return "nostrseal::ReviewButton::Back"
     if button == "approve":
         return "nostrseal::ReviewButton::Approve"
     if button == "reject":
@@ -128,6 +130,7 @@ def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]
     for step in transcript:
         frame = step["frame"]
         body_lines = ", ".join(cpp_string(line) for line in frame["body_lines"])
+        styles = ", ".join(cpp_review_body_style(style) for style in frame.get("body_line_styles", []))
         lines.extend(
             [
                 "        nostrseal::QrReviewTranscriptStep{",
@@ -136,6 +139,7 @@ def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]
                 f"                {cpp_string(frame['page_indicator'])},",
                 f"                {{{body_lines}}},",
                 f"                {cpp_string(frame['action_hint'])},",
+                f"                {{{styles}}},",
                 "            },",
                 f"            {cpp_review_button(step['button'])},",
                 f"            {cpp_optional_bool(step['decision'])},",
@@ -168,6 +172,7 @@ def review_display_limits_factory(name: str, limits: dict) -> list[str]:
 
 def review_display_frame_factory(name: str, frame: dict) -> list[str]:
     body_lines = ", ".join(cpp_string(line) for line in frame["body_lines"])
+    styles = ", ".join(cpp_review_body_style(style) for style in frame.get("body_line_styles", []))
     return [
         f"inline nostrseal::ReviewDisplayFrame {name}() {{",
         "    return nostrseal::ReviewDisplayFrame{",
@@ -175,6 +180,7 @@ def review_display_frame_factory(name: str, frame: dict) -> list[str]:
         f"        {cpp_string(frame['page_indicator'])},",
         f"        {{{body_lines}}},",
         f"        {cpp_string(frame['action_hint'])},",
+        f"        {{{styles}}},",
         "    };",
         "}",
     ]
@@ -311,6 +317,9 @@ def main() -> int:
         (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
     qr_vector = json.loads((specs / "vectors/transports/qr-envelope-kind-1-basic.json").read_text(encoding="utf-8"))
+    long_events_many_tags_qr_vector = json.loads(
+        (specs / "vectors/transports/qr-envelope-kind-1-long-events-many-tags.json").read_text(encoding="utf-8")
+    )
     animated_qr_vector = json.loads(
         (specs / "vectors/transports/qr-animated-response-kind-1-basic.json").read_text(encoding="utf-8")
     )
@@ -338,6 +347,11 @@ def main() -> int:
     basic_review_reject_transcript = json.loads(
         (specs / "vectors/review-transcripts/kind-1-basic-reject.json").read_text(encoding="utf-8")
     )
+    long_events_many_tags_detail_scroll_transcript = json.loads(
+        (specs / "vectors/review-transcripts/kind-1-long-events-many-tags-detail-scroll-approve.json").read_text(
+            encoding="utf-8"
+        )
+    )
     review_display_frame_vectors = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/review-display-frames").glob("*.json"))
@@ -351,6 +365,7 @@ def main() -> int:
         for path in sorted((specs / "vectors/review").glob("*.json"))
     ]
     reviews_by_name = {vector["name"]: vector for vector in review_vectors}
+    review_detail_pages_by_name = {vector["name"]: vector for vector in review_detail_page_vectors}
     display_frames_by_name = {vector["name"]: vector for vector in review_display_frame_vectors}
     long_content_display_frame = display_frames_by_name["kind-1-long-content-page-1-20x3"]
     invalid_vectors = [
@@ -392,6 +407,8 @@ def main() -> int:
                 f"constexpr const char* kSerialFrame = {cpp_string(vector['frame'])};",
                 f"constexpr const char* kQrEnvelopeKind1BasicPayloadBase64Url = {cpp_string(qr_vector['payload_base64url'])};",
                 f"constexpr const char* kQrEnvelopeKind1Basic = {cpp_string(qr_vector['envelope'])};",
+                f"constexpr const char* kQrEnvelopeKind1LongEventsManyTagsPayloadBase64Url = {cpp_string(long_events_many_tags_qr_vector['payload_base64url'])};",
+                f"constexpr const char* kQrEnvelopeKind1LongEventsManyTags = {cpp_string(long_events_many_tags_qr_vector['envelope'])};",
                 f"constexpr const char* kAnimatedQrResponseKind1BasicPayloadBase64Url = {cpp_string(animated_qr_vector['payload_base64url'])};",
                 f"constexpr const char* kAnimatedQrResponseKind1BasicJson = {cpp_string(compact_json(animated_qr_vector['decoded']))};",
                 *animated_qr_frames_factory(
@@ -463,6 +480,21 @@ def main() -> int:
                 *qr_review_transcript_factory(
                     "basic_qr_review_reject_transcript",
                     basic_review_reject_transcript["transcript"],
+                ),
+                "",
+                *review_display_limits_factory(
+                    "long_events_many_tags_detail_scroll_approve_display_limits",
+                    review_detail_pages_by_name[long_events_many_tags_detail_scroll_transcript["detail_review_vector"]]["limits"],
+                ),
+                "",
+                *qr_review_buttons_factory(
+                    "long_events_many_tags_detail_scroll_approve_buttons",
+                    long_events_many_tags_detail_scroll_transcript["buttons"],
+                ),
+                "",
+                *qr_review_transcript_factory(
+                    "long_events_many_tags_detail_scroll_approve_transcript",
+                    long_events_many_tags_detail_scroll_transcript["transcript"],
                 ),
                 "}  // namespace nostrseal::test_vectors",
                 "",
