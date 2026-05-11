@@ -126,6 +126,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             profile["firmware_protocol_evidence"],
             [
                 "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
+                "NostrSeal/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(

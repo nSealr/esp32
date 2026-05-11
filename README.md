@@ -115,9 +115,9 @@ board into a separate repository.
 - Firmware protocol evidence is tracked separately from display/control
   acceptance and signed-output verification. Current T-Display S3 hardware
   smokes prove the flashed firmware still answers valid protocol requests,
-  rejects invalid protocol input deterministically, and refuses valid
-  `sign_event` requests with `signing_disabled`; they do not clear real-signing
-  blockers.
+  rejects invalid protocol input deterministically, exposes the Unicode review
+  rendering gate, and refuses valid `sign_event` requests with
+  `signing_disabled`; they do not clear real-signing blockers.
 - Trusted display frames wrap and truncate long body text to configured display
   limits, giving small ESP32 screens and display adapters a deterministic
   rendering oracle.

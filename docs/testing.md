@@ -77,10 +77,10 @@ tests with strict C++ warnings.
   clear the signed-output production blocker.
 - Security-profile validation requiring firmware protocol evidence to remain
   separate from display/control acceptance and signed-output verification. The
-  current T-Display S3 disabled-copy smoke proves the flashed firmware still
-  answers valid protocol requests, rejects invalid protocol input
-  deterministically, and refuses valid `sign_event` requests with
-  `signing_disabled`.
+  current T-Display S3 disabled-copy and Unicode signing-gate smokes prove the
+  flashed firmware still answers valid protocol requests, rejects invalid
+  protocol input deterministically, exposes the Unicode review rendering gate,
+  and refuses valid `sign_event` requests with `signing_disabled`.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.
