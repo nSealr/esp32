@@ -45,7 +45,8 @@
     "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
     "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json"
+    "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
+    "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json"
   ],
   "unicode_review_rendering": {
     "status": "ascii_safe_codepoint_fallback_only",
@@ -67,7 +68,8 @@
     "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
     "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json"
+    "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
+    "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json"
   ],
   "security_fuse_audit_evidence": [
     "NostrSeal/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"

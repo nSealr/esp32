@@ -261,6 +261,12 @@ tests with strict C++ warnings.
   trusted-review boundary compiles into the ESP-IDF component while the
   attached-board smoke still preserves the USB serial scaffold,
   `signing_disabled` refusal path, and deterministic invalid-request errors.
+- Value-line color firmware smoke evidence recorded for revision `2f21b3b` on
+  `/dev/cu.usbmodem1101`: ESP-IDF build and flash passed, capability smoke
+  passed with 40 exchanges, and review-scenario smoke passed with 7 scenarios.
+  Host-core raster tests verify Value lines use the dedicated yellow color;
+  the hardware smoke does not replace human visual color inspection and does
+  not enable signing.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.

@@ -300,6 +300,13 @@ lines, content chunks, and tag items stay visually grouped after wrapping
 instead of falling back to the same white color as normal body text. Signing
 remains disabled.
 
+Hardware note, 2026-05-11: revision `2f21b3b` was built with ESP-IDF
+`v5.5.4`, flashed to the attached T-Display S3 on `/dev/cu.usbmodem1101`, and
+passed both capability smoke and review-scenario smoke after the value-line
+color change. The smoke records protocol/display-path evidence only; human
+visual color confirmation remains separate from production trusted-display
+acceptance.
+
 Status note, 2026-05-09: the T-Display S3 button press classifier is now
 factored into a host-buildable state machine shared by the ESP-IDF GPIO polling
 adapter. Host-core tests cover debounce rejection, short press mapping, long
