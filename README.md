@@ -24,6 +24,16 @@ test grant `grant-esp32-usb-kind-1-session`. The USB route does not clear any
 production signing gate yet; signing remains disabled until provisioning,
 storage, review, hardening, and signed-output verification are accepted.
 
+The final account/custody split is also explicit. `esp32_qr_vault` should
+match the Raspberry QR vault behavior for shared features: RAM-only session
+keyring, manual approval for every signature, SeedSigner
+SeedQR/CompactSeedQR-compatible BIP-39 import, plain mnemonic QR, `nsec` QR,
+local generation, no persistent policy, no persistent secret, and no TROPIC01.
+`esp32_usb_nip46` should become a persistent encrypted device vault with seed
+profiles, passphrase namespaces, NIP-06 accounts, standalone key slots, and
+per-public-key policy state after production gates pass. The current policy
+vectors are conformance scaffolds, not the final policy UX.
+
 Feature targets and current status are tracked in `NostrSeal/specs`
 `vectors/features/signer-feature-matrix-v0.json`. ESP32 may implement both QR
 vault and USB/NIP-46 features, but each shared feature must keep the same

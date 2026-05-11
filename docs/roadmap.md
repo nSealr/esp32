@@ -563,6 +563,16 @@ persistent-slot route for `policy-scoped-automation-daily-use` and
 `grant-esp32-usb-kind-1-session`. These are conformance inputs only; signing
 remains disabled until the M8 production gates pass.
 
+Status note, 2026-05-11: the ESP32 product target now separates account
+sources by route. The QR vault target must match Raspberry QR vault behavior
+with RAM-only mnemonic/passphrase/NIP-06/`nsec`/local-generation session
+sources, including SeedSigner SeedQR/CompactSeedQR import and no microSD/file
+secret transfer. The USB/NIP-46 target is a future encrypted device vault with
+seed profiles, passphrase namespaces, standalone key slots, and per-public-key
+policy after provisioning/storage and security gates pass. The current
+scoped-automation vectors remain conformance scaffolds, not the final policy
+menu.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

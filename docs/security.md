@@ -46,6 +46,10 @@ The current profile is `development_scaffold`:
   `grant-esp32-usb-kind-1-session` are shared conformance contracts only;
   they do not enable persistent grants or signatures on this development
   scaffold
+- future persistent-device vault: seed profiles, BIP-39 passphrase namespaces,
+  NIP-06 accounts, standalone key slots, and per-public-key policy remain a
+  production design target, not current firmware behavior; v0 uses one
+  device-level unlock ceremony when that vault exists
 
 This is intentional for development. It is not a production custody profile and
 must not be used to claim a finished hardware wallet.

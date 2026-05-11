@@ -284,6 +284,15 @@ tests with strict C++ warnings.
 
 - ESP32-S3 QR vault camera/display tests must consume the shared QR envelope,
   review-screen, `approval_digest`, and signing vectors from `NostrSeal/specs`.
+- ESP32-S3 QR vault account-source tests must eventually mirror Raspberry QR
+  vault behavior for RAM-only manual words, SeedSigner Standard SeedQR,
+  CompactSeedQR, plain mnemonic QR, `nsec` QR, local generation, and no
+  microSD/file secret transfer.
+- ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
+  one device-level unlock ceremony, encrypted storage, seed profiles,
+  passphrase namespaces, standalone key slots, per-public-key policy,
+  device-reviewed policy updates, wipe behavior, and no companion-side secret
+  custody.
 - Expand pre-signing hardening tests as host-core gains more JSON/schema
   coverage. The current host-core already consumes the shared invalid vectors
   where the QR parser owns the boundary, but richer schema diagnostics can be

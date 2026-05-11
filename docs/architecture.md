@@ -58,6 +58,18 @@ runtime signing disabled until provisioning/storage, display review,
 physical controls, Unicode review rendering, secure boot, flash encryption,
 debug lock, and companion signed-output verification are accepted.
 
+For the QR route, the target key-source behavior is the same as Raspberry QR
+vault behavior: a RAM-only session keyring fed by manual BIP-39 words,
+SeedSigner Standard SeedQR, CompactSeedQR, plain mnemonic QR, `nsec` QR, or
+local generation. It must not persist policy state or secret material.
+
+For the USB/NIP-46 route, the target is a persistent encrypted device vault
+after production gates pass. That vault may hold seed profiles, BIP-39
+passphrase namespaces, NIP-06 account selections, standalone key slots, and
+per-public-key policy. The v0 product decision is one device-level unlock
+PIN/ceremony. Policy changes must be locally reviewed and physically approved
+on the device; companion proposals are not authoritative by themselves.
+
 Feature target and current status are tracked in `NostrSeal/specs`
 `vectors/features/signer-feature-matrix-v0.json`. ESP32-specific firmware can
 have board-specific drivers, but any shared feature such as request validation,
