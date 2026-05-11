@@ -151,7 +151,7 @@ void process_frame_line(
 
 extern "C" void app_main(void) {
     ESP_LOGI(kTag, "NostrSeal ESP32-S3 USB signer scaffold booted");
-    ESP_LOGW(kTag, "Signing is disabled in this scaffold until storage, review, approval, and tests are implemented");
+    ESP_LOGW(kTag, "Signing is disabled until provisioning, hardening, signed-output verification, and signing tests pass");
     ESP_LOGI(kTag, "USB serial frame handler ready for get_capabilities, get_signing_status, get_public_key, and disabled sign_event");
     const auto& board = nostrseal_esp32::t_display_s3_board_profile();
     ESP_LOGI(kTag, "%s %dx%d %s profile compiled",

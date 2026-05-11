@@ -115,7 +115,7 @@ A short monitor session confirmed that the scaffold boots:
 ```text
 I boot.esp32s3: SPI Flash Size : 16MB
 I nostrseal: NostrSeal ESP32-S3 USB signer scaffold booted
-W nostrseal: Signing is disabled in this scaffold until storage, review, approval, and tests are implemented
+W nostrseal: Signing is disabled until provisioning, hardening, signed-output verification, and signing tests pass
 I nostrseal: USB serial frame handler ready for get_capabilities, get_signing_status, get_public_key, and disabled sign_event
 ```
 
@@ -171,8 +171,10 @@ be compiled into the ESP-IDF component while the attached-device smoke still
 exercises only the USB serial scaffold: capability and development public-key
 requests succeed, `sign_event` returns `signing_disabled`, and invalid requests
 return deterministic `unsupported_request` frames. Real signing is
-intentionally disabled until storage, review UI, approval controls, and
-response verification tests are implemented.
+intentionally disabled until production provisioning, production hardening,
+signed-output verification, and real signing tests pass. The later T-Display S3
+development review UI and onboard-button loop are non-signing evidence only;
+they do not clear the production trusted-display or physical-control blockers.
 
 On 2026-05-08, revision `dfdeec9` was built with ESP-IDF `v5.5.4`, flashed to
 `/dev/cu.usbmodem1101`, and passed `make IDF_PORT=/dev/cu.usbmodem1101

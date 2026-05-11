@@ -269,5 +269,6 @@ console with the shared v0 serial-frame byte limit, answers the shared
 `get_capabilities` request and other valid v0 request ids, returns the shared
 development public key for `get_public_key`, returns `signing_disabled` for
 valid `sign_event` requests, and logs that signing is disabled. It does not
-yet include storage, production key provisioning, display review, button
-approval, or signing components.
+yet include storage, production key provisioning, a signing backend, or a
+production signing profile. The T-Display S3 development display/button review
+loop remains non-signing acceptance evidence only.
