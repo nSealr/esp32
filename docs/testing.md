@@ -111,8 +111,9 @@ tests with strict C++ warnings.
   pixel-color functions used by the ESP-IDF display driver keep stable samples
   for the white border, blue boot header, green/black boot checkerboard, review
   title text, page indicator, body text, footer background, and footer action
-  text, including lowercase body glyphs and representative printable ASCII
-  punctuation glyphs.
+  text, including lowercase body glyphs, representative printable ASCII
+  punctuation glyphs, and yellow value-line coloring for wrapped pubkeys,
+  content chunks, and tag items.
 - Firmware button-driver tests proving the T-Display S3 scaffold maps vendor
   documented GPIO0/GPIO14 physical controls to Scroll/Next short presses in
   logical sign-event reviews and Reject/Approve long presses, while keeping

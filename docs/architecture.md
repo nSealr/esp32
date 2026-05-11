@@ -176,7 +176,9 @@ The T-Display S3 ST7789/i80 adapter now keeps its board-specific rasterization
 logic in a host-buildable module. The ESP-IDF draw path and desktop tests share
 the same color-per-pixel functions for the boot pattern and review frame, so
 layout regressions in title, page indicator, body text, footer text, borders,
-lowercase glyphs, and core colors are caught before flashing.
+lowercase glyphs, and core colors are caught before flashing. Review value
+lines use a dedicated yellow color, meta lines remain green, and normal body
+text remains white so wrapped pubkeys and tag values stay visually grouped.
 
 The T-Display S3 button adapter follows the same pattern: GPIO polling remains
 inside the ESP-IDF wrapper, while debounce timing, short/long press

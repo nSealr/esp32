@@ -294,6 +294,12 @@ indicator, body text, footer background, and footer action text. This is a
 regression guard for the display calibration work; it does not change the
 disabled-signing boundary.
 
+Status note, 2026-05-11: the T-Display S3 raster maps review `Value`
+body-line styles to a dedicated yellow color. Long pubkeys, continuation
+lines, content chunks, and tag items stay visually grouped after wrapping
+instead of falling back to the same white color as normal body text. Signing
+remains disabled.
+
 Status note, 2026-05-09: the T-Display S3 button press classifier is now
 factored into a host-buildable state machine shared by the ESP-IDF GPIO polling
 adapter. Host-core tests cover debounce rejection, short press mapping, long

@@ -156,7 +156,9 @@ storage, review, hardening, and signed-output verification are accepted.
 - Host-buildable T-Display S3 raster tests cover the same boot and review-frame
   pixel-color function used by the ESP-IDF ST7789/i80 draw path, including
   border, boot pattern, title, page indicator, body, footer samples, and
-  representative printable ASCII punctuation glyphs.
+  representative printable ASCII punctuation glyphs. Value/continuation lines
+  use a dedicated yellow display color so long pubkeys, content chunks, and tag
+  items remain visually grouped after wrapping.
 - T-Display S3 onboard button polling for manual review navigation after a live
   `sign_event` request. Short GPIO14 cycles the stable Event, Content, Tags,
   and Decision pages; short GPIO0 scrolls within Content or Tags when that

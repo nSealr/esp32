@@ -190,6 +190,9 @@ uint16_t body_line_color(nostrseal::ReviewBodyLineStyle style) {
     if (style == nostrseal::ReviewBodyLineStyle::Meta) {
         return kTDisplayS3ColorGreen;
     }
+    if (style == nostrseal::ReviewBodyLineStyle::Value) {
+        return kTDisplayS3ColorYellow;
+    }
     return kTDisplayS3ColorWhite;
 }
 

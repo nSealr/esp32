@@ -1706,7 +1706,7 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
     };
 
     assert(t_display_s3_review_frame_color_for(compact_frame, 10, 42) == kTDisplayS3ColorGreen);
-    assert(t_display_s3_review_frame_color_for(compact_frame, 11, 55) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(compact_frame, 11, 55) == kTDisplayS3ColorYellow);
 
     nostrseal::ReviewDisplayFrame lowercase_frame;
     lowercase_frame.title = "Content";
@@ -1717,7 +1717,7 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
         nostrseal::ReviewBodyLineStyle::Value,
     };
 
-    assert(t_display_s3_review_frame_color_for(lowercase_frame, 11, 44) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(lowercase_frame, 11, 44) == kTDisplayS3ColorYellow);
 
     nostrseal::ReviewDisplayFrame comma_frame;
     comma_frame.title = "Content";
@@ -1728,7 +1728,7 @@ void test_t_display_s3_raster_has_stable_boot_and_review_pixels() {
         nostrseal::ReviewBodyLineStyle::Value,
     };
 
-    assert(t_display_s3_review_frame_color_for(comma_frame, 12, 47) == kTDisplayS3ColorWhite);
+    assert(t_display_s3_review_frame_color_for(comma_frame, 12, 47) == kTDisplayS3ColorYellow);
 
     nostrseal::ReviewDisplayFrame ascii_frame;
     ascii_frame.title = "ASCII";
