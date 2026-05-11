@@ -259,6 +259,9 @@ def limit_constants_factory(limits: dict) -> list[str]:
         f"constexpr std::size_t kMaxRequestIdLength = {limits['max_request_id_length']};",
         f"constexpr std::size_t kMaxDecodedRequestJsonBytes = {limits['max_decoded_request_json_bytes']};",
         f"constexpr std::size_t kMaxStaticQrDecodedJsonBytes = {limits['max_static_qr_decoded_json_bytes']};",
+        f"constexpr std::size_t kMaxAnimatedQrDecodedJsonBytes = {limits['max_animated_qr_decoded_json_bytes']};",
+        f"constexpr std::size_t kMaxAnimatedQrFramePayloadChars = {limits['max_animated_qr_frame_payload_chars']};",
+        f"constexpr std::size_t kMaxAnimatedQrFrameCount = {limits['max_animated_qr_frame_count']};",
         f"constexpr std::size_t kMaxSerialFrameBytes = {limits['max_serial_frame_bytes']};",
         f"constexpr std::size_t kMaxContentUtf8Bytes = {limits['max_content_utf8_bytes']};",
         f"constexpr std::size_t kMaxTagCount = {limits['max_tag_count']};",
@@ -292,6 +295,15 @@ def invalid_signing_request_factory(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def animated_qr_frames_factory(name: str, frames: list[str]) -> list[str]:
+    frame_values = ", ".join(cpp_string(frame) for frame in frames)
+    return [
+        f"inline std::vector<std::string> {name}() {{",
+        f"    return {{{frame_values}}};",
+        "}",
+    ]
+
+
 def main() -> int:
     specs = default_specs_dir()
     limits = json.loads((specs / "vectors/limits/nseal-v0.json").read_text(encoding="utf-8"))["limits"]
@@ -299,6 +311,9 @@ def main() -> int:
         (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
     qr_vector = json.loads((specs / "vectors/transports/qr-envelope-kind-1-basic.json").read_text(encoding="utf-8"))
+    animated_qr_vector = json.loads(
+        (specs / "vectors/transports/qr-animated-response-kind-1-basic.json").read_text(encoding="utf-8")
+    )
     capability_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-capabilities-scaffold.json").read_text(encoding="utf-8")
     )
@@ -377,6 +392,13 @@ def main() -> int:
                 f"constexpr const char* kSerialFrame = {cpp_string(vector['frame'])};",
                 f"constexpr const char* kQrEnvelopeKind1BasicPayloadBase64Url = {cpp_string(qr_vector['payload_base64url'])};",
                 f"constexpr const char* kQrEnvelopeKind1Basic = {cpp_string(qr_vector['envelope'])};",
+                f"constexpr const char* kAnimatedQrResponseKind1BasicPayloadBase64Url = {cpp_string(animated_qr_vector['payload_base64url'])};",
+                f"constexpr const char* kAnimatedQrResponseKind1BasicJson = {cpp_string(compact_json(animated_qr_vector['decoded']))};",
+                *animated_qr_frames_factory(
+                    "animated_qr_response_kind_1_basic_frames",
+                    animated_qr_vector["frames"],
+                ),
+                "",
                 f"constexpr const char* kCapabilityRequestPayloadBase64Url = {cpp_string(capability_request_payload)};",
                 f"constexpr const char* kCapabilityRequestFrame = {cpp_string(serial_frame('request', capability_request_payload))};",
                 f"constexpr const char* kCapabilityResponsePayloadBase64Url = {cpp_string(capability_response_payload)};",

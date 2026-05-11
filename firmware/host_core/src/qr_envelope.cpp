@@ -12,12 +12,14 @@
 
 #include "nostrseal/json_unicode.hpp"
 #include "nostrseal/limits.hpp"
+#include "nostrseal/sha256.hpp"
 #include "nostrseal/utf8.hpp"
 
 namespace nostrseal {
 namespace {
 
 constexpr const char* kPrefix = "nseal1:";
+constexpr const char* kAnimatedPrefix = "nseal1a:";
 constexpr char kInvalidBase64 = static_cast<char>(-1);
 
 enum class JsonValueKind {
@@ -33,6 +35,19 @@ struct JsonTopLevelValue {
     std::string value;
 };
 
+struct AnimatedQrFrame {
+    std::string digest;
+    std::size_t index;
+    std::size_t total;
+    std::string chunk;
+};
+
+bool is_lower_hex(const std::string& value, std::size_t size) {
+    return value.size() == size && std::all_of(value.begin(), value.end(), [](char ch) {
+               return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
+           });
+}
+
 bool is_base64url_payload(const std::string& value) {
     if (value.empty()) {
         return false;
@@ -41,6 +56,91 @@ bool is_base64url_payload(const std::string& value) {
         return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
                ch == '-';
     });
+}
+
+std::size_t parse_positive_decimal(const std::string& value, const char* message) {
+    if (value.empty() || value.front() == '0') {
+        throw QrEnvelopeError(message);
+    }
+    std::size_t parsed = 0;
+    for (const char ch : value) {
+        if (ch < '0' || ch > '9') {
+            throw QrEnvelopeError(message);
+        }
+        const std::size_t digit = static_cast<std::size_t>(ch - '0');
+        if (parsed > (std::numeric_limits<std::size_t>::max() - digit) / 10U) {
+            throw QrEnvelopeError(message);
+        }
+        parsed = parsed * 10U + digit;
+    }
+    return parsed;
+}
+
+std::string animated_frame_checksum(
+    const std::string& digest,
+    std::size_t index,
+    std::size_t total,
+    const std::string& chunk) {
+    return sha256_hex(
+               std::string(kAnimatedPrefix) + digest + ":" + std::to_string(index) + "/" + std::to_string(total) +
+               ":" + chunk)
+        .substr(0, 16);
+}
+
+AnimatedQrFrame parse_animated_qr_frame(const std::string& frame) {
+    if (frame.rfind(kAnimatedPrefix, 0) != 0) {
+        throw QrEnvelopeError("animated QR frame requires nseal1a prefix");
+    }
+    std::vector<std::string> parts;
+    std::size_t start = 0;
+    while (start <= frame.size()) {
+        const std::size_t separator = frame.find(':', start);
+        if (separator == std::string::npos) {
+            parts.push_back(frame.substr(start));
+            break;
+        }
+        parts.push_back(frame.substr(start, separator - start));
+        start = separator + 1U;
+    }
+    if (parts.size() != 5U || parts[0] != "nseal1a") {
+        throw QrEnvelopeError("animated QR frame is malformed");
+    }
+    const std::string& digest = parts[1];
+    const std::string& index_total = parts[2];
+    const std::string& chunk = parts[3];
+    const std::string& checksum = parts[4];
+    if (!is_lower_hex(digest, 64)) {
+        throw QrEnvelopeError("animated QR digest must be 32-byte lowercase hex");
+    }
+    if (!is_lower_hex(checksum, 16)) {
+        throw QrEnvelopeError("animated QR checksum must be 8-byte lowercase hex");
+    }
+    const std::size_t slash = index_total.find('/');
+    if (slash == std::string::npos || index_total.find('/', slash + 1U) != std::string::npos) {
+        throw QrEnvelopeError("animated QR index must use index/total");
+    }
+    const std::size_t index = parse_positive_decimal(
+        index_total.substr(0, slash),
+        "animated QR index and total must be decimal");
+    const std::size_t total = parse_positive_decimal(
+        index_total.substr(slash + 1U),
+        "animated QR index and total must be decimal");
+    if (index > total) {
+        throw QrEnvelopeError("animated QR frame index is out of range");
+    }
+    if (total > kMaxAnimatedQrFrameCount) {
+        throw QrEnvelopeError("animated QR frame count exceeds max_animated_qr_frame_count");
+    }
+    if (!is_base64url_payload(chunk)) {
+        throw QrEnvelopeError("animated QR chunk must be unpadded base64url");
+    }
+    if (chunk.size() > kMaxAnimatedQrFramePayloadChars) {
+        throw QrEnvelopeError("animated QR chunk exceeds max_animated_qr_frame_payload_chars");
+    }
+    if (checksum != animated_frame_checksum(digest, index, total, chunk)) {
+        throw QrEnvelopeError("animated QR frame checksum mismatch");
+    }
+    return AnimatedQrFrame{digest, index, total, chunk};
 }
 
 std::array<char, 256> base64url_decode_table() {
@@ -487,6 +587,54 @@ QrEnvelope decode_qr_envelope(const std::string& envelope) {
     }
     if (!is_valid_utf8(decoded)) {
         throw QrEnvelopeError("QR envelope payload must be valid UTF-8");
+    }
+    require_json_container(decoded);
+    return QrEnvelope{payload, decoded};
+}
+
+QrEnvelope decode_animated_qr_envelope_frames(const std::vector<std::string>& frames) {
+    if (frames.empty()) {
+        throw QrEnvelopeError("animated QR requires at least one frame");
+    }
+    std::vector<AnimatedQrFrame> parsed;
+    parsed.reserve(frames.size());
+    for (const std::string& frame : frames) {
+        parsed.push_back(parse_animated_qr_frame(frame));
+    }
+    const std::string digest = parsed.front().digest;
+    const std::size_t total = parsed.front().total;
+    if (parsed.size() != total) {
+        throw QrEnvelopeError("animated QR frames must be unique and contiguous");
+    }
+    std::map<std::size_t, std::string> chunks;
+    for (const AnimatedQrFrame& frame : parsed) {
+        if (frame.digest != digest || frame.total != total) {
+            throw QrEnvelopeError("animated QR frame set mismatch");
+        }
+        if (!chunks.emplace(frame.index, frame.chunk).second) {
+            throw QrEnvelopeError("animated QR frames must be unique and contiguous");
+        }
+    }
+    std::string payload;
+    for (std::size_t index = 1; index <= total; ++index) {
+        const auto chunk = chunks.find(index);
+        if (chunk == chunks.end()) {
+            throw QrEnvelopeError("animated QR frames must be unique and contiguous");
+        }
+        payload += chunk->second;
+    }
+    if ((payload.size() % 4U) == 1U) {
+        throw QrEnvelopeError("animated QR payload has invalid base64url length");
+    }
+    const std::string decoded = decode_base64url(payload);
+    if (decoded.size() > kMaxAnimatedQrDecodedJsonBytes) {
+        throw QrEnvelopeError("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes");
+    }
+    if (sha256_hex(decoded) != digest) {
+        throw QrEnvelopeError("animated QR decoded digest mismatch");
+    }
+    if (!is_valid_utf8(decoded)) {
+        throw QrEnvelopeError("animated QR payload must be valid UTF-8");
     }
     require_json_container(decoded);
     return QrEnvelope{payload, decoded};

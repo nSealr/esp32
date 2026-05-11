@@ -95,6 +95,9 @@ tests with strict C++ warnings.
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review
   without a signing backend and unsafe QR requests are rejected before display.
+- Animated QR host-core tests proving shared `nseal1a:` frames reconstruct to
+  the expected payload JSON and reject empty, missing-frame, and checksum-
+  mismatched frame sets before future camera adapters exist.
 - QR review I/O harness tests proving scanner, display, and physical-button
   adapter boundaries can drive the host-core review loop without adding a
   signing backend, and that non-terminal button streams fail within a bounded

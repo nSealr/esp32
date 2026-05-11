@@ -8,6 +8,9 @@ namespace nostrseal {
 inline constexpr std::size_t kMaxRequestIdLength = 128;
 inline constexpr std::size_t kMaxDecodedRequestJsonBytes = 704;
 inline constexpr std::size_t kMaxStaticQrDecodedJsonBytes = 704;
+inline constexpr std::size_t kMaxAnimatedQrDecodedJsonBytes = 4096;
+inline constexpr std::size_t kMaxAnimatedQrFramePayloadChars = 256;
+inline constexpr std::size_t kMaxAnimatedQrFrameCount = 64;
 inline constexpr std::size_t kMaxSerialFrameBytes = 1024;
 inline constexpr std::size_t kMaxContentUtf8Bytes = 512;
 inline constexpr std::size_t kMaxTagCount = 16;

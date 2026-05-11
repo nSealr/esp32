@@ -257,6 +257,14 @@ void test_qr_envelope_decodes_shared_vector() {
     assert(envelope.payload_json.find("\"method\":\"sign_event\"") != std::string::npos);
 }
 
+void test_animated_qr_envelope_decodes_shared_vector() {
+    const nostrseal::QrEnvelope envelope =
+        nostrseal::decode_animated_qr_envelope_frames(nostrseal::test_vectors::animated_qr_response_kind_1_basic_frames());
+
+    assert(envelope.payload_base64url == nostrseal::test_vectors::kAnimatedQrResponseKind1BasicPayloadBase64Url);
+    assert(envelope.payload_json == nostrseal::test_vectors::kAnimatedQrResponseKind1BasicJson);
+}
+
 void test_qr_envelope_parses_sign_event_request_metadata() {
     const nostrseal::QrEnvelope envelope =
         nostrseal::decode_qr_envelope(nostrseal::test_vectors::kQrEnvelopeKind1Basic);
@@ -351,10 +359,50 @@ void test_qr_envelope_rejects_shared_invalid_qr_vectors() {
     });
 }
 
+void test_animated_qr_envelope_rejections() {
+    expect_throw("animated QR requires at least one frame", [] {
+        (void)nostrseal::decode_animated_qr_envelope_frames({});
+    });
+    expect_throw("animated QR frames must be unique and contiguous", [] {
+        std::vector<std::string> frames = nostrseal::test_vectors::animated_qr_response_kind_1_basic_frames();
+        frames.erase(frames.begin());
+        (void)nostrseal::decode_animated_qr_envelope_frames(frames);
+    });
+    expect_throw("animated QR frame checksum mismatch", [] {
+        std::vector<std::string> frames = nostrseal::test_vectors::animated_qr_response_kind_1_basic_frames();
+        char& last = frames[0].back();
+        last = last == '0' ? '1' : '0';
+        (void)nostrseal::decode_animated_qr_envelope_frames(frames);
+    });
+    expect_throw("animated QR frame count exceeds max_animated_qr_frame_count", [] {
+        const std::string frame =
+            "nseal1a:0000000000000000000000000000000000000000000000000000000000000000:"
+            "1/65:AA:0000000000000000";
+        (void)nostrseal::decode_animated_qr_envelope_frames({frame});
+    });
+    expect_throw("animated QR chunk exceeds max_animated_qr_frame_payload_chars", [] {
+        const std::string oversized_chunk(nostrseal::kMaxAnimatedQrFramePayloadChars + 1U, 'A');
+        const std::string frame =
+            "nseal1a:0000000000000000000000000000000000000000000000000000000000000000:"
+            "1/1:" +
+            oversized_chunk + ":0000000000000000";
+        (void)nostrseal::decode_animated_qr_envelope_frames({frame});
+    });
+    expect_throw("animated QR index and total must be decimal", [] {
+        const std::string frame =
+            "nseal1a:0000000000000000000000000000000000000000000000000000000000000000:"
+            "184467440737095516160/1:AA:0000000000000000";
+        (void)nostrseal::decode_animated_qr_envelope_frames({frame});
+    });
+}
+
 void test_qr_limits_match_shared_profile() {
     assert(nostrseal::kMaxRequestIdLength == nostrseal::test_vectors::kMaxRequestIdLength);
     assert(nostrseal::kMaxDecodedRequestJsonBytes == nostrseal::test_vectors::kMaxDecodedRequestJsonBytes);
     assert(nostrseal::kMaxStaticQrDecodedJsonBytes == nostrseal::test_vectors::kMaxStaticQrDecodedJsonBytes);
+    assert(nostrseal::kMaxAnimatedQrDecodedJsonBytes == nostrseal::test_vectors::kMaxAnimatedQrDecodedJsonBytes);
+    assert(nostrseal::kMaxAnimatedQrFramePayloadChars == nostrseal::test_vectors::kMaxAnimatedQrFramePayloadChars);
+    assert(nostrseal::kMaxAnimatedQrFrameCount == nostrseal::test_vectors::kMaxAnimatedQrFrameCount);
     assert(nostrseal::kMaxSerialFrameBytes == nostrseal::test_vectors::kMaxSerialFrameBytes);
     assert(nostrseal::kMaxContentUtf8Bytes == nostrseal::test_vectors::kMaxContentUtf8Bytes);
     assert(nostrseal::kMaxTagCount == nostrseal::test_vectors::kMaxTagCount);
@@ -1822,6 +1870,7 @@ int main() {
     test_serial_frame_rejections();
     test_serial_frame_rejects_shared_invalid_vectors();
     test_qr_envelope_decodes_shared_vector();
+    test_animated_qr_envelope_decodes_shared_vector();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_parses_event_template_fields();
@@ -1829,6 +1878,7 @@ int main() {
     test_qr_signing_request_preserves_json_unicode_escapes();
     test_qr_envelope_rejections();
     test_qr_envelope_rejects_shared_invalid_qr_vectors();
+    test_animated_qr_envelope_rejections();
     test_qr_limits_match_shared_profile();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();

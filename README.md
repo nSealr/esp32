@@ -28,10 +28,12 @@ board into a separate repository.
   limit, accepts common serial line endings, and rejects shared invalid
   serial-frame vectors for oversized frames, checksum mismatch, and malformed
   base64url payloads.
-- `nseal1:` QR envelope decode boundary compatible with the shared QR
-  transport vector. It rejects malformed, padded, invalid UTF-8, and oversized
-  envelopes before any future camera/display adapter can review them; camera
-  capture, animated QR reconstruction, and signing remain future work.
+- `nseal1:` static QR envelope decode boundary plus `nseal1a:` animated QR
+  frame reconstruction compatible with the shared transport vectors. The host
+  core rejects malformed, padded, invalid UTF-8, oversized, missing-frame, and
+  checksum-mismatched QR inputs before any future camera/display adapter can
+  review them; camera capture, animated scan timing, and signing remain future
+  work.
 - QR `sign_event` request metadata parsing for decoded envelopes. It extracts
   version, `request_id`, method, `params` presence, and the raw
   `params.event_template` object boundary. The minimal field parser is
