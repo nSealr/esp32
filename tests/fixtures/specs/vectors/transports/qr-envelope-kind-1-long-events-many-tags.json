@@ -1,0 +1,59 @@
+{
+  "name": "qr-envelope-kind-1-long-events-many-tags",
+  "format": "qr-envelope-v0",
+  "prefix": "nseal1:",
+  "payload_base64url": "eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1sb25nLWV2ZW50cy1tYW55LXRhZ3MiLCJtZXRob2QiOiJzaWduX2V2ZW50IiwicGFyYW1zIjp7ImV2ZW50X3RlbXBsYXRlIjp7ImNyZWF0ZWRfYXQiOjE3MTAwMDAxMjAsImtpbmQiOjEsInRhZ3MiOltbImUiLCJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiIiwicm9vdCJdLFsidCIsIm5vc3Ryc2VhbCJdLFsidCIsImhhcmR3YXJlIl0sWyJ0IiwicmV2aWV3Il0sWyJ0Iiwic2VjdXJpdHkiXSxbInQiLCJxciJdLFsidCIsInZhdWx0Il0sWyJ0IiwiY29tcGFuaW9uIl0sWyJ0IiwidGVzdCJdXSwiY29udGVudCI6Inh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4In19fQ",
+  "envelope": "nseal1:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1sb25nLWV2ZW50cy1tYW55LXRhZ3MiLCJtZXRob2QiOiJzaWduX2V2ZW50IiwicGFyYW1zIjp7ImV2ZW50X3RlbXBsYXRlIjp7ImNyZWF0ZWRfYXQiOjE3MTAwMDAxMjAsImtpbmQiOjEsInRhZ3MiOltbImUiLCJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiIiwicm9vdCJdLFsidCIsIm5vc3Ryc2VhbCJdLFsidCIsImhhcmR3YXJlIl0sWyJ0IiwicmV2aWV3Il0sWyJ0Iiwic2VjdXJpdHkiXSxbInQiLCJxciJdLFsidCIsInZhdWx0Il0sWyJ0IiwiY29tcGFuaW9uIl0sWyJ0IiwidGVzdCJdXSwiY29udGVudCI6Inh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4In19fQ",
+  "decoded": {
+    "version": 1,
+    "request_id": "req-kind-1-long-events-many-tags",
+    "method": "sign_event",
+    "params": {
+      "event_template": {
+        "created_at": 1710000120,
+        "kind": 1,
+        "tags": [
+          [
+            "e",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "",
+            "root"
+          ],
+          [
+            "t",
+            "nostrseal"
+          ],
+          [
+            "t",
+            "hardware"
+          ],
+          [
+            "t",
+            "review"
+          ],
+          [
+            "t",
+            "security"
+          ],
+          [
+            "t",
+            "qr"
+          ],
+          [
+            "t",
+            "vault"
+          ],
+          [
+            "t",
+            "companion"
+          ],
+          [
+            "t",
+            "test"
+          ]
+        ],
+        "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  }
+}
