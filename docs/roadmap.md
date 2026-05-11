@@ -534,8 +534,8 @@ from the shared basic kind `1` fixture and verified the request-matched
   3.5 is the preferred secondary board family, restricted to case-plus-OV5640
   variants (`ESP32-S3-Touch-LCD-3.5-C` or `ESP32-S3-Touch-LCD-3.5B-C`). The
   remaining selection is driver-specific: ST7796/SPI versus AXS15231B/QSPI.
-  Jade is tracked only as custom-firmware feasibility research; do not target
-  production Jade hardware until a safe flashing and recovery path is proven.
+  Jade is tracked only as ESP-IDF architecture reference material. Do not target
+  production retail Jade hardware for NostrSeal firmware.
 - QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
   Status: host-core `nseal1:` envelope decoding, `nseal1a:` animated frame
   reconstruction, top-level `sign_event` metadata parsing, and raw
