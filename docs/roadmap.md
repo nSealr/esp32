@@ -75,7 +75,7 @@
   by the driver-facing harness, checked against shared review-transcript
   vectors.
 - Deterministic QR review transcript helper for future display/button adapter
-  acceptance tests, checked against shared `NostrSeal/specs` transcript
+  acceptance tests, checked against shared `nSealr/specs` transcript
   vectors.
 - Shared review-display-frame vector consumption for bounded long-content
   display rendering.
@@ -127,7 +127,7 @@ button navigation, but production acceptance for trusted display and physical
 controls remains blocked. Camera input for the ESP32 stateless QR vault, the
 T-Display S3 Pro target, and any signing backend remain pending. QR review
 transcripts provide a deterministic host-side oracle for those adapters and are
-now checked against shared `NostrSeal/specs` vectors. The
+now checked against shared `nSealr/specs` vectors. The
 host-core QR parser also mirrors the shared v0 limit profile and rejects
 applicable invalid QR-envelope and signing-request vectors before trusted review
 can begin.
@@ -167,12 +167,12 @@ hardware smoke catch regressions where the ESP-IDF app only recognizes exact
 fixture payloads.
 
 Status note, 2026-05-08: the same hardware smoke now sends invalid dynamic
-request metadata from shared `NostrSeal/specs` serial-frame vectors for
+request metadata from shared `nSealr/specs` serial-frame vectors for
 unsupported version and invalid `request_id` syntax. The expected device
-behavior is a deterministic `nseal1f:error` frame with `unsupported_request`,
+behavior is a deterministic `nsealr1f:error` frame with `unsupported_request`,
 preserving the signing-disabled boundary.
 
-Status note, 2026-05-08: invalid signing-request vectors from `NostrSeal/specs`
+Status note, 2026-05-08: invalid signing-request vectors from `nSealr/specs`
 are now wrapped as serial frames in the hardware smoke, including invalid
 `sign_event` request shapes and unknown top-level request fields. The device
 protocol catches parser rejections inside the request boundary and returns
@@ -225,7 +225,7 @@ protocol-smoke timeout exposed repeated bootloader `Checksum failed` and
 ESP-IDF `v5.5.4`; esptool verified bootloader, app, and partition-table image
 hashes, and the follow-up `make IDF_PORT=/dev/cu.usbmodem1101
 idf-smoke-capabilities` passed. The result is recorded as a manual
-`NostrSeal/hardware` protocol-smoke report and does not change the disabled
+`nSealr/hardware` protocol-smoke report and does not change the disabled
 signing boundary.
 
 Hardware note, 2026-05-08: revision `dfdeec9` was built with local ESP-IDF
@@ -246,7 +246,7 @@ IDF_PORT=/dev/cu.usbmodem1101 idf-smoke-capabilities`. The smoke passed 33 USB
 serial exchanges: 6 valid response frames and 27 expected rejection frames.
 `sign_event` remains disabled with `signing_disabled`; real display, GPIO,
 camera, storage, secure boot, debug lock, and signing acceptance remain
-pending. The result is recorded as a manual `NostrSeal/hardware`
+pending. The result is recorded as a manual `nSealr/hardware`
 protocol-smoke report.
 
 Hardware note, 2026-05-09: the host-core device protocol now implements the
@@ -332,7 +332,7 @@ display/button acceptance runs more repeatable, but it still does not turn
 physical input into signing authorization.
 
 Status note, 2026-05-10: the manual T-Display S3 review exerciser now includes
-tagged-event and long-content scenarios built from shared `NostrSeal/specs`
+tagged-event and long-content scenarios built from shared `nSealr/specs`
 vectors. These scenarios let a human inspect grouped tag content, compact
 full-content review, many-tag scroll windows, and stable logical page indicators
 on the physical display while the serial response still returns
@@ -371,7 +371,7 @@ scenario to the default non-interactive smoke set, the already flashed
 `294a77e` firmware image passed `make IDF_PORT=/dev/cu.usbmodem1101
 idf-smoke-review-scenarios` with 8 scenarios, 9 verified exchanges, 8 response
 frames, and 1 expected rejection frame. The report is
-`NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json`.
+`nSealr/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json`.
 
 Status note, 2026-05-10: `make idf-smoke-review-scenarios` now provides a
 non-interactive hardware protocol smoke for the basic, tagged, long-content,
@@ -581,9 +581,9 @@ menu.
   case-plus-OV5640 board. Its display path is AXS15231B/QSPI; driver and
   physical approval-control acceptance remain pending. Jade is tracked only as
   ESP-IDF architecture reference material. Do not target production retail Jade
-  hardware for NostrSeal firmware.
-- QR request scanner using shared `NostrSeal/specs` QR envelope vectors.
-  Status: host-core `nseal1:` envelope decoding, `nseal1a:` animated frame
+  hardware for nSealr firmware.
+- QR request scanner using shared `nSealr/specs` QR envelope vectors.
+  Status: host-core `nsealr1:` envelope decoding, `nsealr1a:` animated frame
   reconstruction, top-level `sign_event` metadata parsing, and raw
   `params.event_template` object boundary extraction are implemented. It also
   rejects host-supplied `id`, `pubkey`, or `sig` fields, applies shared v0
@@ -600,7 +600,7 @@ menu.
 - Signed-event QR output verified by the companion.
 
 Status: future target in this repository. It must not be moved into
-`NostrSeal/raspberry`. It also must not sign real QR requests until the shared
+`nSealr/raspberry`. It also must not sign real QR requests until the shared
 pre-signing hardening vectors are consumed where feasible and the camera,
 display, GPIO, and review acceptance gates are complete.
 

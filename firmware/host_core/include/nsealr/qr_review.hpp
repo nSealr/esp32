@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "nostrseal/qr_envelope.hpp"
-#include "nostrseal/trusted_review.hpp"
+#include "nsealr/qr_envelope.hpp"
+#include "nsealr/trusted_review.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 std::vector<TrustedReviewPage> build_qr_review_pages(const QrSigningRequest& request);
 std::vector<TrustedReviewPage> build_qr_display_review_pages(
@@ -17,4 +17,4 @@ TrustedReviewRequest build_qr_display_review_request(
     ReviewDisplayLimits limits = {});
 TrustedReviewSession begin_qr_trusted_review(const QrSigningRequest& request, ReviewDisplayLimits limits = {});
 
-}  // namespace nostrseal
+}  // namespace nsealr

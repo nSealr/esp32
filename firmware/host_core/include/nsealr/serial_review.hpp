@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "nostrseal/trusted_review.hpp"
+#include "nsealr/trusted_review.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 TrustedReviewRequest build_serial_sign_event_trusted_review_request(const std::string& request_json);
 TrustedReviewSession begin_serial_sign_event_trusted_review(
@@ -60,4 +60,4 @@ SerialReviewIoFlowResult run_serial_review_io_flow(
     ReviewDisplayLimits limits = {},
     std::size_t max_steps = 32);
 
-}  // namespace nostrseal
+}  // namespace nsealr

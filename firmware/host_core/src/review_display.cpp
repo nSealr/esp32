@@ -1,11 +1,11 @@
-#include "nostrseal/review_display.hpp"
+#include "nsealr/review_display.hpp"
 
-#include "nostrseal/utf8.hpp"
+#include "nsealr/utf8.hpp"
 
 #include <stdexcept>
 #include <utility>
 
-namespace nostrseal {
+namespace nsealr {
 
 namespace {
 
@@ -167,4 +167,4 @@ ReviewDisplayFrame render_review_page(const ReviewPage& page, std::size_t page_i
     return frame;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

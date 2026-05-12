@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PREFIX = "nseal1f:"
+PREFIX = "nsealr1f:"
 
 
 def default_specs_dir() -> Path:

@@ -4,9 +4,9 @@
 #include <string>
 #include <string_view>
 
-#include "nostrseal/utf8.hpp"
+#include "nsealr/utf8.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 inline int json_hex_value(char ch) {
     if (ch >= '0' && ch <= '9') {
@@ -71,4 +71,4 @@ void append_json_unicode_escape(
     }
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

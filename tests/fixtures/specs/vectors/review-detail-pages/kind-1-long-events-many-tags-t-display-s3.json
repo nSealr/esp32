@@ -3,7 +3,7 @@
   "format": "review-detail-pages-v0",
   "display_profile": "ascii-safe-codepoint-fallback-v0",
   "source_review_vector": "kind-1-long-events-many-tags",
-  "approval_digest": "a20e42cf8dca3a5ae67e490e513fc4493a57179a2f6ac21de0b375bbda82b0a0",
+  "approval_digest": "7c9ae4d4656c7c9ff296483e410bc6f770bef611ddd81cad7a4f56a2a4019799",
   "limits": {
     "max_title_chars": 18,
     "max_body_lines": 5,
@@ -66,7 +66,7 @@
         "root",
         "Tag 2/9",
         "t",
-        "nostrseal",
+        "nsealr",
         "Tag 3/9"
       ],
       "action": "next",

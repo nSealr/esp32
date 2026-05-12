@@ -1,11 +1,11 @@
-#include "nostrseal/qr_review_flow.hpp"
+#include "nsealr/qr_review_flow.hpp"
 
 #include <stdexcept>
 #include <utility>
 
-#include "nostrseal/qr_envelope.hpp"
+#include "nsealr/qr_envelope.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
 TrustedReviewRequest review_request_from_qr(const std::string& qr_envelope, ReviewDisplayLimits limits) {
@@ -96,4 +96,4 @@ std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     return transcript;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

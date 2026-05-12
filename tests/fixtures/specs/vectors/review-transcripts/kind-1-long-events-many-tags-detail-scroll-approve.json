@@ -4,7 +4,7 @@
   "review_mode": "detail",
   "source_vector": "qr-envelope-kind-1-long-events-many-tags",
   "detail_review_vector": "kind-1-long-events-many-tags-t-display-s3",
-  "qr_envelope": "nseal1:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1sb25nLWV2ZW50cy1tYW55LXRhZ3MiLCJtZXRob2QiOiJzaWduX2V2ZW50IiwicGFyYW1zIjp7ImV2ZW50X3RlbXBsYXRlIjp7ImNyZWF0ZWRfYXQiOjE3MTAwMDAxMjAsImtpbmQiOjEsInRhZ3MiOltbImUiLCJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiIiwicm9vdCJdLFsidCIsIm5vc3Ryc2VhbCJdLFsidCIsImhhcmR3YXJlIl0sWyJ0IiwicmV2aWV3Il0sWyJ0Iiwic2VjdXJpdHkiXSxbInQiLCJxciJdLFsidCIsInZhdWx0Il0sWyJ0IiwiY29tcGFuaW9uIl0sWyJ0IiwidGVzdCJdXSwiY29udGVudCI6Inh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4In19fQ",
+  "qr_envelope": "nsealr1:eyJ2ZXJzaW9uIjoxLCJyZXF1ZXN0X2lkIjoicmVxLWtpbmQtMS1sb25nLWV2ZW50cy1tYW55LXRhZ3MiLCJtZXRob2QiOiJzaWduX2V2ZW50IiwicGFyYW1zIjp7ImV2ZW50X3RlbXBsYXRlIjp7ImNyZWF0ZWRfYXQiOjE3MTAwMDAxMjAsImtpbmQiOjEsInRhZ3MiOltbImUiLCJhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhIiwiIiwicm9vdCJdLFsidCIsIm5zZWFsciJdLFsidCIsImhhcmR3YXJlIl0sWyJ0IiwicmV2aWV3Il0sWyJ0Iiwic2VjdXJpdHkiXSxbInQiLCJxciJdLFsidCIsInZhdWx0Il0sWyJ0IiwiY29tcGFuaW9uIl0sWyJ0IiwidGVzdCJdXSwiY29udGVudCI6Inh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4In19fQ",
   "request": {
     "version": 1,
     "request_id": "req-kind-1-long-events-many-tags",
@@ -22,7 +22,7 @@
           ],
           [
             "t",
-            "nostrseal"
+            "nsealr"
           ],
           [
             "t",
@@ -57,7 +57,7 @@
       }
     }
   },
-  "approval_digest": "a20e42cf8dca3a5ae67e490e513fc4493a57179a2f6ac21de0b375bbda82b0a0",
+  "approval_digest": "7c9ae4d4656c7c9ff296483e410bc6f770bef611ddd81cad7a4f56a2a4019799",
   "buttons": [
     "next",
     "next",
@@ -132,7 +132,7 @@
           "root",
           "Tag 2/9",
           "t",
-          "nostrseal",
+          "nsealr",
           "Tag 3/9"
         ],
         "action_hint": "Next/Scroll",

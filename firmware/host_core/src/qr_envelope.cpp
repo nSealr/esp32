@@ -1,4 +1,4 @@
-#include "nostrseal/qr_envelope.hpp"
+#include "nsealr/qr_envelope.hpp"
 
 #include <algorithm>
 #include <array>
@@ -10,16 +10,16 @@
 #include <utility>
 #include <vector>
 
-#include "nostrseal/json_unicode.hpp"
-#include "nostrseal/limits.hpp"
-#include "nostrseal/sha256.hpp"
-#include "nostrseal/utf8.hpp"
+#include "nsealr/json_unicode.hpp"
+#include "nsealr/limits.hpp"
+#include "nsealr/sha256.hpp"
+#include "nsealr/utf8.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
-constexpr const char* kPrefix = "nseal1:";
-constexpr const char* kAnimatedPrefix = "nseal1a:";
+constexpr const char* kPrefix = "nsealr1:";
+constexpr const char* kAnimatedPrefix = "nsealr1a:";
 constexpr char kInvalidBase64 = static_cast<char>(-1);
 
 enum class JsonValueKind {
@@ -89,7 +89,7 @@ std::string animated_frame_checksum(
 
 AnimatedQrFrame parse_animated_qr_frame(const std::string& frame) {
     if (frame.rfind(kAnimatedPrefix, 0) != 0) {
-        throw QrEnvelopeError("animated QR frame requires nseal1a prefix");
+        throw QrEnvelopeError("animated QR frame requires nsealr1a prefix");
     }
     std::vector<std::string> parts;
     std::size_t start = 0;
@@ -102,7 +102,7 @@ AnimatedQrFrame parse_animated_qr_frame(const std::string& frame) {
         parts.push_back(frame.substr(start, separator - start));
         start = separator + 1U;
     }
-    if (parts.size() != 5U || parts[0] != "nseal1a") {
+    if (parts.size() != 5U || parts[0] != "nsealr1a") {
         throw QrEnvelopeError("animated QR frame is malformed");
     }
     const std::string& digest = parts[1];
@@ -572,7 +572,7 @@ QrEventTemplate parse_event_template_fields(const std::string& event_template_js
 
 QrEnvelope decode_qr_envelope(const std::string& envelope) {
     if (envelope.rfind(kPrefix, 0) != 0) {
-        throw QrEnvelopeError("QR envelope must start with nseal1:");
+        throw QrEnvelopeError("QR envelope must start with nsealr1:");
     }
     const std::string payload = envelope.substr(std::string(kPrefix).size());
     if (!is_base64url_payload(payload)) {
@@ -680,4 +680,4 @@ QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {
         1, request_id->second.value, method->second.value, true, true, event_template->second.value, parsed_event_template};
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

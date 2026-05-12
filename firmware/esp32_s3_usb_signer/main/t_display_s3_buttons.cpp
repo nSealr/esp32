@@ -8,7 +8,7 @@
 
 #include "t_display_s3_board.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 namespace {
 
 constexpr int kTDisplayS3ButtonActiveLevel = 0;
@@ -24,8 +24,8 @@ bool gpio_pressed(int gpio) {
 std::optional<TDisplayS3ButtonEvent> poll_button(
     TDisplayS3ButtonState& state,
     int gpio,
-    nostrseal::ReviewButton short_press_button,
-    nostrseal::ReviewButton long_press_button) {
+    nsealr::ReviewButton short_press_button,
+    nsealr::ReviewButton long_press_button) {
     return update_t_display_s3_button_state(
         state,
         gpio_pressed(gpio),
@@ -60,18 +60,18 @@ std::optional<TDisplayS3ButtonEvent> poll_t_display_s3_button_event(TDisplayS3Bu
     if (std::optional<TDisplayS3ButtonEvent> event = poll_button(
             buttons.button1,
             kTDisplayS3Button1Gpio,
-            nostrseal::ReviewButton::Back,
-            nostrseal::ReviewButton::Reject)) {
+            nsealr::ReviewButton::Back,
+            nsealr::ReviewButton::Reject)) {
         return event;
     }
     return poll_button(
         buttons.button2,
         kTDisplayS3Button2Gpio,
-        nostrseal::ReviewButton::Next,
-        nostrseal::ReviewButton::Approve);
+        nsealr::ReviewButton::Next,
+        nsealr::ReviewButton::Approve);
 }
 
-std::optional<nostrseal::ReviewButton> poll_t_display_s3_review_button(TDisplayS3Buttons& buttons) {
+std::optional<nsealr::ReviewButton> poll_t_display_s3_review_button(TDisplayS3Buttons& buttons) {
     const std::optional<TDisplayS3ButtonEvent> event = poll_t_display_s3_button_event(buttons);
     if (!event.has_value()) {
         return std::nullopt;
@@ -79,4 +79,4 @@ std::optional<nostrseal::ReviewButton> poll_t_display_s3_review_button(TDisplayS
     return event->button;
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

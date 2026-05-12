@@ -1,5 +1,5 @@
 {
-  "schema": "nseal-esp32-security-profile-v0",
+  "schema": "nsealr-esp32-security-profile-v0",
   "target": "esp32_s3_usb_signer",
   "profile": "development_scaffold",
   "runtime_signing_feature_enabled": false,
@@ -33,50 +33,50 @@
     "required_before_signing": true,
     "production_claim": "blocked_until_production_acceptance",
     "evidence_reports": [
-      "NostrSeal/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
+      "nSealr/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
     ]
   },
   "display_review_protocol_evidence": [
-    "NostrSeal/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
-    "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
+    "nSealr/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
+    "nSealr/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+    "nSealr/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+    "nSealr/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
+    "nSealr/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
+    "nSealr/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
   ],
   "unicode_review_rendering": {
     "status": "ascii_safe_codepoint_fallback_only",
     "required_before_signing": true,
     "production_claim": "blocked_until_full_unicode_review_acceptance",
     "evidence_reports": [
-      "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
-      "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
-      "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-      "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
-      "NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
+      "nSealr/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+      "nSealr/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+      "nSealr/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
+      "nSealr/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
+      "nSealr/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json"
     ]
   },
   "companion_transport_evidence": [
-    "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json"
+    "nSealr/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json"
   ],
   "firmware_protocol_evidence": [
-    "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
-    "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json"
+    "nSealr/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
+    "nSealr/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json"
   ],
   "security_fuse_audit_evidence": [
-    "NostrSeal/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"
+    "nSealr/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"
   ],
   "physical_approval_controls": {
     "status": "manual_development_acceptance_passed",
@@ -84,10 +84,10 @@
     "production_claim": "blocked_until_production_acceptance",
     "touch_approval_allowed": false,
     "evidence_reports": [
-      "NostrSeal/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
-      "NostrSeal/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
+      "nSealr/hardware/reports/t-display-s3-review-button-navigation-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-terminal-review-decisions-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-manual-button-approve-2026-05-09.json",
+      "nSealr/hardware/reports/t-display-s3-manual-button-reject-2026-05-09.json"
     ]
   },
   "production_blockers": [

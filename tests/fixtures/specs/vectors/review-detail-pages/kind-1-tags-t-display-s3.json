@@ -4,7 +4,7 @@
   "display_profile": "ascii-safe-codepoint-fallback-v0",
   "source_review_vector": "kind-1-tags",
   "source_screen_review_vector": "kind-1-tags",
-  "approval_digest": "08a2aa30855b0064ab598f6d2ee3bd05a64bb937c7d39c33490c9521f05a3665",
+  "approval_digest": "b45328f9ef96122900562d161cca5f09e24bfdb66676c46ebbcfe08dd661eb30",
   "limits": {
     "max_title_chars": 18,
     "max_body_lines": 5,
@@ -36,7 +36,7 @@
     {
       "title": "Content",
       "lines": [
-        "NostrSeal fixture: tagged kind 1 event."
+        "nSealr fixture: tagged kind 1 event."
       ],
       "action": "next",
       "page_indicator": "Page 2/4",
@@ -55,7 +55,7 @@
         "mention",
         "Tag 2/2",
         "t",
-        "nostrseal"
+        "nsealr"
       ],
       "action": "next",
       "page_indicator": "Page 3/4",

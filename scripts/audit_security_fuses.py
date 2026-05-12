@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Sequence
 
 
-SCHEMA = "nseal-esp32-security-fuse-audit-v0"
+SCHEMA = "nsealr-esp32-security-fuse-audit-v0"
 TARGET = "esp32s3"
 READ_ONLY_COMMAND = ("espefuse.py", "--chip", TARGET, "--port")
 

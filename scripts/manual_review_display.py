@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Manual T-Display S3 review-display exerciser.
 
-This helper sends deterministic serial requests to a flashed NostrSeal ESP32
+This helper sends deterministic serial requests to a flashed nSealr ESP32
 device so a human can inspect the physical trusted-review display state. It
 does not enable signing and expects the firmware to keep returning
 ``signing_disabled`` for valid ``sign_event`` requests.
@@ -122,7 +122,7 @@ def build_scroll_review_exchange(
     specs_dir: Path = smoke_capabilities.DEFAULT_SPECS,
 ) -> tuple[str, str]:
     content = (
-        "NostrSeal scroll review content shows a long Nostr note across "
+        "nSealr scroll review content shows a long Nostr note across "
         "multiple display windows without truncation. "
         * 5
     )[:420]
@@ -135,7 +135,7 @@ def build_scroll_review_exchange(
                 "created_at": 1710000240,
                 "kind": 1,
                 "tags": [
-                    ["t", "nostrseal"],
+                    ["t", "nsealr"],
                     ["t", "hardware"],
                     ["t", "review"],
                     ["t", "security"],
@@ -164,13 +164,13 @@ def build_dense_tags_review_exchange(
                 "tags": [
                     ["p", "1" * 64, "mention"],
                     ["e", "2" * 64, "wss://relay.example"],
-                    ["t", "nostrseal"],
+                    ["t", "nsealr"],
                     ["t", "hardware"],
                     ["t", "display"],
                     ["t", "review"],
                     ["t", "scroll"],
                     ["t", "tags"],
-                    ["client", "nostrseal"],
+                    ["client", "nsealr"],
                     ["subject", "dense tags"],
                     ["nonce", "7"],
                     ["alt", "manual review"],
@@ -195,7 +195,7 @@ def build_unicode_review_exchange(
                 "created_at": 1710000360,
                 "kind": 1,
                 "tags": [["t", "caff\u00e8"], ["emoji", "\U0001f600"]],
-                "content": "NostrSeal unicode review: caff\u00e8 \U0001f600",
+                "content": "nSealr unicode review: caff\u00e8 \U0001f600",
             }
         },
     }
@@ -273,7 +273,7 @@ def build_manual_observation_checklist(scenario: str) -> str:
             "Confirm this fixture shows Tag 1/2 and Tag 2/2 on one compact Tags screen without ellipses.",
             "Confirm Tag 1/2 shows p, the full 64-character pubkey, and mention, without the empty field.",
             "Confirm the pubkey continuation line is indented and uses the same color as the first pubkey line.",
-            "Confirm Tag 2/2 shows t and nostrseal.",
+            "Confirm Tag 2/2 shows t and nsealr.",
             "If Tags shows a Page 3/4 Lines X-Y/N indicator, press short BOOT/GPIO0 to scroll only within Tags.",
             "Continue with short KEY/GPIO14 from Tags to the final Decision page.",
         ]

@@ -1,8 +1,8 @@
 repos:
   - repo: local
     hooks:
-      - id: nostrseal-ci
-        name: NostrSeal repository baseline
+      - id: nsealr-ci
+        name: nSealr repository baseline
         entry: make ci
         language: system
         pass_filenames: false

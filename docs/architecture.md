@@ -1,6 +1,6 @@
 # Architecture
 
-`NostrSeal/esp32` contains firmware for ESP32-based signer targets.
+`nSealr/esp32` contains firmware for ESP32-based signer targets.
 
 ## Targets
 
@@ -21,7 +21,7 @@
 
 ## Responsibilities
 
-- Parse NostrSeal signing requests.
+- Parse nSealr signing requests.
 - Render trusted review on local display where available.
 - Require physical approval or rejection.
 - Sign only after approval.
@@ -31,7 +31,7 @@
 ESP-IDF is the default firmware framework for serious ESP32-S3 work.
 
 The ESP32 stateless QR vault target is part of this repository, not the
-Raspberry repository. It should reuse shared `NostrSeal/specs` contracts for
+Raspberry repository. It should reuse shared `nSealr/specs` contracts for
 the QR envelope, trusted-review model, review-screen vectors, `approval_digest`,
 and signing vectors while implementing camera/display/button handling with
 ESP32 firmware components. It must not add persistent-secret storage or
@@ -50,7 +50,7 @@ route types:
   custody `device_persistent`, trusted review `device_display`, and
   `policy-scoped-automation-daily-use`.
 
-The current `nseal-account-descriptor-v0` USB vector
+The current `nsealr-account-descriptor-v0` USB vector
 `esp32-usb-device-slot-0` and grant vector `grant-esp32-usb-kind-1-session`
 are conformance contracts only. They do not authorize persistent grants on the
 current firmware and do not enable real signing. The firmware must still keep
@@ -70,7 +70,7 @@ per-public-key policy. The v0 product decision is one device-level unlock
 PIN/ceremony. Policy changes must be locally reviewed and physically approved
 on the device; companion proposals are not authoritative by themselves.
 
-Feature target and current status are tracked in `NostrSeal/specs`
+Feature target and current status are tracked in `nSealr/specs`
 `vectors/features/signer-feature-matrix-v0.json`. ESP32-specific firmware can
 have board-specific drivers, but any shared feature such as request validation,
 trusted review, approval digest binding, QR transport, serial transport, or
@@ -82,9 +82,9 @@ board-local behavior.
 The first firmware foundation is host-buildable C++ under
 `firmware/host_core`.
 
-- `serial_frame`: encodes and decodes newline-terminated `nseal1f:` frames with
+- `serial_frame`: encodes and decodes newline-terminated `nsealr1f:` frames with
   type, base64url JSON payload, and checksum.
-- `qr_envelope`: decodes `nseal1:` QR envelopes, validates unpadded base64url
+- `qr_envelope`: decodes `nsealr1:` QR envelopes, validates unpadded base64url
   payloads, validates UTF-8, applies shared v0 QR/request size limits, and
   requires a decoded JSON container for the future ESP32-S3 QR vault target.
   It also classifies decoded `sign_event` requests by top-level metadata,
@@ -93,7 +93,7 @@ The first firmware foundation is host-buildable C++ under
   host-supplied `id`, `pubkey`, or `sig` fields before review/signing code
   exists. It parses only the minimum unsigned event-template fields:
   `created_at`, `kind`, `tags`, and `content`, with constrained tag/content
-  limits mirrored from `NostrSeal/specs`.
+  limits mirrored from `nSealr/specs`.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
@@ -103,7 +103,7 @@ The first firmware foundation is host-buildable C++ under
   production display/control acceptance, storage, or a signing backend exists.
   It also defines the serial/display/button I/O harness for USB signer adapter
   acceptance tests.
-- `qr_review_flow`: host-core flow boundary from raw scanned `nseal1:` QR
+- `qr_review_flow`: host-core flow boundary from raw scanned `nsealr1:` QR
   envelopes to trusted review frames and approval state. It includes the
   `QrReviewIo` adapter harness for future scanner, display, and GPIO button
   code, returns the displayed frame/button transcript from that harness, and has
@@ -116,7 +116,7 @@ The first firmware foundation is host-buildable C++ under
   companion signed-output verification before firmware can be considered ready
   to connect a signing backend.
 - `approval_gate`: request-id and approval-digest bound approval state
-  machine, checked against shared `NostrSeal/specs` review-screen vectors.
+  machine, checked against shared `nSealr/specs` review-screen vectors.
 - `review_controls`: page-by-page review button state machine for future
   display/button adapters. It refuses approval until the final review page is
   reached, keeps rejection available before signing, and treats approval or
@@ -149,7 +149,7 @@ This code is intentionally independent of ESP-IDF so protocol and approval
 logic can be tested on desktop before it is wrapped by USB CDC, UART, display,
 button, secure storage, and signing components.
 
-Host tests generate their transport-vector header from `NostrSeal/specs` so the
+Host tests generate their transport-vector header from `nSealr/specs` so the
 firmware core is checked against the same serial frame vector used by the
 companion. The same generated header now includes review-screen approval
 digests, trusted review request factories, directory-discovered
@@ -174,7 +174,7 @@ sections become scroll windows such as `Page 3/4 Lines 1-9/18`. ESP-IDF
 display adapters, such as the T-Display S3 ST7789/i80 path, can paint those
 frames without changing review, approval, or signing semantics.
 The T-Display S3 sized detail-page output is now pinned by shared
-`NostrSeal/specs` review-detail-page vectors, while the `approval_digest`
+`nSealr/specs` review-detail-page vectors, while the `approval_digest`
 continues to come from the older digest-bound `screen-pages` contract.
 Frames with additional scroll windows show `Next/Scroll` in the footer so the
 physical display exposes both navigation axes. Adjacent scroll windows do not
@@ -219,8 +219,8 @@ as `Signing disabled` and `Not signed` is not buried in untested ESP-IDF loop
 branches.
 
 The QR envelope decoder is similarly hardware-neutral. It accepts the same
-static `nseal1:` envelope contract used by Raspberry and the companion, and it
-now also reconstructs complete `nseal1a:` animated QR frame sets in host-core
+static `nsealr1:` envelope contract used by Raspberry and the companion, and it
+now also reconstructs complete `nsealr1a:` animated QR frame sets in host-core
 tests. Animated reconstruction verifies frame digest, one-based ordering,
 checksums, frame count, frame payload size, decoded payload size, UTF-8, and
 JSON container shape before returning payload JSON. It does not perform camera
@@ -230,13 +230,13 @@ the raw `params.event_template` object boundary before later review code does
 real request handling. It also tolerates normal JSON string escapes, applies
 shared resource limits, and rejects event templates that already include `id`,
 `pubkey`, or `sig`. Those layers must be added behind separate tests and must
-continue to consume shared vectors from `NostrSeal/specs`. The current field
+continue to consume shared vectors from `nSealr/specs`. The current field
 parser validates only the unsigned event-template primitives that future review
 generation needs; tag semantics, event id computation, key storage, and signing
 remain absent.
 
 The QR review builder consumes those parsed primitives and emits the same page
-order, text, and `approval_digest` as `NostrSeal/specs` review-screen vectors
+order, text, and `approval_digest` as `nSealr/specs` review-screen vectors
 for basic and tagged kind `1` requests. It can create a `TrustedReviewSession`
 from a parsed QR request, so the future QR path can reuse the same bounded
 display frames, final-page traversal, and request/digest-bound approval gate as
@@ -277,7 +277,7 @@ The QR review transcript helper and `QrReviewIo` result both record the frame
 shown before each physical button input, the optional terminal decision, and
 whether the approval gate has been satisfied. This gives display/GPIO adapters a
 deterministic host-side oracle for review-loop tests without introducing a
-signing backend. ESP32 host-core tests consume the shared `NostrSeal/specs` QR
+signing backend. ESP32 host-core tests consume the shared `nSealr/specs` QR
 review-transcript vectors so future firmware adapters stay aligned with the
 cross-repository review contract.
 
@@ -329,7 +329,7 @@ display-review evidence.
 
 `firmware/esp32_s3_usb_signer` is the first ESP-IDF project scaffold for the
 ESP32-S3 USB signer. It currently boots, uses native USB Serial/JTAG as the
-primary ESP-IDF console, reads newline-terminated `nseal1f:` frames from that
+primary ESP-IDF console, reads newline-terminated `nsealr1f:` frames from that
 console with the shared v0 serial-frame byte limit, answers the shared
 `get_capabilities` request and other valid v0 request ids, returns the shared
 development public key for `get_public_key`, returns `signing_disabled` for

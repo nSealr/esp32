@@ -5,12 +5,12 @@
 #include <string>
 #include <vector>
 
-#include "nostrseal/qr_review.hpp"
-#include "nostrseal/review_controls.hpp"
-#include "nostrseal/review_display.hpp"
-#include "nostrseal/trusted_review.hpp"
+#include "nsealr/qr_review.hpp"
+#include "nsealr/review_controls.hpp"
+#include "nsealr/review_display.hpp"
+#include "nsealr/trusted_review.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 class QrReviewFlow {
 public:
@@ -63,4 +63,4 @@ std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     const std::vector<ReviewButton>& buttons,
     ReviewDisplayLimits limits = {});
 
-}  // namespace nostrseal
+}  // namespace nsealr

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 TDisplayS3SerialInputEvent update_t_display_s3_serial_input(
     TDisplayS3SerialInput& input,
@@ -41,4 +41,4 @@ TDisplayS3SerialInputEvent update_t_display_s3_serial_input(
     return {};
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

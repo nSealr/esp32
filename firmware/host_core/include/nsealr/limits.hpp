@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace nostrseal {
+namespace nsealr {
 
 inline constexpr std::size_t kMaxRequestIdLength = 128;
 inline constexpr std::size_t kMaxDecodedRequestJsonBytes = 704;
@@ -19,4 +19,4 @@ inline constexpr std::size_t kMaxTagFieldUtf8Bytes = 64;
 inline constexpr std::size_t kMaxTotalTagUtf8Bytes = 4096;
 inline constexpr std::uint64_t kMaxSafeInteger = 9007199254740991ULL;
 
-}  // namespace nostrseal
+}  // namespace nsealr

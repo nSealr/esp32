@@ -3,10 +3,10 @@
 #include <optional>
 #include <string>
 
-#include "nostrseal/review_display.hpp"
-#include "nostrseal/trusted_review.hpp"
+#include "nsealr/review_display.hpp"
+#include "nsealr/trusted_review.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 struct SerialFrameHandlingResult {
     std::string response_frame;
@@ -19,4 +19,4 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
     const std::string& line,
     ReviewDisplayLimits limits = {});
 
-}  // namespace nostrseal
+}  // namespace nsealr

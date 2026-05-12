@@ -43,36 +43,36 @@ def compact_json(value: dict) -> str:
 
 def serial_frame(frame_type: str, payload_base64url: str) -> str:
     checksum = hashlib.sha256(f"{frame_type}:{payload_base64url}".encode("utf-8")).hexdigest()[:16]
-    return f"nseal1f:{frame_type}:{payload_base64url}:{checksum}\n"
+    return f"nsealr1f:{frame_type}:{payload_base64url}:{checksum}\n"
 
 
 def cpp_review_action(action: str) -> str:
     if action == "next":
-        return "nostrseal::ReviewPageAction::Next"
+        return "nsealr::ReviewPageAction::Next"
     if action == "approve_or_reject":
-        return "nostrseal::ReviewPageAction::ApproveOrReject"
+        return "nsealr::ReviewPageAction::ApproveOrReject"
     raise ValueError(f"unsupported review page action: {action}")
 
 
 def cpp_review_button(button: str) -> str:
     if button == "next":
-        return "nostrseal::ReviewButton::Next"
+        return "nsealr::ReviewButton::Next"
     if button == "scroll":
-        return "nostrseal::ReviewButton::Back"
+        return "nsealr::ReviewButton::Back"
     if button == "approve":
-        return "nostrseal::ReviewButton::Approve"
+        return "nsealr::ReviewButton::Approve"
     if button == "reject":
-        return "nostrseal::ReviewButton::Reject"
+        return "nsealr::ReviewButton::Reject"
     raise ValueError(f"unsupported review button: {button}")
 
 
 def cpp_review_body_style(style: str) -> str:
     if style == "normal":
-        return "nostrseal::ReviewBodyLineStyle::Normal"
+        return "nsealr::ReviewBodyLineStyle::Normal"
     if style == "meta":
-        return "nostrseal::ReviewBodyLineStyle::Meta"
+        return "nsealr::ReviewBodyLineStyle::Meta"
     if style == "value":
-        return "nostrseal::ReviewBodyLineStyle::Value"
+        return "nsealr::ReviewBodyLineStyle::Value"
     raise ValueError(f"unsupported review body line style: {style}")
 
 
@@ -86,8 +86,8 @@ def cpp_optional_bool(value: bool | None) -> str:
 
 def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
     lines = [
-        f"inline nostrseal::TrustedReviewRequest {name}() {{",
-        "    return nostrseal::TrustedReviewRequest{",
+        f"inline nsealr::TrustedReviewRequest {name}() {{",
+        "    return nsealr::TrustedReviewRequest{",
         f"        {cpp_string(screen_review['request_id'])},",
         f"        {cpp_string(screen_review['approval_digest'])},",
         "        {",
@@ -96,7 +96,7 @@ def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
         body_lines = ", ".join(cpp_string(line) for line in page["lines"])
         lines.extend(
             [
-                "            nostrseal::TrustedReviewPage{",
+                "            nsealr::TrustedReviewPage{",
                 f"                {cpp_string(page['title'])},",
                 f"                {{{body_lines}}},",
                 f"                {cpp_review_action(page['action'])},",
@@ -116,7 +116,7 @@ def trusted_review_factory(name: str, screen_review: dict) -> list[str]:
 def qr_review_buttons_factory(name: str, buttons: list[str]) -> list[str]:
     button_values = ", ".join(cpp_review_button(button) for button in buttons)
     return [
-        f"inline std::vector<nostrseal::ReviewButton> {name}() {{",
+        f"inline std::vector<nsealr::ReviewButton> {name}() {{",
         f"    return {{{button_values}}};",
         "}",
     ]
@@ -124,7 +124,7 @@ def qr_review_buttons_factory(name: str, buttons: list[str]) -> list[str]:
 
 def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]:
     lines = [
-        f"inline std::vector<nostrseal::QrReviewTranscriptStep> {name}() {{",
+        f"inline std::vector<nsealr::QrReviewTranscriptStep> {name}() {{",
         "    return {",
     ]
     for step in transcript:
@@ -133,8 +133,8 @@ def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]
         styles = ", ".join(cpp_review_body_style(style) for style in frame.get("body_line_styles", []))
         lines.extend(
             [
-                "        nostrseal::QrReviewTranscriptStep{",
-                "            nostrseal::ReviewDisplayFrame{",
+                "        nsealr::QrReviewTranscriptStep{",
+                "            nsealr::ReviewDisplayFrame{",
                 f"                {cpp_string(frame['title'])},",
                 f"                {cpp_string(frame['page_indicator'])},",
                 f"                {{{body_lines}}},",
@@ -158,8 +158,8 @@ def qr_review_transcript_factory(name: str, transcript: list[dict]) -> list[str]
 
 def review_display_limits_factory(name: str, limits: dict) -> list[str]:
     return [
-        f"inline nostrseal::ReviewDisplayLimits {name}() {{",
-        "    return nostrseal::ReviewDisplayLimits{",
+        f"inline nsealr::ReviewDisplayLimits {name}() {{",
+        "    return nsealr::ReviewDisplayLimits{",
         f"        .max_title_chars = {limits['max_title_chars']},",
         f"        .max_body_lines = {limits['max_body_lines']},",
         f"        .max_line_chars = {limits['max_line_chars']},",
@@ -174,8 +174,8 @@ def review_display_frame_factory(name: str, frame: dict) -> list[str]:
     body_lines = ", ".join(cpp_string(line) for line in frame["body_lines"])
     styles = ", ".join(cpp_review_body_style(style) for style in frame.get("body_line_styles", []))
     return [
-        f"inline nostrseal::ReviewDisplayFrame {name}() {{",
-        "    return nostrseal::ReviewDisplayFrame{",
+        f"inline nsealr::ReviewDisplayFrame {name}() {{",
+        "    return nsealr::ReviewDisplayFrame{",
         f"        {cpp_string(frame['title'])},",
         f"        {cpp_string(frame['page_indicator'])},",
         f"        {{{body_lines}}},",
@@ -201,7 +201,7 @@ def trusted_review_page_initializer(page: dict) -> list[str]:
     body_lines = ", ".join(cpp_string(line) for line in page["lines"])
     styles = ", ".join(cpp_review_body_style(style) for style in page.get("body_line_styles", []))
     return [
-        "            nostrseal::TrustedReviewPage{",
+        "            nsealr::TrustedReviewPage{",
         f"                {cpp_string(page['title'])},",
         f"                {{{body_lines}}},",
         f"                {cpp_review_action(page['action'])},",
@@ -218,8 +218,8 @@ def review_detail_page_vector_factories(vectors: list[dict], reviews_by_name: di
         "    const char* name;",
         "    const char* request_json;",
         "    const char* approval_digest;",
-        "    nostrseal::ReviewDisplayLimits limits;",
-        "    std::vector<nostrseal::TrustedReviewPage> pages;",
+        "    nsealr::ReviewDisplayLimits limits;",
+        "    std::vector<nsealr::TrustedReviewPage> pages;",
         "};",
         "",
         "inline std::vector<ReviewDetailPageVector> review_detail_page_vectors() {",
@@ -233,7 +233,7 @@ def review_detail_page_vector_factories(vectors: list[dict], reviews_by_name: di
                 f"            {cpp_string(vector['name'])},",
                 f"            {cpp_string(compact_json(source['request']))},",
                 f"            {cpp_string(vector['approval_digest'])},",
-                "            nostrseal::ReviewDisplayLimits{",
+                "            nsealr::ReviewDisplayLimits{",
                 f"                .max_title_chars = {vector['limits']['max_title_chars']},",
                 f"                .max_body_lines = {vector['limits']['max_body_lines']},",
                 f"                .max_line_chars = {vector['limits']['max_line_chars']},",
@@ -312,7 +312,7 @@ def animated_qr_frames_factory(name: str, frames: list[str]) -> list[str]:
 
 def main() -> int:
     specs = default_specs_dir()
-    limits = json.loads((specs / "vectors/limits/nseal-v0.json").read_text(encoding="utf-8"))["limits"]
+    limits = json.loads((specs / "vectors/limits/nsealr-v0.json").read_text(encoding="utf-8"))["limits"]
     vector = json.loads(
         (specs / "vectors/transports/serial-frame-request-kind-1-basic.json").read_text(encoding="utf-8")
     )
@@ -396,10 +396,10 @@ def main() -> int:
                 "#include <string>",
                 "#include <vector>",
                 "",
-                '#include "nostrseal/qr_review_flow.hpp"',
-                '#include "nostrseal/trusted_review.hpp"',
+                '#include "nsealr/qr_review_flow.hpp"',
+                '#include "nsealr/trusted_review.hpp"',
                 "",
-                "namespace nostrseal::test_vectors {",
+                "namespace nsealr::test_vectors {",
                 *limit_constants_factory(limits),
                 "",
                 f"constexpr const char* kSerialFrameType = {cpp_string(vector['type'])};",
@@ -496,7 +496,7 @@ def main() -> int:
                     "long_events_many_tags_detail_scroll_approve_transcript",
                     long_events_many_tags_detail_scroll_transcript["transcript"],
                 ),
-                "}  // namespace nostrseal::test_vectors",
+                "}  // namespace nsealr::test_vectors",
                 "",
             ]
         ),

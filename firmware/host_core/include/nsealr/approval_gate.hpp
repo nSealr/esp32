@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace nostrseal {
+namespace nsealr {
 
 enum class ApprovalDecision {
     Pending,
@@ -27,4 +27,4 @@ private:
     ApprovalDecision decision_ = ApprovalDecision::Pending;
 };
 
-}  // namespace nostrseal
+}  // namespace nsealr

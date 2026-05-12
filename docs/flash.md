@@ -74,7 +74,7 @@ Build result:
 
 ```text
 ESP-IDF v5.5.4
-nostrseal_esp32_s3_usb_signer.bin size: 0x7ab70 bytes after adding the
+nsealr_esp32_s3_usb_signer.bin size: 0x7ab70 bytes after adding the
 host-core QR review I/O transcript helper to the ESP-IDF component
 smallest app partition: 0x100000 bytes
 free app partition space: 0x85490 bytes, about 52%
@@ -114,9 +114,9 @@ A short monitor session confirmed that the scaffold boots:
 
 ```text
 I boot.esp32s3: SPI Flash Size : 16MB
-I nostrseal: NostrSeal ESP32-S3 USB signer scaffold booted
-W nostrseal: Signing is disabled until provisioning, hardening, signed-output verification, and signing tests pass
-I nostrseal: USB serial frame handler ready for get_capabilities, get_signing_status, get_public_key, and disabled sign_event
+I nsealr: nSealr ESP32-S3 USB signer scaffold booted
+W nsealr: Signing is disabled until provisioning, hardening, signed-output verification, and signing tests pass
+I nsealr: USB serial frame handler ready for get_capabilities, get_signing_status, get_public_key, and disabled sign_event
 ```
 
 The first flash smoke test reported a hardware/config mismatch:

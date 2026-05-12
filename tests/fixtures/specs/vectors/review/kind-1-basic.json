@@ -9,7 +9,7 @@
         "created_at": 1710000000,
         "kind": 1,
         "tags": [],
-        "content": "NostrSeal fixture: basic kind 1 event."
+        "content": "nSealr fixture: basic kind 1 event."
       }
     }
   },
@@ -17,8 +17,8 @@
     "kind": 1,
     "created_at": 1710000000,
     "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
-    "content": "NostrSeal fixture: basic kind 1 event.",
-    "content_utf8_bytes": 38,
+    "content": "nSealr fixture: basic kind 1 event.",
+    "content_utf8_bytes": 35,
     "tag_count": 0,
     "tags": []
   }

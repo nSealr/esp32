@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 
-#include "nostrseal/approval_gate.hpp"
-#include "nostrseal/review_controls.hpp"
-#include "nostrseal/review_display.hpp"
+#include "nsealr/approval_gate.hpp"
+#include "nsealr/review_controls.hpp"
+#include "nsealr/review_display.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 struct TrustedReviewPage {
     std::string title;
@@ -56,4 +56,4 @@ private:
     std::size_t current_scroll_page_offset_ = 0;
 };
 
-}  // namespace nostrseal
+}  // namespace nsealr

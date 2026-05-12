@@ -1,6 +1,6 @@
 #include "t_display_s3_review_state.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 void start_t_display_s3_review_activity(TDisplayS3ReviewActivity& activity, std::uint32_t now_tick) {
     activity.active = true;

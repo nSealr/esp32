@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <optional>
 
-namespace nostrseal {
+namespace nsealr {
 
 enum class ReviewButton {
     Next,
@@ -30,4 +30,4 @@ private:
     bool rejected_ = false;
 };
 
-}  // namespace nostrseal
+}  // namespace nsealr

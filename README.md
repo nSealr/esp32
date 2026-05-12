@@ -1,6 +1,6 @@
-# NostrSeal ESP32
+# nSealr ESP32
 
-Firmware for ESP32-based NostrSeal signer targets.
+Firmware for ESP32-based nSealr signer targets.
 
 This repository groups the ESP32 firmware family instead of splitting every
 board into a separate repository.
@@ -19,7 +19,7 @@ board into a separate repository.
 The shared identity/policy route split is explicit: `esp32_qr_vault` remains a
 stateless, manual-only QR route with `persistent_grants: false`, while
 `esp32_usb_nip46` is the future persistent daily-use route described by
-`nseal-account-descriptor-v0`, `policy-scoped-automation-daily-use`, and the
+`nsealr-account-descriptor-v0`, `policy-scoped-automation-daily-use`, and the
 test grant `grant-esp32-usb-kind-1-session`. The USB route does not clear any
 production signing gate yet; signing remains disabled until provisioning,
 storage, review, hardening, and signed-output verification are accepted.
@@ -34,7 +34,7 @@ profiles, passphrase namespaces, NIP-06 accounts, standalone key slots, and
 per-public-key policy state after production gates pass. The current policy
 vectors are conformance scaffolds, not the final policy UX.
 
-Feature targets and current status are tracked in `NostrSeal/specs`
+Feature targets and current status are tracked in `nSealr/specs`
 `vectors/features/signer-feature-matrix-v0.json`. ESP32 may implement both QR
 vault and USB/NIP-46 features, but each shared feature must keep the same
 behavior as other implementations by using the shared `contract_id`. The ESP32
@@ -48,12 +48,12 @@ hardware readiness can differ, final vault behavior must converge.
 - Host-side ESP32-S3 detection gate for native USB/JTAG serial boards.
 - Local ESP-IDF `v5.5.4` build, flash, and capability/public-key/signing-disabled
   smoke test on an attached ESP32-S3.
-- `nseal1f:` serial frame encode/decode compatible with the companion serial
+- `nsealr1f:` serial frame encode/decode compatible with the companion serial
   framing draft. The decoder mirrors the shared v0 `max_serial_frame_bytes`
   limit, accepts common serial line endings, and rejects shared invalid
   serial-frame vectors for unsupported frame types, oversized frames, checksum
   mismatch, and malformed base64url payloads.
-- `nseal1:` static QR envelope decode boundary plus `nseal1a:` animated QR
+- `nsealr1:` static QR envelope decode boundary plus `nsealr1a:` animated QR
   frame reconstruction compatible with the shared transport vectors. The host
   core rejects malformed, padded, invalid UTF-8, oversized, missing-frame, and
   checksum-mismatched QR inputs before any future camera/display adapter can
@@ -69,15 +69,15 @@ hardware readiness can differ, final vault behavior must converge.
 - Minimal QR event-template field parsing for `created_at`, `kind`, `tags`, and
   `content`. This prepares trusted review generation without enabling tag
   semantics, key storage, or signing.
-- Shared NostrSeal v0 implementation limits for constrained firmware parsing,
+- Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.
 - QR trusted-review page generation from parsed event templates, checked
-  against shared `NostrSeal/specs` review-screen vectors. QR-derived
+  against shared `nSealr/specs` review-screen vectors. QR-derived
   `approval_digest` now matches shared basic/tagged vectors, while camera
   input, display/GPIO drivers, key storage, and signing remain disabled.
 - T-Display S3 sized QR review detail pages checked against shared
-  `NostrSeal/specs` review-detail-page vectors. These pin complete
+  `nSealr/specs` review-detail-page vectors. These pin complete
   Event/Content/Tags/Decision pages, scroll windows, compact line styles, long
   value continuations, visible JSON-style escapes for decoded control
   characters, and explicit `U+XXXX` fallback for unsupported display glyphs
@@ -86,7 +86,7 @@ hardware readiness can differ, final vault behavior must converge.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
-- `QrReviewFlow` host-core boundary from raw scanned `nseal1:` QR envelope to
+- `QrReviewFlow` host-core boundary from raw scanned `nsealr1:` QR envelope to
   trusted review frames and physical approval state. It rejects unsafe QR
   requests before a future camera/display adapter can display them.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
@@ -104,8 +104,8 @@ hardware readiness can differ, final vault behavior must converge.
 - Deterministic QR review transcripts for display/button adapter tests. A
   transcript records each displayed frame, input button, decision, and approval
   state without exposing any signing output, and the host-core tests consume the
-  shared `NostrSeal/specs` review-transcript vectors.
-- ESP32-S3 scaffold capability response over the same `nseal1f:` frame
+  shared `nSealr/specs` review-transcript vectors.
+- ESP32-S3 scaffold capability response over the same `nsealr1f:` frame
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic
   development-only fixture key.
@@ -162,7 +162,7 @@ hardware readiness can differ, final vault behavior must converge.
   rendering oracle.
 - Generated host test fixtures from shared serial, review-screen,
   review-display-frame, review-detail-page, review-transcript, limits, and invalid hardening
-  vectors in `NostrSeal/specs`.
+  vectors in `nSealr/specs`.
 - Board profile for the no-camera LILYGO T-Display S3 as an ESP32-S3
   USB/display signer candidate. The profile documents integrated ST7789
   display constraints, GPIO0/GPIO14 onboard button mapping, touch-not-approval,
@@ -218,7 +218,7 @@ minutes of inactivity; expiry clears the session and shows `Review Timeout` /
 
 The ESP32 stateless QR vault target belongs in this repository as ESP32
 firmware. It must reuse the shared QR envelope, review model, review-screen
-vectors, `approval_digest`, and signing vectors from `NostrSeal/specs`; it
+vectors, `approval_digest`, and signing vectors from `nSealr/specs`; it
 should not depend on Raspberry implementation code. It has no persistent secret
 and no TROPIC01 dependency.
 

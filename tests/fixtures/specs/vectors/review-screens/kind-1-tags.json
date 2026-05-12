@@ -17,10 +17,10 @@
           ],
           [
             "t",
-            "nostrseal"
+            "nsealr"
           ]
         ],
-        "content": "NostrSeal fixture: tagged kind 1 event."
+        "content": "nSealr fixture: tagged kind 1 event."
       }
     }
   },
@@ -28,8 +28,8 @@
     "kind": 1,
     "created_at": 1710000060,
     "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
-    "content": "NostrSeal fixture: tagged kind 1 event.",
-    "content_utf8_bytes": 39,
+    "content": "nSealr fixture: tagged kind 1 event.",
+    "content_utf8_bytes": 36,
     "tag_count": 2,
     "tags": [
       [
@@ -40,14 +40,14 @@
       ],
       [
         "t",
-        "nostrseal"
+        "nsealr"
       ]
     ]
   },
   "screen_review": {
     "format": "screen-pages",
     "request_id": "req-kind-1-tags",
-    "approval_digest": "08a2aa30855b0064ab598f6d2ee3bd05a64bb937c7d39c33490c9521f05a3665",
+    "approval_digest": "b45328f9ef96122900562d161cca5f09e24bfdb66676c46ebbcfe08dd661eb30",
     "pages": [
       {
         "title": "Event",
@@ -62,7 +62,7 @@
       {
         "title": "Content",
         "lines": [
-          "NostrSeal fixture: tagged kind 1 event."
+          "nSealr fixture: tagged kind 1 event."
         ],
         "action": "next"
       },
@@ -76,7 +76,7 @@
           "mention",
           "Tag 2/2",
           "t",
-          "nostrseal"
+          "nsealr"
         ],
         "action": "next"
       },

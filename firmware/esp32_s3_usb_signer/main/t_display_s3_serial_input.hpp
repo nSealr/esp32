@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string>
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 enum class TDisplayS3SerialInputEventKind {
     None,
@@ -26,4 +26,4 @@ TDisplayS3SerialInputEvent update_t_display_s3_serial_input(
     char ch,
     std::size_t max_frame_bytes);
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

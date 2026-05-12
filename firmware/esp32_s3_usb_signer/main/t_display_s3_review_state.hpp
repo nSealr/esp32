@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 struct TDisplayS3ReviewActivity {
     bool active = false;

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 constexpr int kTDisplayS3DisplayWidth = 170;
 constexpr int kTDisplayS3DisplayHeight = 320;
@@ -43,4 +43,4 @@ struct TDisplayS3BoardProfile {
 
 const TDisplayS3BoardProfile& t_display_s3_board_profile();
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

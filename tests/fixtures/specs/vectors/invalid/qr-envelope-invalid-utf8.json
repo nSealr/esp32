@@ -3,5 +3,5 @@
   "format": "pre-signing-invalid-vector-v0",
   "category": "qr-envelope",
   "expected_error": "QR envelope payload must be valid UTF-8",
-  "envelope": "nseal1:_w"
+  "envelope": "nsealr1:_w"
 }

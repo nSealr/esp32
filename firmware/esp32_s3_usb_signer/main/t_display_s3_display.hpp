@@ -6,7 +6,7 @@
 
 #include "t_display_s3_raster.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 struct TDisplayS3Display {
     esp_lcd_i80_bus_handle_t i80_bus = nullptr;
@@ -19,6 +19,6 @@ esp_err_t initialize_t_display_s3_display(TDisplayS3Display& display);
 esp_err_t draw_t_display_s3_boot_frame(TDisplayS3Display& display);
 esp_err_t draw_t_display_s3_review_frame(
     TDisplayS3Display& display,
-    const nostrseal::ReviewDisplayFrame& frame);
+    const nsealr::ReviewDisplayFrame& frame);
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify baseline repository structure for NostrSeal repos."""
+"""Verify baseline repository structure for nSealr repos."""
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ def main() -> int:
             print(f"ERROR: {error}")
         return 1
 
-    print(f"NostrSeal {REPO} baseline verification passed")
+    print(f"nSealr {REPO} baseline verification passed")
     return 0
 
 

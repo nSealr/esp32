@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-namespace nostrseal {
+namespace nsealr {
 
 constexpr std::uint32_t kReplacementCodepoint = 0xfffdU;
 
@@ -104,4 +104,4 @@ inline bool is_valid_utf8(std::string_view value) {
     return true;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

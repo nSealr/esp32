@@ -1,5 +1,5 @@
 {
-  "format": "nseal-grant-descriptor-v0",
+  "format": "nsealr-grant-descriptor-v0",
   "grant_id": "grant-esp32-usb-kind-1-session",
   "account_id": "acct-esp32-usb-slot-0",
   "route_type": "esp32_usb_nip46",
@@ -20,5 +20,5 @@
   },
   "requires_device_policy_confirmation": true,
   "revocable": true,
-  "audit_event_format": "nseal-grant-audit-event-v0"
+  "audit_event_format": "nsealr-grant-audit-event-v0"
 }

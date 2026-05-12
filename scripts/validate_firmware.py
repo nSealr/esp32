@@ -133,8 +133,8 @@ def validate_firmware_project(project: Path) -> None:
 
 def validate_security_profile(path: Path) -> None:
     profile = json.loads(path.read_text(encoding="utf-8"))
-    if profile.get("schema") != "nseal-esp32-security-profile-v0":
-        raise ValueError(f"{path}: schema must be nseal-esp32-security-profile-v0")
+    if profile.get("schema") != "nsealr-esp32-security-profile-v0":
+        raise ValueError(f"{path}: schema must be nsealr-esp32-security-profile-v0")
     if profile.get("target") != "esp32_s3_usb_signer":
         raise ValueError(f"{path}: target must be esp32_s3_usb_signer")
     if profile.get("production_signing_allowed") is not False:
@@ -250,7 +250,7 @@ def validate_board_profiles(board_dir: Path) -> None:
 def main() -> int:
     validate_firmware_project(ROOT / "firmware/esp32_s3_usb_signer")
     validate_board_profiles(ROOT / "boards")
-    print("NostrSeal ESP32 firmware validation passed")
+    print("nSealr ESP32 firmware validation passed")
     return 0
 
 

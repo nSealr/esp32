@@ -5,7 +5,7 @@
 #include <string_view>
 #include <vector>
 
-namespace nostrseal {
+namespace nsealr {
 
 enum class ReviewPageAction {
     Next,
@@ -48,4 +48,4 @@ ReviewDisplayFrame render_review_page(
     std::size_t total_pages,
     ReviewDisplayLimits limits = {});
 
-}  // namespace nostrseal
+}  // namespace nsealr

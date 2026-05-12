@@ -1,8 +1,8 @@
-#include "nostrseal/review_controls.hpp"
+#include "nsealr/review_controls.hpp"
 
 #include <stdexcept>
 
-namespace nostrseal {
+namespace nsealr {
 
 ReviewControlSession::ReviewControlSession(std::size_t page_count) : page_count_(page_count) {
     if (page_count_ == 0) {
@@ -57,4 +57,4 @@ std::optional<bool> ReviewControlSession::handle_button(ReviewButton button) {
     return true;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

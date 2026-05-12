@@ -1,5 +1,5 @@
 {
-  "format": "nseal-account-descriptor-v0",
+  "format": "nsealr-account-descriptor-v0",
   "account_id": "acct-esp32-usb-slot-0",
   "label": "ESP32 USB slot 0",
   "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",

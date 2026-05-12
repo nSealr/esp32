@@ -4,7 +4,7 @@
   "category": "nip46-policy-file",
   "expected_error": "sign_event permission parameter must match event_kind",
   "policy_file": {
-    "format": "nseal-nip46-policy-v0",
+    "format": "nsealr-nip46-policy-v0",
     "approved_permissions": [
       {
         "method": "sign_event",

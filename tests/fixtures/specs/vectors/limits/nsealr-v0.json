@@ -1,6 +1,6 @@
 {
-  "format": "nostrseal-implementation-limits-v0",
-  "name": "nostrseal-v0",
+  "format": "nsealr-implementation-limits-v0",
+  "name": "nsealr-v0",
   "limits": {
     "max_request_id_length": 128,
     "max_decoded_request_json_bytes": 704,
@@ -30,7 +30,7 @@
     }
   },
   "notes": [
-    "These are NostrSeal v0 implementation safety limits for constrained signers, not Nostr protocol limits.",
+    "These are nSealr v0 implementation safety limits for constrained signers, not Nostr protocol limits.",
     "Changes to these values require updated specs vectors and downstream conformance tests."
   ]
 }

@@ -1,10 +1,10 @@
-#include "nostrseal/trusted_review.hpp"
+#include "nsealr/trusted_review.hpp"
 
 #include <stdexcept>
 #include <string_view>
 #include <utility>
 
-namespace nostrseal {
+namespace nsealr {
 
 namespace {
 
@@ -160,4 +160,4 @@ bool TrustedReviewSession::terminal_decision_recorded() const {
            approval_gate_.decision() == ApprovalDecision::Rejected;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

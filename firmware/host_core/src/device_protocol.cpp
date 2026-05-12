@@ -1,4 +1,4 @@
-#include "nostrseal/device_protocol.hpp"
+#include "nsealr/device_protocol.hpp"
 
 #include <algorithm>
 #include <array>
@@ -7,15 +7,15 @@
 #include <utility>
 #include <vector>
 
-#include "nostrseal/json_unicode.hpp"
-#include "nostrseal/limits.hpp"
-#include "nostrseal/qr_envelope.hpp"
-#include "nostrseal/serial_frame.hpp"
-#include "nostrseal/serial_review.hpp"
-#include "nostrseal/signing_policy.hpp"
-#include "nostrseal/utf8.hpp"
+#include "nsealr/json_unicode.hpp"
+#include "nsealr/limits.hpp"
+#include "nsealr/qr_envelope.hpp"
+#include "nsealr/serial_frame.hpp"
+#include "nsealr/serial_review.hpp"
+#include "nsealr/signing_policy.hpp"
+#include "nsealr/utf8.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
 constexpr char kInvalidBase64 = static_cast<char>(-1);
@@ -302,7 +302,7 @@ SerialFrame unsupported_request_frame() {
 
 std::string capability_response_json(const std::string& request_id) {
     return std::string(R"({"version":1,"request_id":")") + request_id +
-           R"(","ok":true,"result":{"capabilities":{"device":{"name":"NostrSeal ESP32-S3 USB Signer Scaffold","firmware":"nostrseal-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nseal.signing.v0","nseal.serial-frame.v0"],"methods":["get_capabilities","get_signing_status","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})";
+           R"(","ok":true,"result":{"capabilities":{"device":{"name":"nSealr ESP32-S3 USB Signer Scaffold","firmware":"nsealr-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nsealr.signing.v0","nsealr.serial-frame.v0"],"methods":["get_capabilities","get_signing_status","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})";
 }
 
 std::string public_key_response_json(const std::string& request_id) {
@@ -416,4 +416,4 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
     return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

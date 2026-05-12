@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-#include "nostrseal/review_display.hpp"
+#include "nsealr/review_display.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 constexpr uint16_t kTDisplayS3ColorBlack = 0x0000;
 constexpr uint16_t kTDisplayS3ColorWhite = 0xFFFF;
@@ -15,7 +15,7 @@ constexpr uint16_t kTDisplayS3ColorYellow = 0xFFE0;
 constexpr uint16_t kTDisplayS3ColorAmber = 0xFEA0;
 
 uint16_t t_display_s3_boot_frame_color_for(int x, int y);
-nostrseal::ReviewDisplayLimits t_display_s3_review_limits();
-uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame& frame, int x, int y);
+nsealr::ReviewDisplayLimits t_display_s3_review_limits();
+uint16_t t_display_s3_review_frame_color_for(const nsealr::ReviewDisplayFrame& frame, int x, int y);
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

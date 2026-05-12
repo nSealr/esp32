@@ -1,4 +1,4 @@
-#include "nostrseal/sha256.hpp"
+#include "nsealr/sha256.hpp"
 
 #include <array>
 #include <cstdint>
@@ -6,7 +6,7 @@
 #include <sstream>
 #include <vector>
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
 constexpr std::array<std::uint32_t, 64> kRoundConstants = {
@@ -115,4 +115,4 @@ std::string sha256_hex(std::string_view input) {
     return out.str();
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

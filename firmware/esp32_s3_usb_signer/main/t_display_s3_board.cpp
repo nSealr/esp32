@@ -1,6 +1,6 @@
 #include "t_display_s3_board.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 namespace {
 constexpr TDisplayS3BoardProfile kProfile{
@@ -21,4 +21,4 @@ const TDisplayS3BoardProfile& t_display_s3_board_profile() {
     return kProfile;
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

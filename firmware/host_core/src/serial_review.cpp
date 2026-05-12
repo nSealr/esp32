@@ -1,12 +1,12 @@
-#include "nostrseal/serial_review.hpp"
+#include "nsealr/serial_review.hpp"
 
 #include <stdexcept>
 #include <utility>
 
-#include "nostrseal/qr_envelope.hpp"
-#include "nostrseal/qr_review.hpp"
+#include "nsealr/qr_envelope.hpp"
+#include "nsealr/qr_review.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
 TrustedReviewRequest build_serial_display_review_request(
@@ -93,4 +93,4 @@ SerialReviewIoFlowResult run_serial_review_io_flow(
     };
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

@@ -15,10 +15,10 @@
 #include "t_display_s3_board.hpp"
 #include "t_display_s3_raster.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 namespace {
 
-constexpr const char* kTag = "nostrseal-display";
+constexpr const char* kTag = "nsealr-display";
 constexpr int kTDisplayS3PixelClockHz = 8 * 1000 * 1000;
 constexpr int kTDisplayS3TransferRows = 16;
 constexpr int kTDisplayS3CommandBits = 8;
@@ -206,7 +206,7 @@ esp_err_t draw_t_display_s3_boot_frame(TDisplayS3Display& display) {
     return err;
 }
 
-esp_err_t draw_t_display_s3_review_frame(TDisplayS3Display& display, const nostrseal::ReviewDisplayFrame& frame) {
+esp_err_t draw_t_display_s3_review_frame(TDisplayS3Display& display, const nsealr::ReviewDisplayFrame& frame) {
     if (!display.display_driver_active || display.panel == nullptr || display.io == nullptr) {
         return ESP_ERR_INVALID_STATE;
     }
@@ -245,4 +245,4 @@ esp_err_t draw_t_display_s3_review_frame(TDisplayS3Display& display, const nostr
     return err;
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

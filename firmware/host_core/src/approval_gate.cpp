@@ -1,6 +1,6 @@
-#include "nostrseal/approval_gate.hpp"
+#include "nsealr/approval_gate.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 
 void ApprovalGate::begin_review(const std::string& request_id, const std::string& approval_digest) {
     active_request_id_ = request_id;
@@ -37,4 +37,4 @@ const std::string& ApprovalGate::active_approval_digest() const {
     return active_approval_digest_;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

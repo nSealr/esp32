@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace nostrseal {
+namespace nsealr {
 
 enum class FrameType {
     Request,
@@ -26,4 +26,4 @@ FrameType parse_frame_type(const std::string& value);
 std::string encode_serial_frame(const SerialFrame& frame);
 SerialFrame decode_serial_frame(const std::string& line);
 
-}  // namespace nostrseal
+}  // namespace nsealr

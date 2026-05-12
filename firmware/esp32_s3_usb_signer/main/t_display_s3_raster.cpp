@@ -7,7 +7,7 @@
 
 #include "t_display_s3_board.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 namespace {
 
 constexpr std::size_t kTDisplayS3ReviewTitleChars = 18;
@@ -163,34 +163,34 @@ int right_aligned_text_x(std::string_view text, int scale, int right_margin) {
     return std::max(0, kTDisplayS3LogicalDisplayWidth - right_margin - text_width_px(text, scale));
 }
 
-nostrseal::ReviewBodyLineStyle body_line_style_for(
-    const nostrseal::ReviewDisplayFrame& frame,
+nsealr::ReviewBodyLineStyle body_line_style_for(
+    const nsealr::ReviewDisplayFrame& frame,
     std::size_t index) {
     if (index < frame.body_line_styles.size()) {
         return frame.body_line_styles[index];
     }
-    return nostrseal::ReviewBodyLineStyle::Normal;
+    return nsealr::ReviewBodyLineStyle::Normal;
 }
 
-int body_line_scale(nostrseal::ReviewBodyLineStyle style) {
-    if (style == nostrseal::ReviewBodyLineStyle::Normal) {
+int body_line_scale(nsealr::ReviewBodyLineStyle style) {
+    if (style == nsealr::ReviewBodyLineStyle::Normal) {
         return 2;
     }
     return 1;
 }
 
-int body_line_height(nostrseal::ReviewBodyLineStyle style) {
-    if (style == nostrseal::ReviewBodyLineStyle::Normal) {
+int body_line_height(nsealr::ReviewBodyLineStyle style) {
+    if (style == nsealr::ReviewBodyLineStyle::Normal) {
         return kBodyLineHeight;
     }
     return kCompactBodyLineHeight;
 }
 
-uint16_t body_line_color(nostrseal::ReviewBodyLineStyle style) {
-    if (style == nostrseal::ReviewBodyLineStyle::Meta) {
+uint16_t body_line_color(nsealr::ReviewBodyLineStyle style) {
+    if (style == nsealr::ReviewBodyLineStyle::Meta) {
         return kTDisplayS3ColorGreen;
     }
-    if (style == nostrseal::ReviewBodyLineStyle::Value) {
+    if (style == nsealr::ReviewBodyLineStyle::Value) {
         return kTDisplayS3ColorYellow;
     }
     return kTDisplayS3ColorWhite;
@@ -212,8 +212,8 @@ uint16_t t_display_s3_boot_frame_color_for(int x, int y) {
     return kTDisplayS3ColorBlack;
 }
 
-nostrseal::ReviewDisplayLimits t_display_s3_review_limits() {
-    return nostrseal::ReviewDisplayLimits{
+nsealr::ReviewDisplayLimits t_display_s3_review_limits() {
+    return nsealr::ReviewDisplayLimits{
         .max_title_chars = kTDisplayS3ReviewTitleChars,
         .max_body_lines = kTDisplayS3ReviewBodyLines,
         .max_line_chars = kTDisplayS3ReviewLineChars,
@@ -222,7 +222,7 @@ nostrseal::ReviewDisplayLimits t_display_s3_review_limits() {
     };
 }
 
-uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame& frame, int x, int y) {
+uint16_t t_display_s3_review_frame_color_for(const nsealr::ReviewDisplayFrame& frame, int x, int y) {
     if (y < kHeaderHeight) {
         if (text_pixel_active(frame.title, 10, 7, 2, x, y)) {
             return kTDisplayS3ColorWhite;
@@ -244,7 +244,7 @@ uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame
         if (line >= kTDisplayS3ReviewCompactBodyLines) {
             break;
         }
-        const nostrseal::ReviewBodyLineStyle style = body_line_style_for(frame, line);
+        const nsealr::ReviewBodyLineStyle style = body_line_style_for(frame, line);
         if (text_pixel_active(frame.body_lines[line], 10, line_y, body_line_scale(style), x, y)) {
             return body_line_color(style);
         }
@@ -261,4 +261,4 @@ uint16_t t_display_s3_review_frame_color_for(const nostrseal::ReviewDisplayFrame
     return kTDisplayS3ColorBlack;
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

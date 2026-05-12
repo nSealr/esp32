@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace nostrseal {
+namespace nsealr {
 
 struct QrEnvelope {
     std::string payload_base64url;
@@ -39,4 +39,4 @@ QrEnvelope decode_qr_envelope(const std::string& envelope);
 QrEnvelope decode_animated_qr_envelope_frames(const std::vector<std::string>& frames);
 QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope);
 
-}  // namespace nostrseal
+}  // namespace nsealr

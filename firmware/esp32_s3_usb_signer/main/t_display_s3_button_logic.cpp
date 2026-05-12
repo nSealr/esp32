@@ -1,14 +1,14 @@
 #include "t_display_s3_button_logic.hpp"
 
-namespace nostrseal_esp32 {
+namespace nsealr_esp32 {
 
 std::optional<TDisplayS3ButtonEvent> update_t_display_s3_button_state(
     TDisplayS3ButtonState& state,
     bool pressed,
     int64_t now_ms,
     int gpio,
-    nostrseal::ReviewButton short_press_button,
-    nostrseal::ReviewButton long_press_button) {
+    nsealr::ReviewButton short_press_button,
+    nsealr::ReviewButton long_press_button) {
     if (pressed && !state.pressed) {
         state.pressed = true;
         state.pressed_at_ms = now_ms;
@@ -33,4 +33,4 @@ std::optional<TDisplayS3ButtonEvent> update_t_display_s3_button_state(
     return std::nullopt;
 }
 
-}  // namespace nostrseal_esp32
+}  // namespace nsealr_esp32

@@ -9,7 +9,7 @@
         "created_at": 1710000000,
         "kind": 1,
         "tags": [],
-        "content": "NostrSeal fixture: basic kind 1 event."
+        "content": "nSealr fixture: basic kind 1 event."
       }
     }
   },
@@ -17,15 +17,15 @@
     "kind": 1,
     "created_at": 1710000000,
     "author_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
-    "content": "NostrSeal fixture: basic kind 1 event.",
-    "content_utf8_bytes": 38,
+    "content": "nSealr fixture: basic kind 1 event.",
+    "content_utf8_bytes": 35,
     "tag_count": 0,
     "tags": []
   },
   "screen_review": {
     "format": "screen-pages",
     "request_id": "req-kind-1-basic",
-    "approval_digest": "6115446825f03a7abf600a7e5746e2a28de33aff3088894e1b610c17a7bb685b",
+    "approval_digest": "a09ddd564e439fdd4756da6863156eddcfc50c295af453af1c78c35986c303a5",
     "pages": [
       {
         "title": "Event",
@@ -40,7 +40,7 @@
       {
         "title": "Content",
         "lines": [
-          "NostrSeal fixture: basic kind 1 event."
+          "nSealr fixture: basic kind 1 event."
         ],
         "action": "next"
       },

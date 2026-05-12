@@ -1,7 +1,7 @@
-#include "nostrseal/qr_review.hpp"
+#include "nsealr/qr_review.hpp"
 
-#include "nostrseal/sha256.hpp"
-#include "nostrseal/utf8.hpp"
+#include "nsealr/sha256.hpp"
+#include "nsealr/utf8.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
 struct QrReviewData {
@@ -536,4 +536,4 @@ TrustedReviewSession begin_qr_trusted_review(const QrSigningRequest& request, Re
     return TrustedReviewSession{build_qr_display_review_request(request, limits), limits};
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

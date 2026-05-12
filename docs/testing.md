@@ -19,7 +19,7 @@ tests with strict C++ warnings.
 - Shared invalid serial-frame vector tests for oversized frames, checksum
   mismatch, malformed payloads, and unsupported frame types, plus a host-core
   assertion that `kMaxSerialFrameBytes` matches the shared v0 limit profile.
-- QR envelope tests covering the shared `nseal1:` vector, prefix rejection,
+- QR envelope tests covering the shared `nsealr1:` vector, prefix rejection,
   unpadded base64url rejection, invalid UTF-8 rejection, oversized decoded
   payload rejection, and non-JSON payload rejection.
 - QR `sign_event` request metadata tests covering version, `request_id`,
@@ -130,7 +130,7 @@ tests with strict C++ warnings.
   display frames, final-page traversal, and request/digest-bound approval.
 - QR review-flow tests proving raw scanned QR envelopes drive trusted review
   without a signing backend and unsafe QR requests are rejected before display.
-- Animated QR host-core tests proving shared `nseal1a:` frames reconstruct to
+- Animated QR host-core tests proving shared `nsealr1a:` frames reconstruct to
   the expected payload JSON and reject empty, missing-frame, and checksum-
   mismatched frame sets before future camera adapters exist.
 - QR review I/O harness tests proving scanner, display, and physical-button
@@ -141,15 +141,15 @@ tests with strict C++ warnings.
   future drivers can prove what they actually displayed and accepted.
 - QR review transcript tests covering full approval traversal and early
   rejection as deterministic frame/button/decision records from shared
-  `NostrSeal/specs` review-transcript vectors.
-- Host test header generation from the shared `NostrSeal/specs` serial,
+  `nSealr/specs` review-transcript vectors.
+- Host test header generation from the shared `nSealr/specs` serial,
   review-screen, review-display-frame, review-detail-page, review-transcript,
   limits, and invalid hardening vectors. Review-display-frame and
   review-detail-page generation is directory-driven, so new shared display
   vectors are consumed without adding one-off loader code.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
-  when the sibling `NostrSeal/specs` checkout is not present. Cross-repo drift
-  is still guarded by `NostrSeal/lab` integration checks.
+  when the sibling `nSealr/specs` checkout is not present. Cross-repo drift
+  is still guarded by `nSealr/lab` integration checks.
 - Approval gate tests requiring request-id and shared review-screen
   approval-digest matched approval before signing is permitted.
 - Review button state-machine tests requiring traversal to the final review page
@@ -168,7 +168,7 @@ tests with strict C++ warnings.
   for T-Display S3 sized pages, proving complete Event/Content/Tags/Decision
   physical pages, scroll-window indicators, compact line styles, continuation
   indentation, visible JSON-style control escapes, and `U+XXXX` display
-  fallback match `NostrSeal/specs`.
+  fallback match `nSealr/specs`.
 - The control-escape renderer smoke report records that firmware revision
   `294a77e` built, flashed, and preserved capability/review-scenario protocol
   behavior after the host-core renderer change. It is not human visual
@@ -222,7 +222,7 @@ tests with strict C++ warnings.
   firmware. The smoke sends both shared fixture request frames and dynamic
   `request_id` variants, including `get_signing_status`, so parser changes
   cannot silently fall back to exact fixture matching. It also sends invalid
-  dynamic metadata requests from shared `NostrSeal/specs` invalid serial-frame
+  dynamic metadata requests from shared `nSealr/specs` invalid serial-frame
   vectors plus serial-wrapped invalid signing-request vectors, including
   unknown top-level request fields, expecting deterministic
   `unsupported_request` rejections. Shared malformed transport vectors for
@@ -283,7 +283,7 @@ tests with strict C++ warnings.
 ## Required Tests
 
 - ESP32-S3 QR vault camera/display tests must consume the shared QR envelope,
-  review-screen, `approval_digest`, and signing vectors from `NostrSeal/specs`.
+  review-screen, `approval_digest`, and signing vectors from `nSealr/specs`.
 - ESP32-S3 QR vault account-source tests must eventually mirror Raspberry QR
   vault behavior for RAM-only manual words, SeedSigner Standard SeedQR,
   CompactSeedQR, plain mnemonic QR, `nsec` QR, local generation, and no

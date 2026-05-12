@@ -1,8 +1,8 @@
-#include "nostrseal/signing_policy.hpp"
+#include "nsealr/signing_policy.hpp"
 
 #include <algorithm>
 
-namespace nostrseal {
+namespace nsealr {
 
 namespace {
 
@@ -58,4 +58,4 @@ SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readin
     return status;
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

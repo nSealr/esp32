@@ -1,15 +1,15 @@
-#include "nostrseal/serial_frame.hpp"
+#include "nsealr/serial_frame.hpp"
 
 #include <algorithm>
 #include <array>
 
-#include "nostrseal/limits.hpp"
-#include "nostrseal/sha256.hpp"
+#include "nsealr/limits.hpp"
+#include "nsealr/sha256.hpp"
 
-namespace nostrseal {
+namespace nsealr {
 namespace {
 
-constexpr const char* kPrefix = "nseal1f:";
+constexpr const char* kPrefix = "nsealr1f:";
 
 bool is_base64url_payload(const std::string& value) {
     if (value.empty()) {
@@ -98,7 +98,7 @@ SerialFrame decode_serial_frame(const std::string& line) {
     }
     const std::string normalized = strip_line_ending(line);
     if (normalized.rfind(kPrefix, 0) != 0) {
-        throw SerialFrameError("serial frame must start with nseal1f:");
+        throw SerialFrameError("serial frame must start with nsealr1f:");
     }
     const auto [type_text, payload, frame_checksum] = split_frame_body(normalized.substr(std::string(kPrefix).size()));
     const FrameType type = parse_frame_type(type_text);
@@ -111,4 +111,4 @@ SerialFrame decode_serial_frame(const std::string& line) {
     return SerialFrame{type, payload};
 }
 
-}  // namespace nostrseal
+}  // namespace nsealr

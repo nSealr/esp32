@@ -85,7 +85,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
                 (ROOT / "docs/testing.md").read_text(encoding="utf-8"),
             ]
         )
-        self.assertIn("nseal-account-descriptor-v0", docs)
+        self.assertIn("nsealr-account-descriptor-v0", docs)
         self.assertIn("esp32_usb_nip46", docs)
         self.assertIn("policy-scoped-automation-daily-use", docs)
         self.assertIn("grant-esp32-usb-kind-1-session", docs)
@@ -110,7 +110,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
 
         audit = audit_security_fuses.parse_espefuse_summary(sample_summary, port="/dev/cu.usbmodem1101")
 
-        self.assertEqual(audit["schema"], "nseal-esp32-security-fuse-audit-v0")
+        self.assertEqual(audit["schema"], "nsealr-esp32-security-fuse-audit-v0")
         self.assertEqual(audit["target"], "esp32s3")
         self.assertEqual(audit["port"], "/dev/cu.usbmodem1101")
         self.assertFalse(audit["secure_boot_enabled"])
@@ -155,7 +155,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         validate_firmware.validate_security_profile(profile_path)
 
         profile = json.loads(profile_path.read_text(encoding="utf-8"))
-        self.assertEqual(profile["schema"], "nseal-esp32-security-profile-v0")
+        self.assertEqual(profile["schema"], "nsealr-esp32-security-profile-v0")
         self.assertFalse(profile["runtime_signing_feature_enabled"])
         self.assertFalse(profile["production_signing_allowed"])
         self.assertFalse(profile["secure_boot"]["enabled"])
@@ -186,39 +186,39 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertEqual(
             profile["display_review_protocol_evidence"],
             [
-                "NostrSeal/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
-                "NostrSeal/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
-                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
-                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
-                "NostrSeal/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
-                "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-review-detail-pages-smoke-2026-05-10.json",
+                "nSealr/hardware/reports/t-display-s3-utf8-review-renderer-smoke-2026-05-10.json",
+                "nSealr/hardware/reports/t-display-s3-ascii-punctuation-renderer-smoke-2026-05-10.json",
+                "nSealr/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-dense-tags-review-smoke-2026-05-10.json",
+                "nSealr/hardware/reports/t-display-s3-current-head-smoke-2026-05-10.json",
+                "nSealr/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-control-escape-renderer-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-control-escape-scenario-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(
             profile["companion_transport_evidence"],
             [
-                "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-companion-serial-line-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-companion-serial-line-refactor-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(
             profile["firmware_protocol_evidence"],
             [
-                "NostrSeal/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
-                "NostrSeal/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-disabled-copy-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-unicode-signing-gate-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-signing-status-dedup-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-ascii-punctuation-glyph-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-unsupported-serial-type-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-detail-scroll-contract-smoke-2026-05-11.json",
+                "nSealr/hardware/reports/t-display-s3-value-line-color-smoke-2026-05-11.json",
             ],
         )
         self.assertEqual(
             profile["security_fuse_audit_evidence"],
-            ["NostrSeal/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"],
+            ["nSealr/hardware/reports/t-display-s3-security-fuse-audit-2026-05-11.json"],
         )
         self.assertEqual(
             profile["physical_approval_controls"]["status"],
@@ -237,7 +237,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             profile_path.write_text(
                 json.dumps(
                     {
-                        "schema": "nseal-esp32-security-profile-v0",
+                        "schema": "nsealr-esp32-security-profile-v0",
                         "target": "esp32_s3_usb_signer",
                         "profile": "production",
                         "runtime_signing_feature_enabled": True,
@@ -510,7 +510,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("wait_for_t_display_s3_color_transfer", display_source)
         self.assertIn("esp_lcd_panel_draw_bitmap", display_source)
 
-        self.assertIn("nostrseal/review_display.hpp", raster_header)
+        self.assertIn("nsealr/review_display.hpp", raster_header)
         self.assertIn("t_display_s3_review_limits", raster_header)
         self.assertIn("t_display_s3_review_frame_color_for", raster_header)
         self.assertIn("kTDisplayS3ReviewTitleChars", raster_source)
@@ -524,7 +524,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("text_pixel_active", raster_source)
         self.assertIn("glyph_rows_for", raster_source)
 
-        self.assertIn("nostrseal/review_display.hpp", main)
+        self.assertIn("nsealr/review_display.hpp", main)
         self.assertIn("handle_serial_frame_with_review_preview", main)
         self.assertIn("display_sign_event_review_preview", main)
         self.assertIn("review_frame", main)
@@ -630,28 +630,28 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
                 #include <limits>
 
                 int main() {
-                    nostrseal_esp32::TDisplayS3ReviewActivity activity;
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_active(activity));
+                    nsealr_esp32::TDisplayS3ReviewActivity activity;
+                    assert(!nsealr_esp32::t_display_s3_review_activity_active(activity));
 
-                    nostrseal_esp32::start_t_display_s3_review_activity(activity, 100);
-                    assert(nostrseal_esp32::t_display_s3_review_activity_active(activity));
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 159, 60));
-                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 160, 60));
+                    nsealr_esp32::start_t_display_s3_review_activity(activity, 100);
+                    assert(nsealr_esp32::t_display_s3_review_activity_active(activity));
+                    assert(!nsealr_esp32::t_display_s3_review_activity_expired(activity, 159, 60));
+                    assert(nsealr_esp32::t_display_s3_review_activity_expired(activity, 160, 60));
 
-                    nostrseal_esp32::record_t_display_s3_review_activity(activity, 170);
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 229, 60));
-                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 230, 60));
+                    nsealr_esp32::record_t_display_s3_review_activity(activity, 170);
+                    assert(!nsealr_esp32::t_display_s3_review_activity_expired(activity, 229, 60));
+                    assert(nsealr_esp32::t_display_s3_review_activity_expired(activity, 230, 60));
 
-                    nostrseal_esp32::start_t_display_s3_review_activity(
+                    nsealr_esp32::start_t_display_s3_review_activity(
                         activity,
                         std::numeric_limits<std::uint32_t>::max() - 5
                     );
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 3, 10));
-                    assert(nostrseal_esp32::t_display_s3_review_activity_expired(activity, 5, 10));
+                    assert(!nsealr_esp32::t_display_s3_review_activity_expired(activity, 3, 10));
+                    assert(nsealr_esp32::t_display_s3_review_activity_expired(activity, 5, 10));
 
-                    nostrseal_esp32::clear_t_display_s3_review_activity(activity);
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_active(activity));
-                    assert(!nostrseal_esp32::t_display_s3_review_activity_expired(activity, 1000, 60));
+                    nsealr_esp32::clear_t_display_s3_review_activity(activity);
+                    assert(!nsealr_esp32::t_display_s3_review_activity_active(activity));
+                    assert(!nsealr_esp32::t_display_s3_review_activity_expired(activity, 1000, 60));
                     return 0;
                 }
                 """,
@@ -700,7 +700,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn('frame.page_indicator = "Rejected"', status_source)
         self.assertIn("response_frame_is_error", main)
         self.assertIn("decode_serial_frame(response_frame)", main)
-        self.assertIn("display_review_frame(display, nostrseal_esp32::build_t_display_s3_request_error_frame())", main)
+        self.assertIn("display_review_frame(display, nsealr_esp32::build_t_display_s3_request_error_frame())", main)
         self.assertIn("clear_active_review(active_review)", main)
 
     def test_t_display_s3_firmware_expires_stale_review_sessions_without_signing(self) -> None:
@@ -807,16 +807,16 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
     def test_smoke_script_builds_capability_frames_from_specs(self) -> None:
         request_frame, response_frame = smoke_capabilities.load_capability_frames()
 
-        self.assertTrue(request_frame.startswith("nseal1f:request:"))
-        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertTrue(request_frame.startswith("nsealr1f:request:"))
+        self.assertTrue(response_frame.startswith("nsealr1f:response:"))
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
 
     def test_smoke_script_builds_signing_disabled_frames_from_specs(self) -> None:
         request_frame, response_frame = smoke_capabilities.load_signing_disabled_frames()
 
-        self.assertTrue(request_frame.startswith("nseal1f:request:"))
-        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertTrue(request_frame.startswith("nsealr1f:request:"))
+        self.assertTrue(response_frame.startswith("nsealr1f:response:"))
         self.assertIn("response", response_frame)
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
@@ -824,8 +824,8 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
     def test_smoke_script_builds_public_key_frames_from_specs(self) -> None:
         request_frame, response_frame = smoke_capabilities.load_public_key_frames()
 
-        self.assertTrue(request_frame.startswith("nseal1f:request:"))
-        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertTrue(request_frame.startswith("nsealr1f:request:"))
+        self.assertTrue(response_frame.startswith("nsealr1f:response:"))
         self.assertIn("response", response_frame)
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
@@ -833,8 +833,8 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
     def test_smoke_script_builds_signing_status_frames_from_specs(self) -> None:
         request_frame, response_frame = smoke_capabilities.load_signing_status_frames()
 
-        self.assertTrue(request_frame.startswith("nseal1f:request:"))
-        self.assertTrue(response_frame.startswith("nseal1f:response:"))
+        self.assertTrue(request_frame.startswith("nsealr1f:request:"))
+        self.assertTrue(response_frame.startswith("nsealr1f:response:"))
         self.assertIn("response", response_frame)
         self.assertTrue(request_frame.endswith("\n"))
         self.assertTrue(response_frame.endswith("\n"))
@@ -876,7 +876,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             invalid_dir.joinpath("serial-frame-request-invalid-version.json").write_text(
                 json.dumps(
                     {
-                        "frame": "nseal1f:request:test-version:0000000000000000\n",
+                        "frame": "nsealr1f:request:test-version:0000000000000000\n",
                     }
                 ),
                 encoding="utf-8",
@@ -884,7 +884,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             invalid_dir.joinpath("serial-frame-request-invalid-request-id.json").write_text(
                 json.dumps(
                     {
-                        "frame": "nseal1f:request:test-request-id:0000000000000000\n",
+                        "frame": "nsealr1f:request:test-request-id:0000000000000000\n",
                     }
                 ),
                 encoding="utf-8",
@@ -893,11 +893,11 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             exchanges = smoke_capabilities.load_invalid_metadata_frames(specs_dir)
 
         self.assertEqual(len(exchanges), 2)
-        self.assertEqual(exchanges[0][0], "nseal1f:request:test-version:0000000000000000\n")
-        self.assertEqual(exchanges[1][0], "nseal1f:request:test-request-id:0000000000000000\n")
+        self.assertEqual(exchanges[0][0], "nsealr1f:request:test-version:0000000000000000\n")
+        self.assertEqual(exchanges[1][0], "nsealr1f:request:test-request-id:0000000000000000\n")
         for _, error_frame in exchanges:
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
-            self.assertTrue(error_frame.startswith("nseal1f:error:"))
+            self.assertTrue(error_frame.startswith("nsealr1f:error:"))
 
     def test_smoke_script_wraps_invalid_transport_frame_vectors(self) -> None:
         with TemporaryDirectory() as temp_root:
@@ -909,7 +909,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                     {
                         "name": "serial-frame-checksum-mismatch",
                         "category": "serial-frame",
-                        "frame": "nseal1f:request:payload:0000000000000000\n",
+                        "frame": "nsealr1f:request:payload:0000000000000000\n",
                     }
                 ),
                 encoding="utf-8",
@@ -919,7 +919,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                     {
                         "name": "serial-frame-malformed-payload",
                         "category": "serial-frame",
-                        "frame": "nseal1f:request:not-valid-base64!:0000000000000000\n",
+                        "frame": "nsealr1f:request:not-valid-base64!:0000000000000000\n",
                     }
                 ),
                 encoding="utf-8",
@@ -929,7 +929,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                     {
                         "name": "serial-frame-unsupported-type",
                         "category": "serial-frame",
-                        "frame": "nseal1f:command:payload:0000000000000000\n",
+                        "frame": "nsealr1f:command:payload:0000000000000000\n",
                     }
                 ),
                 encoding="utf-8",
@@ -939,7 +939,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
                     {
                         "name": "serial-frame-oversized",
                         "category": "serial-frame",
-                        "frame": "nseal1f:" + ("x" * 1100),
+                        "frame": "nsealr1f:" + ("x" * 1100),
                     }
                 ),
                 encoding="utf-8",
@@ -951,7 +951,7 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertEqual(len(malformed_exchanges), 3)
         self.assertEqual(len(overlong_exchanges), 1)
         for request_frame, error_frame in malformed_exchanges:
-            self.assertTrue(request_frame.startswith("nseal1f:"))
+            self.assertTrue(request_frame.startswith("nsealr1f:"))
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "malformed_frame"})
         self.assertEqual(decode_serial_frame_payload(overlong_exchanges[0][1]), {"error": "overlong_frame"})
         self.assertTrue(overlong_exchanges[0][0].endswith("\n"))
@@ -1045,11 +1045,11 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         )
         for request_frame, error_frame in exchanges:
             self.assertEqual(decode_serial_frame_payload(error_frame), {"error": "unsupported_request"})
-            self.assertTrue(request_frame.startswith("nseal1f:request:"))
-            self.assertTrue(error_frame.startswith("nseal1f:error:"))
+            self.assertTrue(request_frame.startswith("nsealr1f:request:"))
+            self.assertTrue(error_frame.startswith("nsealr1f:error:"))
 
     def test_smoke_script_extracts_first_protocol_frame_after_logs(self) -> None:
-        frame = "nseal1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
+        frame = "nsealr1f:response:eyJvayI6dHJ1ZX0:44b87362ee86689d\n"
 
         self.assertEqual(
             smoke_capabilities.extract_first_protocol_frame(f"I boot: log line\n{frame}ignored"),
@@ -1057,20 +1057,20 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         )
 
     def test_smoke_script_waits_for_newline_terminated_protocol_frame(self) -> None:
-        self.assertIsNone(smoke_capabilities.extract_first_protocol_frame("nseal1f:response:partial"))
+        self.assertIsNone(smoke_capabilities.extract_first_protocol_frame("nsealr1f:response:partial"))
 
     def test_smoke_script_normalizes_serial_crlf_frames(self) -> None:
         self.assertEqual(
-            smoke_capabilities.extract_first_protocol_frame("nseal1f:response:payload:checksum\r\n"),
-            "nseal1f:response:payload:checksum\n",
+            smoke_capabilities.extract_first_protocol_frame("nsealr1f:response:payload:checksum\r\n"),
+            "nsealr1f:response:payload:checksum\n",
         )
 
     def test_smoke_script_summarizes_expected_rejections_without_raw_error_frames(self) -> None:
         summary = smoke_capabilities.format_smoke_summary(
             [
-                "nseal1f:response:payload:checksum\n",
-                "nseal1f:error:payload:checksum\n",
-                "nseal1f:error:payload:checksum\n",
+                "nsealr1f:response:payload:checksum\n",
+                "nsealr1f:error:payload:checksum\n",
+                "nsealr1f:error:payload:checksum\n",
             ]
         )
 
@@ -1078,13 +1078,13 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         self.assertIn("verified exchanges: 3", summary)
         self.assertIn("response frames: 1", summary)
         self.assertIn("expected rejection frames: 2", summary)
-        self.assertNotIn("nseal1f:error", summary)
+        self.assertNotIn("nsealr1f:error", summary)
 
     def test_smoke_script_applies_timeout_per_exchange(self) -> None:
         responses = [
-            "nseal1f:response:first:1111111111111111\n",
-            "nseal1f:error:second:2222222222222222\n",
-            "nseal1f:response:third:3333333333333333\n",
+            "nsealr1f:response:first:1111111111111111\n",
+            "nsealr1f:error:second:2222222222222222\n",
+            "nsealr1f:response:third:3333333333333333\n",
         ]
 
         class SlowExchangeDevice:
@@ -1124,8 +1124,8 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
         class WrongFrameDevice:
             def __init__(self) -> None:
                 self._responses = [
-                    "nseal1f:response:first:1111111111111111\n",
-                    "nseal1f:error:wrong:2222222222222222\n",
+                    "nsealr1f:response:first:1111111111111111\n",
+                    "nsealr1f:error:wrong:2222222222222222\n",
                 ]
 
             def write(self, _request: bytes) -> None:
@@ -1143,9 +1143,9 @@ class Esp32S3CapabilitySmokeTests(unittest.TestCase):
             smoke_capabilities.run_serial_exchanges(
                 WrongFrameDevice(),
                 [
-                    ("request-1\n", "nseal1f:response:first:1111111111111111\n"),
-                    ("request-2\n", "nseal1f:error:expected:2222222222222222\n"),
-                    ("request-3\n", "nseal1f:response:third:3333333333333333\n"),
+                    ("request-1\n", "nsealr1f:response:first:1111111111111111\n"),
+                    ("request-2\n", "nsealr1f:error:expected:2222222222222222\n"),
+                    ("request-3\n", "nsealr1f:response:third:3333333333333333\n"),
                 ],
                 timeout=0.1,
             )
@@ -1215,12 +1215,12 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertEqual(response["request_id"], "manual-tags-test")
         self.assertEqual(response["error"]["code"], "signing_disabled")
         self.assertEqual(event_template["tags"][0][0], "p")
-        self.assertEqual(event_template["tags"][1], ["t", "nostrseal"])
+        self.assertEqual(event_template["tags"][1], ["t", "nsealr"])
         self.assertIn("tag content grouped by tag, not interpreted tag labels", checklist)
         self.assertIn("Tag 1/2 and Tag 2/2 on one compact Tags screen", checklist)
         self.assertIn("Tag 1/2 shows p, the full 64-character pubkey, and mention", checklist)
         self.assertIn("pubkey continuation line is indented", checklist)
-        self.assertIn("Tag 2/2 shows t and nostrseal", checklist)
+        self.assertIn("Tag 2/2 shows t and nsealr", checklist)
         self.assertIn("short BOOT/GPIO0 to scroll only within Tags", checklist)
         self.assertNotIn("Warnings", checklist)
 
@@ -1357,7 +1357,7 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
         self.assertIn("not as actual spacing", checklist)
 
     def test_review_detail_styles_do_not_keep_obsolete_label_style(self) -> None:
-        header = (ROOT / "firmware/host_core/include/nostrseal/review_display.hpp").read_text()
+        header = (ROOT / "firmware/host_core/include/nsealr/review_display.hpp").read_text()
         renderer = (ROOT / "firmware/host_core/src/review_display.cpp").read_text()
         raster = (ROOT / "firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp").read_text()
         vector_generator = (ROOT / "scripts/generate_transport_vector_header.py").read_text()
@@ -1458,8 +1458,8 @@ class Esp32S3ManualReviewDisplayTests(unittest.TestCase):
 
     def test_manual_review_display_runs_exchanges_with_fake_serial_device(self) -> None:
         responses = [
-            "nseal1f:response:manual:1111111111111111\n",
-            "nseal1f:error:manual:2222222222222222\n",
+            "nsealr1f:response:manual:1111111111111111\n",
+            "nsealr1f:error:manual:2222222222222222\n",
         ]
 
         class ManualDisplayDevice:

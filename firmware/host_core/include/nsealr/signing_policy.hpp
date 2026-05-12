@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace nostrseal {
+namespace nsealr {
 
 struct SigningReadiness {
     bool runtime_signing_feature_enabled = false;
@@ -28,4 +28,4 @@ struct SigningReadinessStatus {
 
 SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readiness);
 
-}  // namespace nostrseal
+}  // namespace nsealr
