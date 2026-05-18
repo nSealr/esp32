@@ -574,6 +574,13 @@ policy after provisioning/storage and security gates pass. The current
 scoped-automation vectors remain conformance scaffolds, not the final policy
 menu.
 
+Status note, 2026-05-18: host-core now decodes canonical NIP-19 `nsec`
+payloads against the shared specs vector as a RAM-only QR-vault key-source
+parser. This narrows the future ESP32 QR vault import gap without changing the
+feature-matrix status to implemented, because camera/import UX, session
+keyring wiring, local review, response QR output, and real signing remain
+pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

@@ -94,6 +94,10 @@ The first firmware foundation is host-buildable C++ under
   exists. It parses only the minimum unsigned event-template fields:
   `created_at`, `kind`, `tags`, and `content`, with constrained tag/content
   limits mirrored from `nSealr/specs`.
+- `nip19_nsec`: decodes canonical lowercase NIP-19 `nsec` Bech32 private-key
+  payloads into a 32-byte RAM-only secret-key buffer and lowercase hex for test
+  comparison. It exists only as a QR-vault key-source parser; it does not
+  provide key storage, public-key derivation, policy state, or signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

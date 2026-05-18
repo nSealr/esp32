@@ -9,6 +9,7 @@
 #include "nsealr/approval_gate.hpp"
 #include "nsealr/device_protocol.hpp"
 #include "nsealr/limits.hpp"
+#include "nsealr/nip19_nsec.hpp"
 #include "nsealr/qr_envelope.hpp"
 #include "nsealr/qr_review.hpp"
 #include "nsealr/qr_review_flow.hpp"
@@ -429,6 +430,39 @@ void test_qr_limits_match_shared_profile() {
     assert(nsealr::kMaxTagFieldUtf8Bytes == nsealr::test_vectors::kMaxTagFieldUtf8Bytes);
     assert(nsealr::kMaxTotalTagUtf8Bytes == nsealr::test_vectors::kMaxTotalTagUtf8Bytes);
     assert(nsealr::kMaxSafeInteger == nsealr::test_vectors::kMaxSafeInteger);
+}
+
+void test_nip19_nsec_decoder_matches_shared_vector() {
+    const nsealr::NsecSecretKey secret =
+        nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+
+    assert(nsealr::decode_nsec_secret_key_hex(nsealr::test_vectors::kNip19NsecTestKey1) ==
+           nsealr::test_vectors::kNip19NsecTestKey1SecretKey);
+    assert(secret.front() == 0x11U);
+    assert(secret.back() == 0x11U);
+    assert(std::string(nsealr::test_vectors::kNip19NsecTestKey1PublicKey).size() == 64U);
+
+    expect_throw("checksum", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("nsec1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygqqqqqq");
+    });
+    expect_throw("prefix", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("npub1fu64hh9hes90w2808n8tjc2ajp5yhddjef0ctx4s7zmsgp6cwx4qgy4eg9");
+    });
+    expect_throw("lowercase", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("NSEC1ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYG3ZYGS4RM7HZ");
+    });
+    expect_throw("unsupported characters", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("nsec1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygi4rm7hz");
+    });
+    expect_throw("invalid padding", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("nsec1py3nlzd");
+    });
+    expect_throw("32-byte secret key", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("nsec1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zypf0r0t");
+    });
+    expect_throw("malformed", [] {
+        (void)nsealr::decode_nsec_secret_key_hex("nsec1short");
+    });
 }
 
 void test_qr_signing_request_rejections() {
@@ -1966,6 +2000,7 @@ int main() {
     test_qr_envelope_rejects_shared_invalid_qr_vectors();
     test_animated_qr_envelope_rejections();
     test_qr_limits_match_shared_profile();
+    test_nip19_nsec_decoder_matches_shared_vector();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

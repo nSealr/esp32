@@ -69,6 +69,10 @@ hardware readiness can differ, final vault behavior must converge.
 - Minimal QR event-template field parsing for `created_at`, `kind`, `tags`, and
   `content`. This prepares trusted review generation without enabling tag
   semantics, key storage, or signing.
+- Host-core NIP-19 `nsec` decoder checked against the shared
+  `nSealr/specs` vector. This is a RAM-only key-source parser for the future
+  ESP32 QR vault; it does not add persistent key slots, storage, policies, or a
+  signing backend.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.

@@ -21,6 +21,7 @@ host-core-test: generate-host-vectors
 		firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp \
 		firmware/host_core/src/approval_gate.cpp \
 		firmware/host_core/src/device_protocol.cpp \
+		firmware/host_core/src/nip19_nsec.cpp \
 		firmware/host_core/src/qr_envelope.cpp \
 		firmware/host_core/src/qr_review.cpp \
 		firmware/host_core/src/qr_review_flow.cpp \

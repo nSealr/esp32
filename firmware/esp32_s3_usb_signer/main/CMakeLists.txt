@@ -11,6 +11,7 @@ idf_component_register(
         "t_display_s3_status_frames.cpp"
         "../../host_core/src/approval_gate.cpp"
         "../../host_core/src/device_protocol.cpp"
+        "../../host_core/src/nip19_nsec.cpp"
         "../../host_core/src/qr_envelope.cpp"
         "../../host_core/src/qr_review.cpp"
         "../../host_core/src/qr_review_flow.cpp"

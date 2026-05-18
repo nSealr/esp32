@@ -1,0 +1,10 @@
+{
+  "format": "nsealr-nip19-nsec-vector-v0",
+  "name": "nsec-test-key-1",
+  "source": "Derived from vectors/keys/test-key-1 using NIP-19 nsec Bech32 encoding",
+  "warning": "Deterministic public fixture key for tests only. Never use in production.",
+  "nsec": "nsec1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs4rm7hz",
+  "secret_key": "1111111111111111111111111111111111111111111111111111111111111111",
+  "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+  "compatibility_scope": "NIP-19 nsec private-key import for RAM-only QR vault session loading only; not a persistent policy, key slot, mnemonic, BIP-39 seed, or NIP-49 encrypted backup."
+}

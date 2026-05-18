@@ -290,6 +290,10 @@ tests with strict C++ warnings.
   vault behavior for RAM-only manual words, SeedSigner Standard SeedQR,
   CompactSeedQR, plain mnemonic QR, `nsec` QR, local generation, and no
   microSD/file secret transfer.
+- Host-core `nsec` tests must consume `nSealr/specs/vectors/nip19` and reject
+  non-canonical lowercase Bech32, malformed payloads, invalid checksums,
+  wrong prefixes, unsupported characters, bad padding, and non-32-byte
+  payloads before the value can become a RAM-only QR-vault session source.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

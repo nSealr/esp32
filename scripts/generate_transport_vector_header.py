@@ -335,6 +335,7 @@ def main() -> int:
     public_key_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
     )
+    nsec_vector = json.loads((specs / "vectors/nip19/nsec-test-key-1.json").read_text(encoding="utf-8"))
     basic_review_screen = json.loads(
         (specs / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
     )
@@ -432,6 +433,9 @@ def main() -> int:
                 f"constexpr const char* kPublicKeyRequestFrame = {cpp_string(serial_frame('request', public_key_request_payload))};",
                 f"constexpr const char* kPublicKeyResponsePayloadBase64Url = {cpp_string(public_key_response_payload)};",
                 f"constexpr const char* kPublicKeyResponseFrame = {cpp_string(serial_frame('response', public_key_response_payload))};",
+                f"constexpr const char* kNip19NsecTestKey1 = {cpp_string(nsec_vector['nsec'])};",
+                f"constexpr const char* kNip19NsecTestKey1SecretKey = {cpp_string(nsec_vector['secret_key'])};",
+                f"constexpr const char* kNip19NsecTestKey1PublicKey = {cpp_string(nsec_vector['public_key'])};",
                 f"constexpr const char* kBasicReviewScreenApprovalDigest = {cpp_string(basic_review_screen['screen_review']['approval_digest'])};",
                 f"constexpr const char* kTaggedReviewScreenApprovalDigest = {cpp_string(tagged_review_screen['screen_review']['approval_digest'])};",
                 f"constexpr const char* kInvalidQrEnvelopeMalformed = {cpp_string(invalid_by_name['qr-envelope-malformed']['envelope'])};",

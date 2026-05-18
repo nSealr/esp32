@@ -111,6 +111,7 @@ def validate_firmware_project(project: Path) -> None:
         "t_display_s3_status_frames.cpp",
         "approval_gate.cpp",
         "device_protocol.cpp",
+        "nip19_nsec.cpp",
         "qr_envelope.cpp",
         "qr_review.cpp",
         "qr_review_flow.cpp",
