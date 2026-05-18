@@ -407,9 +407,10 @@ ellipses, and preserves the `signing_disabled` protocol expectation.
 Status note, 2026-05-10: `security_profile.json` now separates manual
 development acceptance reports from display-review protocol evidence. The
 trusted-display and physical-control gates remain production blockers, while
-detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and current-head
-smoke reports are tracked as development traceability for the review-rendering
-contract.
+detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and historical
+head-smoke reports are tracked as development traceability for the firmware
+revision they name, not as evidence for the current repository head or as
+production acceptance for the review-rendering contract.
 
 Status note, 2026-05-11: `security_profile.json` now also tracks Unicode review
 rendering as `ascii_safe_codepoint_fallback_only` with
@@ -549,7 +550,7 @@ smoke after that change.
 
 Hardware note, 2026-05-10: revision `8307c4b` was rebuilt with ESP-IDF
 `v5.5.4`, flashed on the attached LILYGO T-Display S3 at
-`/dev/cu.usbmodem1101`, and smoke-tested as the current repository head.
+`/dev/cu.usbmodem1101`, and smoke-tested as that day's repository head.
 `idf-smoke-capabilities` passed with 39 verified exchanges, including the
 post-overlong recovery check. `idf-smoke-review-scenarios` passed all 7 review
 scenarios. A lab companion serial smoke then generated a `sign_event` request

@@ -72,8 +72,9 @@ tests with strict C++ warnings.
   production blockers and disallowing touch approval.
 - Security-profile validation requiring separate display-review protocol
   evidence for detail-page, UTF-8 fallback, ASCII punctuation, dense-tags, and
-  current-head smoke runs. These reports remain development traceability and do
-  not convert the trusted-display gate into a production acceptance claim.
+  historical head-smoke runs. These reports remain development traceability for
+  the firmware revision they name and do not convert the trusted-display gate
+  into a production acceptance claim.
 - Security-profile validation requiring Unicode review rendering to remain an
   explicit production blocker while the current display path uses
   `ascii_safe_codepoint_fallback_only`.
@@ -243,7 +244,8 @@ tests with strict C++ warnings.
   verifies the protocol still returns `signing_disabled` or deterministic
   `unsupported_request` frames. It does not replace human visual inspection of
   the display.
-- Current-head T-Display S3 smoke evidence recorded for revision `8307c4b` on
+- Historical T-Display S3 head-smoke evidence recorded for revision `8307c4b`
+  on
   `/dev/cu.usbmodem1101`: ESP-IDF build and flash passed, capability smoke
   passed with 39 exchanges, review-scenario smoke passed with 7 scenarios, and
   lab companion serial smoke verified a request-matched `signing_disabled`
