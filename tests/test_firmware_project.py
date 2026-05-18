@@ -142,6 +142,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("qr_envelope.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
         self.assertIn("serial_review.cpp", cmake)
+        self.assertIn("seedqr.cpp", cmake)
         self.assertIn("review_display.cpp", cmake)
         self.assertIn("signing_policy.cpp", cmake)
         self.assertIn("trusted_review.cpp", cmake)

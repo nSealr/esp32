@@ -119,6 +119,7 @@ def validate_firmware_project(project: Path) -> None:
         "review_display.cpp",
         "serial_frame.cpp",
         "serial_review.cpp",
+        "seedqr.cpp",
         "sha256.cpp",
         "signing_policy.cpp",
         "trusted_review.cpp",

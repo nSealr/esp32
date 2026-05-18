@@ -1,5 +1,6 @@
 #include <cassert>
 #include <array>
+#include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -17,6 +18,7 @@
 #include "nsealr/review_display.hpp"
 #include "nsealr/serial_frame.hpp"
 #include "nsealr/serial_review.hpp"
+#include "nsealr/seedqr.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
 #include "nsealr/utf8.hpp"
@@ -79,6 +81,31 @@ void expect_throw(const std::string& expected, const auto& fn) {
         return;
     }
     assert(false && "expected exception");
+}
+
+int hex_nibble_for_test(char ch) {
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    }
+    if (ch >= 'a' && ch <= 'f') {
+        return 10 + (ch - 'a');
+    }
+    if (ch >= 'A' && ch <= 'F') {
+        return 10 + (ch - 'A');
+    }
+    assert(false && "invalid hex");
+    return 0;
+}
+
+std::vector<std::uint8_t> bytes_from_hex_for_test(const std::string& hex) {
+    assert((hex.size() % 2U) == 0U);
+    std::vector<std::uint8_t> out;
+    out.reserve(hex.size() / 2U);
+    for (std::size_t offset = 0; offset < hex.size(); offset += 2U) {
+        out.push_back(static_cast<std::uint8_t>(
+            (hex_nibble_for_test(hex[offset]) << 4) | hex_nibble_for_test(hex[offset + 1U])));
+    }
+    return out;
 }
 
 void assert_trusted_review_pages(
@@ -462,6 +489,65 @@ void test_nip19_nsec_decoder_matches_shared_vector() {
     });
     expect_throw("malformed", [] {
         (void)nsealr::decode_nsec_secret_key_hex("nsec1short");
+    });
+}
+
+void test_seedqr_decoders_match_shared_vector() {
+    const std::vector<std::uint16_t> expected = nsealr::test_vectors::seedqr_vector_1_word_indexes();
+    const std::vector<std::uint8_t> compact =
+        bytes_from_hex_for_test(nsealr::test_vectors::kSeedQrVector1CompactHex);
+
+    assert(nsealr::decode_standard_seedqr_indexes(nsealr::test_vectors::kSeedQrVector1StandardDigits) == expected);
+    assert(nsealr::decode_compact_seedqr_indexes(compact) == expected);
+
+    std::string spaced = nsealr::test_vectors::kSeedQrVector1StandardDigits;
+    spaced.insert(8, "\n");
+    spaced.insert(4, " ");
+    assert(nsealr::decode_standard_seedqr_indexes(spaced) == expected);
+
+    expect_throw("must contain only digits", [] {
+        (void)nsealr::decode_standard_seedqr_indexes("000a");
+    });
+    expect_throw("four digits per word", [] {
+        (void)nsealr::decode_standard_seedqr_indexes("000");
+    });
+    expect_throw("word count must be 12 or 24", [] {
+        (void)nsealr::decode_standard_seedqr_indexes("0000000000000000");
+    });
+    expect_throw("outside the BIP-39 English wordlist", [] {
+        (void)nsealr::decode_standard_seedqr_indexes(
+            "2048"
+            "1325"
+            "1154"
+            "0127"
+            "1190"
+            "0771"
+            "0415"
+            "0742"
+            "1289"
+            "1906"
+            "2008"
+            "0870"
+            "0266"
+            "1343"
+            "1420"
+            "2016"
+            "1792"
+            "0614"
+            "0896"
+            "1929"
+            "0300"
+            "1524"
+            "0801"
+            "0643");
+    });
+    expect_throw("checksum", [] {
+        std::string mutated = nsealr::test_vectors::kSeedQrVector1StandardDigits;
+        mutated.back() = mutated.back() == '0' ? '1' : '0';
+        (void)nsealr::decode_standard_seedqr_indexes(mutated);
+    });
+    expect_throw("byte length", [] {
+        (void)nsealr::decode_compact_seedqr_indexes({0x01U, 0x02U, 0x03U});
     });
 }
 
@@ -2001,6 +2087,7 @@ int main() {
     test_animated_qr_envelope_rejections();
     test_qr_limits_match_shared_profile();
     test_nip19_nsec_decoder_matches_shared_vector();
+    test_seedqr_decoders_match_shared_vector();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

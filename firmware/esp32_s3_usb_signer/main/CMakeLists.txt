@@ -19,6 +19,7 @@ idf_component_register(
         "../../host_core/src/review_display.cpp"
         "../../host_core/src/serial_frame.cpp"
         "../../host_core/src/serial_review.cpp"
+        "../../host_core/src/seedqr.cpp"
         "../../host_core/src/sha256.cpp"
         "../../host_core/src/signing_policy.cpp"
         "../../host_core/src/trusted_review.cpp"

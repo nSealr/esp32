@@ -294,6 +294,11 @@ tests with strict C++ warnings.
   non-canonical lowercase Bech32, malformed payloads, invalid checksums,
   wrong prefixes, unsupported characters, bad padding, and non-32-byte
   payloads before the value can become a RAM-only QR-vault session source.
+- Host-core SeedQR tests must consume `nSealr/specs/vectors/seedqr` and prove
+  Standard SeedQR digits and CompactSeedQR entropy decode to the same BIP-39
+  word indexes. They must reject non-digit Standard SeedQR input, bad digit
+  grouping, unsupported word counts, out-of-range indexes, bad BIP-39
+  checksums, and unsupported CompactSeedQR byte lengths.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

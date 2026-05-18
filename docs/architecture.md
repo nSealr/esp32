@@ -98,6 +98,11 @@ The first firmware foundation is host-buildable C++ under
   payloads into a 32-byte RAM-only secret-key buffer and lowercase hex for test
   comparison. It exists only as a QR-vault key-source parser; it does not
   provide key storage, public-key derivation, policy state, or signing.
+- `seedqr`: decodes SeedSigner Standard SeedQR digit streams and CompactSeedQR
+  entropy bytes into BIP-39 word indexes, including BIP-39 checksum validation
+  through the host-core SHA-256 helper. It is only a QR-vault key-source parser;
+  it does not embed the BIP-39 English wordlist, derive NIP-06 keys, persist
+  seed material, or sign.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

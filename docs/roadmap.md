@@ -581,6 +581,12 @@ feature-matrix status to implemented, because camera/import UX, session
 keyring wiring, local review, response QR output, and real signing remain
 pending.
 
+Status note, 2026-05-18: host-core now also decodes SeedSigner Standard
+SeedQR and CompactSeedQR into checked BIP-39 word indexes using the shared
+SeedQR vector. This is still partial QR-vault session-import work: BIP-39
+wordlist display, NIP-06 derivation, camera/import UX, session keyring wiring,
+response QR output, and real signing remain pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

@@ -73,6 +73,10 @@ hardware readiness can differ, final vault behavior must converge.
   `nSealr/specs` vector. This is a RAM-only key-source parser for the future
   ESP32 QR vault; it does not add persistent key slots, storage, policies, or a
   signing backend.
+- Host-core SeedSigner Standard SeedQR and CompactSeedQR decoders checked
+  against the shared `nSealr/specs` vector. They validate BIP-39 word indexes
+  and checksum bits for future RAM-only QR-vault session loading; they do not
+  add a wordlist, NIP-06 derivation, storage, or signing.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.
