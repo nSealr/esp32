@@ -264,6 +264,51 @@ def review_detail_page_vector_factories(vectors: list[dict], reviews_by_name: di
     return lines
 
 
+def session_import_review_vector_factories(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct SessionImportReviewVector {",
+        "    const char* name;",
+        "    const char* source_type;",
+        "    const char* label;",
+        "    const char* fingerprint;",
+        "    const char* review_id;",
+        "    const char* approval_digest;",
+        "    std::vector<nsealr::TrustedReviewPage> pages;",
+        "};",
+        "",
+        "inline std::vector<SessionImportReviewVector> session_import_review_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        lines.extend(
+            [
+                "        SessionImportReviewVector{",
+                f"            {cpp_string(vector['name'])},",
+                f"            {cpp_string(vector['source_type'])},",
+                f"            {cpp_string(vector['label'])},",
+                f"            {cpp_string(vector['fingerprint'])},",
+                f"            {cpp_string(vector['review_id'])},",
+                f"            {cpp_string(vector['approval_digest'])},",
+                "            {",
+            ]
+        )
+        for page in vector["pages"]:
+            lines.extend(trusted_review_page_initializer(page))
+        lines.extend(
+            [
+                "            },",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def limit_constants_factory(limits: dict) -> list[str]:
     return [
         f"constexpr std::size_t kMaxRequestIdLength = {limits['max_request_id_length']};",
@@ -341,6 +386,10 @@ def main() -> int:
     )
     seedqr_vector = json.loads((specs / "vectors/seedqr/seedsigner-vector-1.json").read_text(encoding="utf-8"))
     nsec_vector = json.loads((specs / "vectors/nip19/nsec-test-key-1.json").read_text(encoding="utf-8"))
+    session_import_review_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/session-import-reviews").glob("*.json"))
+    ]
     nip06_key_vector = json.loads((specs / "vectors/keys/nip06-account-0-leader.json").read_text(encoding="utf-8"))
     basic_review_screen = json.loads(
         (specs / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
@@ -476,6 +525,8 @@ def main() -> int:
                 "",
                 *review_display_vector_factories(review_display_frame_vectors),
                 *review_detail_page_vector_factories(review_detail_page_vectors, reviews_by_name),
+                "",
+                *session_import_review_vector_factories(session_import_review_vectors),
                 "",
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",

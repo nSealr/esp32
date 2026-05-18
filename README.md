@@ -87,7 +87,8 @@ hardware readiness can differ, final vault behavior must converge.
   or connect a signing backend.
 - Host-core secret-hidden session import review summaries for parsed `nsec`
   and BIP-39 sources. The review shows source type, label, word count when
-  applicable, and a deterministic fingerprint, but never raw `nsec` bytes or
+  applicable, and a deterministic fingerprint, and is checked against shared
+  `nSealr/specs` session-import-review vectors, but never raw `nsec` bytes or
   mnemonic words. It is not a signing approval gate.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request

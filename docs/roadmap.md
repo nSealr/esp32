@@ -599,7 +599,9 @@ backend.
 Status note, 2026-05-18: host-core now builds secret-hidden import review
 summaries for parsed `nsec` and BIP-39 session sources. These summaries expose
 type, label, word count when applicable, and a deterministic fingerprint while
-hiding raw `nsec` bytes and mnemonic words. This is still host-core groundwork:
+hiding raw `nsec` bytes and mnemonic words. The host tests now consume the
+shared session-import-review vectors so review pages, `review_id`, fingerprint,
+and import approval digest cannot drift. This is still host-core groundwork:
 camera/import UX, hardware display/button acceptance, NIP-06 derivation,
 response QR output, and real signing remain pending.
 

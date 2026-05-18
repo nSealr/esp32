@@ -115,8 +115,9 @@ The first firmware foundation is host-buildable C++ under
 - `session_import_review`: builds a secret-hidden import review summary for a
   parsed session key source. It records type, label, word count for BIP-39, and
   a deterministic source fingerprint without exposing raw `nsec` material or
-  mnemonic words. It deliberately returns review pages and a digest only, not a
-  signing approval session.
+  mnemonic words, and its host tests consume the shared
+  `nSealr/specs/vectors/session-import-reviews` contract. It deliberately
+  returns review pages and a digest only, not a signing approval session.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

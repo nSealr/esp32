@@ -1,0 +1,36 @@
+{
+  "format": "nsealr-session-import-review-v0",
+  "name": "nsec-test-key-1",
+  "source_type": "nsec",
+  "source_vector": "vectors/nip19/nsec-test-key-1.json",
+  "label": "nsec test vector",
+  "fingerprint": "dbd1f8666039f02a",
+  "review_id": "session-import-dbd1f8666039f02a",
+  "approval_digest": "dcc8851f8c6a15f60b201345205af678489702437b1ce1dae87958b0ecd2abf0",
+  "pages": [
+    {
+      "title": "Import source",
+      "lines": [
+        "Type: NIP-19 nsec",
+        "Label: nsec test vector",
+        "Fingerprint: dbd1f8666039f02a",
+        "Secret: hidden"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/2",
+      "logical_page_id": "session-import-summary"
+    },
+    {
+      "title": "Import?",
+      "lines": [
+        "Session RAM only",
+        "No signing enabled",
+        "Approve to load"
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 2/2",
+      "logical_page_id": "session-import-decision"
+    }
+  ],
+  "security_scope": "Secret-hidden import review for a RAM-only QR-vault session source; does not expose raw private-key bytes, does not persist material, and does not approve signing."
+}

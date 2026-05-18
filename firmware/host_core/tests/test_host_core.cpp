@@ -137,6 +137,18 @@ void assert_detailed_trusted_review_pages(
     }
 }
 
+nsealr::test_vectors::SessionImportReviewVector session_import_review_vector_by_name(
+    const std::string& name) {
+    for (const nsealr::test_vectors::SessionImportReviewVector& vector :
+         nsealr::test_vectors::session_import_review_vectors()) {
+        if (std::string(vector.name) == name) {
+            return vector;
+        }
+    }
+    assert(false && "missing session import review vector");
+    return {};
+}
+
 void assert_qr_review_transcript_equals(
     const std::vector<nsealr::QrReviewTranscriptStep>& actual,
     const std::vector<nsealr::QrReviewTranscriptStep>& expected) {
@@ -680,17 +692,25 @@ void test_session_import_review_hides_secret_material() {
         nsealr::build_session_import_review(keyring.source_at(0));
     const nsealr::SessionImportReview seed_review =
         nsealr::build_session_import_review(keyring.source_at(1));
+    const nsealr::test_vectors::SessionImportReviewVector nsec_vector =
+        session_import_review_vector_by_name("nsec-test-key-1");
+    const nsealr::test_vectors::SessionImportReviewVector seed_vector =
+        session_import_review_vector_by_name("seedqr-vector-1");
 
-    assert(nsec_review.review_id.rfind("session-import-", 0) == 0U);
-    assert(nsec_review.approval_digest.size() == 64U);
-    assert(nsec_review.pages.size() == 2U);
-    assert(nsec_review.pages.back().action == nsealr::ReviewPageAction::ApproveOrReject);
+    assert(nsec_review.review_id == std::string(nsec_vector.review_id));
+    assert(nsec_review.approval_digest == std::string(nsec_vector.approval_digest));
+    assert(nsealr::session_key_source_fingerprint(keyring.source_at(0)) == std::string(nsec_vector.fingerprint));
+    assert_detailed_trusted_review_pages(nsec_review.pages, nsec_vector.pages);
     assert(lines_contain_text(nsec_review.pages, "Type: NIP-19 nsec"));
     assert(lines_contain_text(nsec_review.pages, "Secret: hidden"));
     assert(!lines_contain_text(nsec_review.pages, nsealr::test_vectors::kNip19NsecTestKey1SecretKey));
 
     assert(seed_review.review_id != nsec_review.review_id);
     assert(seed_review.approval_digest != nsec_review.approval_digest);
+    assert(seed_review.review_id == std::string(seed_vector.review_id));
+    assert(seed_review.approval_digest == std::string(seed_vector.approval_digest));
+    assert(nsealr::session_key_source_fingerprint(keyring.source_at(1)) == std::string(seed_vector.fingerprint));
+    assert_detailed_trusted_review_pages(seed_review.pages, seed_vector.pages);
     assert(lines_contain_text(seed_review.pages, "Type: BIP-39 seed"));
     assert(lines_contain_text(seed_review.pages, "Words: 24"));
     assert(lines_contain_text(seed_review.pages, "Secret: hidden"));

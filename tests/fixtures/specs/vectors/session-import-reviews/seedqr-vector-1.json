@@ -1,0 +1,38 @@
+{
+  "format": "nsealr-session-import-review-v0",
+  "name": "seedqr-vector-1",
+  "source_type": "bip39_seed",
+  "source_vector": "vectors/seedqr/seedsigner-vector-1.json",
+  "label": "SeedQR vector 1",
+  "word_count": 24,
+  "fingerprint": "2813e48dc42eb58b",
+  "review_id": "session-import-2813e48dc42eb58b",
+  "approval_digest": "eb8f785367ddacc3fe14353a1ef90bc4271040c2f0790cb11a73601f2c3e389d",
+  "pages": [
+    {
+      "title": "Import source",
+      "lines": [
+        "Type: BIP-39 seed",
+        "Label: SeedQR vector 1",
+        "Fingerprint: 2813e48dc42eb58b",
+        "Words: 24",
+        "Secret: hidden"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/2",
+      "logical_page_id": "session-import-summary"
+    },
+    {
+      "title": "Import?",
+      "lines": [
+        "Session RAM only",
+        "No signing enabled",
+        "Approve to load"
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 2/2",
+      "logical_page_id": "session-import-decision"
+    }
+  ],
+  "security_scope": "Secret-hidden import review for a RAM-only QR-vault session source; does not expose mnemonic words, does not derive NIP-06 keys, does not persist material, and does not approve signing."
+}
