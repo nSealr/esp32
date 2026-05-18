@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "nsealr/bip39_english.hpp"
 #include "nsealr/nip19_nsec.hpp"
 #include "nsealr/seedqr.hpp"
 
@@ -25,7 +26,7 @@ enum class SessionKeySourceKind {
 };
 
 struct SessionSeedWordIndexes {
-    std::array<std::uint16_t, 24> values{};
+    std::array<std::uint16_t, kMaxBip39MnemonicWords> values{};
     std::size_t count = 0;
 };
 
@@ -39,7 +40,7 @@ struct SessionKeySource {
 class StatelessSessionKeyring {
 public:
     void add_nsec(std::string label, const NsecSecretKey& secret_key);
-    void add_seedqr(std::string label, SeedQrWordIndexes word_indexes);
+    void add_bip39_seed(std::string label, Bip39WordIndexes word_indexes);
     void clear();
 
     [[nodiscard]] bool empty() const;

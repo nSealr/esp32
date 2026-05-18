@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "nsealr/approval_gate.hpp"
+#include "nsealr/bip39_english.hpp"
 #include "nsealr/device_protocol.hpp"
 #include "nsealr/limits.hpp"
 #include "nsealr/nip19_nsec.hpp"
@@ -78,7 +79,11 @@ void expect_throw(const std::string& expected, const auto& fn) {
     try {
         fn();
     } catch (const std::exception& exc) {
-        assert(std::string(exc.what()).find(expected) != std::string::npos);
+        const std::string actual = exc.what();
+        if (actual.find(expected) == std::string::npos) {
+            std::cerr << "expected exception containing '" << expected << "' but got '" << actual << "'\n";
+        }
+        assert(actual.find(expected) != std::string::npos);
         return;
     }
     assert(false && "expected exception");
@@ -509,6 +514,8 @@ void test_seedqr_decoders_match_shared_vector() {
 
     assert(nsealr::decode_standard_seedqr_indexes(nsealr::test_vectors::kSeedQrVector1StandardDigits) == expected);
     assert(nsealr::decode_compact_seedqr_indexes(compact) == expected);
+    assert(nsealr::bip39_english_mnemonic_from_indexes(expected) ==
+           nsealr::test_vectors::kSeedQrVector1Mnemonic);
 
     std::string spaced = nsealr::test_vectors::kSeedQrVector1StandardDigits;
     spaced.insert(8, "\n");
@@ -561,6 +568,43 @@ void test_seedqr_decoders_match_shared_vector() {
     });
 }
 
+void test_bip39_english_mnemonic_parser_matches_shared_vector() {
+    const nsealr::Bip39WordIndexes indexes =
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic);
+
+    assert(indexes.size() == 12U);
+    assert(nsealr::bip39_english_word_at(indexes[0]) == std::string("leader"));
+    assert(nsealr::bip39_english_word_at(indexes[11]) == std::string("bean"));
+    assert(nsealr::bip39_english_mnemonic_from_indexes(indexes) ==
+           nsealr::test_vectors::kNip06Account0Mnemonic);
+    assert(std::string(nsealr::test_vectors::kNip06Account0SecretKey).size() == 64U);
+    assert(std::string(nsealr::test_vectors::kNip06Account0PublicKey).size() == 64U);
+
+    const nsealr::Bip39WordIndexes normalized =
+        nsealr::parse_bip39_english_mnemonic_indexes(
+            "  Leader\nMONKEY  parrot ring guide accident before fence cannon height naive bean\t");
+    assert(normalized == indexes);
+
+    expect_throw("word count", [] {
+        (void)nsealr::parse_bip39_english_mnemonic_indexes("abandon abandon abandon");
+    });
+    expect_throw("English wordlist", [] {
+        (void)nsealr::parse_bip39_english_mnemonic_indexes(
+            "notaword monkey parrot ring guide accident before fence cannon height naive bean");
+    });
+    expect_throw("ASCII English words", [] {
+        (void)nsealr::parse_bip39_english_mnemonic_indexes(
+            "leader monkey parrot ring guide accident before fence cannon height naive bean!");
+    });
+    expect_throw("checksum", [] {
+        (void)nsealr::parse_bip39_english_mnemonic_indexes(
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon");
+    });
+    expect_throw("outside the English wordlist", [] {
+        (void)nsealr::bip39_english_word_at(2048U);
+    });
+}
+
 void test_stateless_session_keyring_accepts_parsed_key_sources() {
     nsealr::StatelessSessionKeyring keyring;
     const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
@@ -568,7 +612,7 @@ void test_stateless_session_keyring_accepts_parsed_key_sources() {
 
     assert(keyring.empty());
     keyring.add_nsec("nsec test vector", secret);
-    keyring.add_seedqr("SeedQR vector 1", seed_indexes);
+    keyring.add_bip39_seed("SeedQR vector 1", seed_indexes);
 
     assert(keyring.size() == 2U);
     assert(keyring.source_at(0).kind == nsealr::SessionKeySourceKind::NsecSecretKey);
@@ -596,13 +640,13 @@ void test_stateless_session_keyring_rejects_invalid_sources() {
     expect_throw("label exceeds max length", [&] {
         keyring.add_nsec(std::string(nsealr::kMaxSessionKeySourceLabelLength + 1U, 'x'), secret);
     });
-    expect_throw("12 or 24 word indexes", [&] {
-        keyring.add_seedqr("short seed", {0U, 1U, 2U});
+    expect_throw("12, 15, 18, 21, or 24 word indexes", [&] {
+        keyring.add_bip39_seed("short seed", {0U, 1U, 2U});
     });
     expect_throw("outside the English wordlist", [&] {
         nsealr::SeedQrWordIndexes indexes(12U, 0U);
         indexes[11] = 2048U;
-        keyring.add_seedqr("bad seed index", indexes);
+        keyring.add_bip39_seed("bad seed index", indexes);
     });
 
     for (std::size_t index = 0; index < nsealr::kMaxStatelessSessionKeySources; ++index) {
@@ -2150,6 +2194,7 @@ int main() {
     test_qr_limits_match_shared_profile();
     test_nip19_nsec_decoder_matches_shared_vector();
     test_seedqr_decoders_match_shared_vector();
+    test_bip39_english_mnemonic_parser_matches_shared_vector();
     test_stateless_session_keyring_accepts_parsed_key_sources();
     test_stateless_session_keyring_rejects_invalid_sources();
     test_qr_signing_request_rejections();

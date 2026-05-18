@@ -23,12 +23,12 @@ void require_capacity(std::size_t size) {
     }
 }
 
-void require_valid_seed_word_indexes(const SeedQrWordIndexes& word_indexes) {
-    if (word_indexes.size() != 12U && word_indexes.size() != 24U) {
-        throw SessionKeyringError("BIP-39 session seed must contain 12 or 24 word indexes");
+void require_valid_seed_word_indexes(const Bip39WordIndexes& word_indexes) {
+    if (!is_valid_bip39_word_count(word_indexes.size())) {
+        throw SessionKeyringError("BIP-39 session seed must contain 12, 15, 18, 21, or 24 word indexes");
     }
     for (const std::uint16_t index : word_indexes) {
-        if (index > 2047U) {
+        if (index >= kBip39EnglishWordCount) {
             throw SessionKeyringError("BIP-39 session seed word index is outside the English wordlist");
         }
     }
@@ -53,7 +53,7 @@ void StatelessSessionKeyring::add_nsec(std::string label, const NsecSecretKey& s
     source.bip39_word_indexes = {};
 }
 
-void StatelessSessionKeyring::add_seedqr(std::string label, SeedQrWordIndexes word_indexes) {
+void StatelessSessionKeyring::add_bip39_seed(std::string label, Bip39WordIndexes word_indexes) {
     require_valid_label(label);
     require_capacity(size_);
     require_valid_seed_word_indexes(word_indexes);

@@ -583,12 +583,15 @@ pending.
 
 Status note, 2026-05-18: host-core now also decodes SeedSigner Standard
 SeedQR and CompactSeedQR into checked BIP-39 word indexes using the shared
-SeedQR vector. This is still partial QR-vault session-import work: BIP-39
-wordlist display, NIP-06 derivation, camera/import UX, session keyring wiring,
-response QR output, and real signing remain pending.
+SeedQR vector. Host-core also has a BIP-39 English parser/renderer that
+normalizes manual or plain mnemonic QR input into the same checked word-index
+representation and renders SeedQR-derived indexes back to words for future
+local review. This is still partial QR-vault session-import work: NIP-06
+derivation, camera/import UX, import review screens, response QR output, and
+real signing remain pending.
 
 Status note, 2026-05-18: host-core now has a bounded stateless session
-keyring model that can hold already parsed `nsec` and SeedQR key sources in a
+keyring model that can hold already parsed `nsec` and BIP-39 key sources in a
 RAM-only container for future import UX and lifecycle tests. It does not derive
 NIP-06 keys, persist material, expose policy state, or connect a signing
 backend.

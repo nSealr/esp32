@@ -100,11 +100,16 @@ The first firmware foundation is host-buildable C++ under
   provide key storage, public-key derivation, policy state, or signing.
 - `seedqr`: decodes SeedSigner Standard SeedQR digit streams and CompactSeedQR
   entropy bytes into BIP-39 word indexes, including BIP-39 checksum validation
-  through the host-core SHA-256 helper. It is only a QR-vault key-source parser;
-  it does not embed the BIP-39 English wordlist, derive NIP-06 keys, persist
-  seed material, or sign.
+  through the shared BIP-39 boundary. It is only a QR-vault key-source parser;
+  it does not derive NIP-06 keys, persist seed material, or sign.
+- `bip39_english`: validates BIP-39 English mnemonic text, normalizes ASCII
+  case/whitespace, maps words to indexes, renders checked indexes back to
+  words, and rejects bad word counts, unknown words, invalid characters,
+  out-of-range indexes, and checksum mismatches. This supports future manual
+  word entry, plain mnemonic QR, and SeedQR review without adding derivation or
+  storage.
 - `session_keyring`: bounded RAM-only host-core model for already parsed `nsec`
-  and SeedQR key sources. It lets future QR-vault import UX and lifecycle tests
+  and BIP-39 key sources. It lets future QR-vault import UX and lifecycle tests
   share one volatile custody boundary, while deliberately avoiding NIP-06
   derivation, persistence, policy state, or signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral

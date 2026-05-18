@@ -75,10 +75,14 @@ hardware readiness can differ, final vault behavior must converge.
   signing backend.
 - Host-core SeedSigner Standard SeedQR and CompactSeedQR decoders checked
   against the shared `nSealr/specs` vector. They validate BIP-39 word indexes
-  and checksum bits for future RAM-only QR-vault session loading; they do not
-  add a wordlist, NIP-06 derivation, storage, or signing.
+  and checksum bits for future RAM-only QR-vault session loading.
+- Host-core BIP-39 English mnemonic parser and word-index renderer checked
+  against the shared NIP-06 mnemonic and SeedQR vectors. This enables one
+  canonical RAM-only representation for manual words, plain mnemonic QR, and
+  SeedQR-derived indexes; it does not derive NIP-06 keys, persist material, or
+  sign.
 - Host-core stateless session keyring model for already parsed `nsec` and
-  SeedQR key sources. It is a bounded RAM-only container for future import UX
+  BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests; it does not derive NIP-06 keys, persist material, expose policy state,
   or connect a signing backend.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,

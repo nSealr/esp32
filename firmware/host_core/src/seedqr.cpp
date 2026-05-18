@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <string_view>
 
+#include "nsealr/bip39_english.hpp"
 #include "nsealr/sha256.hpp"
 
 namespace nsealr {
@@ -52,39 +53,6 @@ int digest_bit(const std::string& digest_hex, std::size_t bit_index) {
     return (nibble >> static_cast<int>(3U - (bit_index % 4U))) & 1;
 }
 
-int index_bit(const SeedQrWordIndexes& indexes, std::size_t bit_index) {
-    const std::size_t word = bit_index / 11U;
-    const std::size_t bit = bit_index % 11U;
-    return (indexes[word] >> static_cast<unsigned>(10U - bit)) & 1U;
-}
-
-std::vector<std::uint8_t> entropy_from_indexes(const SeedQrWordIndexes& indexes) {
-    const std::size_t checksum_bits = checksum_bits_for_word_count(indexes.size());
-    const std::size_t entropy_bits = (indexes.size() * 11U) - checksum_bits;
-    std::vector<std::uint8_t> entropy(entropy_bits / 8U, 0);
-    for (std::size_t bit_index = 0; bit_index < entropy_bits; ++bit_index) {
-        if (index_bit(indexes, bit_index) != 0) {
-            entropy[bit_index / 8U] |= static_cast<std::uint8_t>(1U << static_cast<unsigned>(7U - (bit_index % 8U)));
-        }
-    }
-    return entropy;
-}
-
-void require_valid_bip39_checksum(const SeedQrWordIndexes& indexes) {
-    const std::size_t checksum_bits = checksum_bits_for_word_count(indexes.size());
-    const std::size_t entropy_bits = (indexes.size() * 11U) - checksum_bits;
-    const std::vector<std::uint8_t> entropy = entropy_from_indexes(indexes);
-    const std::string entropy_string(reinterpret_cast<const char*>(entropy.data()), entropy.size());
-    const std::string digest = sha256_hex(std::string_view(entropy_string.data(), entropy_string.size()));
-    for (std::size_t bit_index = 0; bit_index < checksum_bits; ++bit_index) {
-        const int actual = index_bit(indexes, entropy_bits + bit_index);
-        const int expected = digest_bit(digest, bit_index);
-        if (actual != expected) {
-            throw SeedQrError("SeedQR BIP-39 checksum is invalid");
-        }
-    }
-}
-
 int entropy_bit(const std::vector<std::uint8_t>& entropy, std::size_t bit_index) {
     return (entropy[bit_index / 8U] >> static_cast<unsigned>(7U - (bit_index % 8U))) & 1U;
 }
@@ -123,7 +91,11 @@ SeedQrWordIndexes decode_standard_seedqr_indexes(const std::string& digits) {
         }
         indexes.push_back(index);
     }
-    require_valid_bip39_checksum(indexes);
+    try {
+        require_valid_bip39_checksum(indexes);
+    } catch (const Bip39Error& exc) {
+        throw SeedQrError(std::string("SeedQR ") + exc.what());
+    }
     return indexes;
 }
 

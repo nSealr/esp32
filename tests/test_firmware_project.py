@@ -138,6 +138,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
 
         self.assertIn("device_protocol.cpp", cmake)
         self.assertIn("approval_gate.cpp", cmake)
+        self.assertIn("bip39_english.cpp", cmake)
         self.assertIn("nip19_nsec.cpp", cmake)
         self.assertIn("qr_envelope.cpp", cmake)
         self.assertIn("serial_frame.cpp", cmake)
