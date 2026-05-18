@@ -314,6 +314,10 @@ tests with strict C++ warnings.
   `nSealr/specs/vectors/session-import-reviews` snapshots, without leaking raw
   private-key bytes or mnemonic words and without creating a signing approval
   session.
+- Host-core session import flow tests must prove import approval requires
+  local traversal to the final import decision page before loading the
+  stateless session keyring, while rejection, early approval, and non-terminal
+  button streams leave the keyring empty.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

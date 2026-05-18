@@ -118,6 +118,12 @@ The first firmware foundation is host-buildable C++ under
   mnemonic words, and its host tests consume the shared
   `nSealr/specs/vectors/session-import-reviews` contract. It deliberately
   returns review pages and a digest only, not a signing approval session.
+- `session_import_flow`: wraps that import review in a local button-control
+  loop before loading a parsed source into the stateless session keyring.
+  `Next` must reach the final import decision page before `Approve` can load
+  RAM-only source material; `Reject`, early approval, and non-terminal input
+  streams leave the keyring unchanged. This is import approval only, not
+  signing approval, derivation, persistence, or policy automation.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

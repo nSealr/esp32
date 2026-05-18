@@ -20,6 +20,7 @@
 #include "nsealr/serial_frame.hpp"
 #include "nsealr/serial_review.hpp"
 #include "nsealr/seedqr.hpp"
+#include "nsealr/session_import_flow.hpp"
 #include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
 #include "nsealr/signing_policy.hpp"
@@ -721,6 +722,85 @@ void test_session_import_review_hides_secret_material() {
     assert(seed_review.pages.front().action == nsealr::ReviewPageAction::Next);
     assert(seed_review.pages.back().title == "Import?");
     assert(seed_review.pages.back().action == nsealr::ReviewPageAction::ApproveOrReject);
+}
+
+void test_session_import_flow_requires_local_approval_before_loading_keyring() {
+    nsealr::StatelessSessionKeyring pending_sources;
+    nsealr::StatelessSessionKeyring session_keyring;
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+    pending_sources.add_nsec("nsec test vector", secret);
+
+    const nsealr::SessionImportFlowResult result = nsealr::run_session_import_flow(
+        session_keyring,
+        pending_sources.source_at(0),
+        {nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve});
+
+    assert(result.approved);
+    assert(result.loaded);
+    assert(result.review.review_id == std::string(session_import_review_vector_by_name("nsec-test-key-1").review_id));
+    assert(result.transcript.size() == 2U);
+    assert(result.transcript[0].page_index == 0U);
+    assert(result.transcript[0].button == nsealr::ReviewButton::Next);
+    assert(!result.transcript[0].decision.has_value());
+    assert(!result.transcript[0].loaded);
+    assert(result.transcript[1].page_index == 1U);
+    assert(result.transcript[1].button == nsealr::ReviewButton::Approve);
+    assert(result.transcript[1].decision.has_value() && *result.transcript[1].decision);
+    assert(result.transcript[1].loaded);
+    assert(session_keyring.size() == 1U);
+    assert(session_keyring.source_at(0).label == "nsec test vector");
+    assert(session_keyring.source_at(0).nsec_secret_key == secret);
+}
+
+void test_session_import_flow_rejection_does_not_load_keyring() {
+    nsealr::StatelessSessionKeyring pending_sources;
+    nsealr::StatelessSessionKeyring session_keyring;
+    pending_sources.add_bip39_seed("SeedQR vector 1", nsealr::test_vectors::seedqr_vector_1_word_indexes());
+
+    const nsealr::SessionImportFlowResult result = nsealr::run_session_import_flow(
+        session_keyring,
+        pending_sources.source_at(0),
+        {nsealr::ReviewButton::Reject});
+
+    assert(!result.approved);
+    assert(!result.loaded);
+    assert(result.transcript.size() == 1U);
+    assert(result.transcript[0].decision.has_value() && !*result.transcript[0].decision);
+    assert(!result.transcript[0].loaded);
+    assert(session_keyring.empty());
+}
+
+void test_session_import_flow_blocks_early_or_nonterminal_approval() {
+    nsealr::StatelessSessionKeyring pending_sources;
+    nsealr::StatelessSessionKeyring session_keyring;
+    pending_sources.add_nsec(
+        "nsec test vector",
+        nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)nsealr::run_session_import_flow(
+            session_keyring,
+            pending_sources.source_at(0),
+            {nsealr::ReviewButton::Approve});
+    });
+    assert(session_keyring.empty());
+
+    expect_throw("did not reach approval or rejection", [&] {
+        (void)nsealr::run_session_import_flow(
+            session_keyring,
+            pending_sources.source_at(0),
+            {nsealr::ReviewButton::Next});
+    });
+    assert(session_keyring.empty());
+
+    expect_throw("max button steps", [&] {
+        (void)nsealr::run_session_import_flow(
+            session_keyring,
+            pending_sources.source_at(0),
+            {nsealr::ReviewButton::Next, nsealr::ReviewButton::Back},
+            1U);
+    });
+    assert(session_keyring.empty());
 }
 
 void test_qr_signing_request_rejections() {
@@ -2264,6 +2344,9 @@ int main() {
     test_stateless_session_keyring_accepts_parsed_key_sources();
     test_stateless_session_keyring_rejects_invalid_sources();
     test_session_import_review_hides_secret_material();
+    test_session_import_flow_requires_local_approval_before_loading_keyring();
+    test_session_import_flow_rejection_does_not_load_keyring();
+    test_session_import_flow_blocks_early_or_nonterminal_approval();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

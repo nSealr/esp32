@@ -605,6 +605,14 @@ and import approval digest cannot drift. This is still host-core groundwork:
 camera/import UX, hardware display/button acceptance, NIP-06 derivation,
 response QR output, and real signing remain pending.
 
+Status note, 2026-05-18: host-core now has a session import flow that requires
+local review traversal before a parsed `nsec` or BIP-39 source is loaded into
+the stateless session keyring. Approval is accepted only on the final import
+decision page; rejection, early approval, and non-terminal button streams leave
+the keyring unchanged. This is RAM-only import approval, not signing approval,
+NIP-06 derivation, persistence, policy state, response QR output, or real
+signing.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

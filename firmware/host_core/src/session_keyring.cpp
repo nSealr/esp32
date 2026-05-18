@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 namespace nsealr {
 namespace {
@@ -64,6 +65,23 @@ void StatelessSessionKeyring::add_bip39_seed(std::string label, Bip39WordIndexes
     source.bip39_word_indexes = {};
     source.bip39_word_indexes.count = word_indexes.size();
     std::copy(word_indexes.begin(), word_indexes.end(), source.bip39_word_indexes.values.begin());
+}
+
+void StatelessSessionKeyring::add_source(const SessionKeySource& source) {
+    switch (source.kind) {
+        case SessionKeySourceKind::NsecSecretKey:
+            add_nsec(source.label, source.nsec_secret_key);
+            return;
+        case SessionKeySourceKind::Bip39WordIndexes:
+            break;
+    }
+
+    Bip39WordIndexes word_indexes;
+    word_indexes.reserve(source.bip39_word_indexes.count);
+    for (std::size_t index = 0; index < source.bip39_word_indexes.count; ++index) {
+        word_indexes.push_back(source.bip39_word_indexes.values[index]);
+    }
+    add_bip39_seed(source.label, std::move(word_indexes));
 }
 
 void StatelessSessionKeyring::clear() {

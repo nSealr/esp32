@@ -41,6 +41,7 @@ class StatelessSessionKeyring {
 public:
     void add_nsec(std::string label, const NsecSecretKey& secret_key);
     void add_bip39_seed(std::string label, Bip39WordIndexes word_indexes);
+    void add_source(const SessionKeySource& source);
     void clear();
 
     [[nodiscard]] bool empty() const;

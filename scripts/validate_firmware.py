@@ -121,6 +121,7 @@ def validate_firmware_project(project: Path) -> None:
         "serial_frame.cpp",
         "serial_review.cpp",
         "seedqr.cpp",
+        "session_import_flow.cpp",
         "session_import_review.cpp",
         "session_keyring.cpp",
         "sha256.cpp",

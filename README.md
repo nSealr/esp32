@@ -90,6 +90,11 @@ hardware readiness can differ, final vault behavior must converge.
   applicable, and a deterministic fingerprint, and is checked against shared
   `nSealr/specs` session-import-review vectors, but never raw `nsec` bytes or
   mnemonic words. It is not a signing approval gate.
+- Host-core session import flow requiring local traversal of the import review
+  before a parsed source can be loaded into the stateless session keyring.
+  Rejection and incomplete button streams leave the keyring empty, and approval
+  only loads RAM-only source material; it still does not sign, derive NIP-06
+  keys, persist material, or create policy state.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.
