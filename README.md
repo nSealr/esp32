@@ -85,6 +85,10 @@ hardware readiness can differ, final vault behavior must converge.
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests; it does not derive NIP-06 keys, persist material, expose policy state,
   or connect a signing backend.
+- Host-core secret-hidden session import review summaries for parsed `nsec`
+  and BIP-39 sources. The review shows source type, label, word count when
+  applicable, and a deterministic fingerprint, but never raw `nsec` bytes or
+  mnemonic words. It is not a signing approval gate.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.

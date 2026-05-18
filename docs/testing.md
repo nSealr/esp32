@@ -308,6 +308,10 @@ tests with strict C++ warnings.
   `nsec` and BIP-39 key sources, enforce bounded source count and labels,
   reject invalid BIP-39 word-index shapes, and keep the model disconnected
   from NIP-06 derivation, persistence, policy, and signing.
+- Host-core session import review tests must prove parsed `nsec` and BIP-39
+  key sources render secret-hidden review pages with deterministic
+  fingerprints, without leaking raw private-key bytes or mnemonic words and
+  without creating a signing approval session.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

@@ -112,6 +112,11 @@ The first firmware foundation is host-buildable C++ under
   and BIP-39 key sources. It lets future QR-vault import UX and lifecycle tests
   share one volatile custody boundary, while deliberately avoiding NIP-06
   derivation, persistence, policy state, or signing.
+- `session_import_review`: builds a secret-hidden import review summary for a
+  parsed session key source. It records type, label, word count for BIP-39, and
+  a deterministic source fingerprint without exposing raw `nsec` material or
+  mnemonic words. It deliberately returns review pages and a digest only, not a
+  signing approval session.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

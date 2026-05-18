@@ -596,6 +596,13 @@ RAM-only container for future import UX and lifecycle tests. It does not derive
 NIP-06 keys, persist material, expose policy state, or connect a signing
 backend.
 
+Status note, 2026-05-18: host-core now builds secret-hidden import review
+summaries for parsed `nsec` and BIP-39 session sources. These summaries expose
+type, label, word count when applicable, and a deterministic fingerprint while
+hiding raw `nsec` bytes and mnemonic words. This is still host-core groundwork:
+camera/import UX, hardware display/button acceptance, NIP-06 derivation,
+response QR output, and real signing remain pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

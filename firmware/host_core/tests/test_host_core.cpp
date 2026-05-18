@@ -20,6 +20,7 @@
 #include "nsealr/serial_frame.hpp"
 #include "nsealr/serial_review.hpp"
 #include "nsealr/seedqr.hpp"
+#include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
@@ -655,6 +656,51 @@ void test_stateless_session_keyring_rejects_invalid_sources() {
     expect_throw("keyring is full", [&] {
         keyring.add_nsec("overflow", secret);
     });
+}
+
+bool lines_contain_text(const std::vector<nsealr::TrustedReviewPage>& pages, const std::string& needle) {
+    for (const nsealr::TrustedReviewPage& page : pages) {
+        for (const std::string& line : page.lines) {
+            if (line.find(needle) != std::string::npos) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void test_session_import_review_hides_secret_material() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+    const std::vector<std::uint16_t> seed_indexes = nsealr::test_vectors::seedqr_vector_1_word_indexes();
+    keyring.add_nsec("nsec test vector", secret);
+    keyring.add_bip39_seed("SeedQR vector 1", seed_indexes);
+
+    const nsealr::SessionImportReview nsec_review =
+        nsealr::build_session_import_review(keyring.source_at(0));
+    const nsealr::SessionImportReview seed_review =
+        nsealr::build_session_import_review(keyring.source_at(1));
+
+    assert(nsec_review.review_id.rfind("session-import-", 0) == 0U);
+    assert(nsec_review.approval_digest.size() == 64U);
+    assert(nsec_review.pages.size() == 2U);
+    assert(nsec_review.pages.back().action == nsealr::ReviewPageAction::ApproveOrReject);
+    assert(lines_contain_text(nsec_review.pages, "Type: NIP-19 nsec"));
+    assert(lines_contain_text(nsec_review.pages, "Secret: hidden"));
+    assert(!lines_contain_text(nsec_review.pages, nsealr::test_vectors::kNip19NsecTestKey1SecretKey));
+
+    assert(seed_review.review_id != nsec_review.review_id);
+    assert(seed_review.approval_digest != nsec_review.approval_digest);
+    assert(lines_contain_text(seed_review.pages, "Type: BIP-39 seed"));
+    assert(lines_contain_text(seed_review.pages, "Words: 24"));
+    assert(lines_contain_text(seed_review.pages, "Secret: hidden"));
+    assert(!lines_contain_text(seed_review.pages, "attack"));
+    assert(!lines_contain_text(seed_review.pages, "expire"));
+
+    assert(seed_review.pages.front().title == "Import source");
+    assert(seed_review.pages.front().action == nsealr::ReviewPageAction::Next);
+    assert(seed_review.pages.back().title == "Import?");
+    assert(seed_review.pages.back().action == nsealr::ReviewPageAction::ApproveOrReject);
 }
 
 void test_qr_signing_request_rejections() {
@@ -2197,6 +2243,7 @@ int main() {
     test_bip39_english_mnemonic_parser_matches_shared_vector();
     test_stateless_session_keyring_accepts_parsed_key_sources();
     test_stateless_session_keyring_rejects_invalid_sources();
+    test_session_import_review_hides_secret_material();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();
