@@ -587,6 +587,12 @@ SeedQR vector. This is still partial QR-vault session-import work: BIP-39
 wordlist display, NIP-06 derivation, camera/import UX, session keyring wiring,
 response QR output, and real signing remain pending.
 
+Status note, 2026-05-18: host-core now has a bounded stateless session
+keyring model that can hold already parsed `nsec` and SeedQR key sources in a
+RAM-only container for future import UX and lifecycle tests. It does not derive
+NIP-06 keys, persist material, expose policy state, or connect a signing
+backend.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

@@ -19,6 +19,7 @@
 #include "nsealr/serial_frame.hpp"
 #include "nsealr/serial_review.hpp"
 #include "nsealr/seedqr.hpp"
+#include "nsealr/session_keyring.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
 #include "nsealr/utf8.hpp"
@@ -180,6 +181,15 @@ bool lines_contain(const std::vector<std::string>& lines, const std::string& nee
         }
     }
     return false;
+}
+
+void assert_session_seed_words_equal(
+    const nsealr::SessionSeedWordIndexes& actual,
+    const std::vector<std::uint16_t>& expected) {
+    assert(actual.count == expected.size());
+    for (std::size_t index = 0; index < expected.size(); ++index) {
+        assert(actual.values[index] == expected[index]);
+    }
 }
 
 class RecordingQrReviewIo : public nsealr::QrReviewIo {
@@ -548,6 +558,58 @@ void test_seedqr_decoders_match_shared_vector() {
     });
     expect_throw("byte length", [] {
         (void)nsealr::decode_compact_seedqr_indexes({0x01U, 0x02U, 0x03U});
+    });
+}
+
+void test_stateless_session_keyring_accepts_parsed_key_sources() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+    const std::vector<std::uint16_t> seed_indexes = nsealr::test_vectors::seedqr_vector_1_word_indexes();
+
+    assert(keyring.empty());
+    keyring.add_nsec("nsec test vector", secret);
+    keyring.add_seedqr("SeedQR vector 1", seed_indexes);
+
+    assert(keyring.size() == 2U);
+    assert(keyring.source_at(0).kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(keyring.source_at(0).label == "nsec test vector");
+    assert(keyring.source_at(0).nsec_secret_key == secret);
+    assert(keyring.source_at(0).bip39_word_indexes.count == 0U);
+    assert(keyring.source_at(1).kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(keyring.source_at(1).label == "SeedQR vector 1");
+    assert_session_seed_words_equal(keyring.source_at(1).bip39_word_indexes, seed_indexes);
+    expect_throw("index is out of range", [&] {
+        (void)keyring.source_at(2);
+    });
+
+    keyring.clear();
+    assert(keyring.empty());
+}
+
+void test_stateless_session_keyring_rejects_invalid_sources() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+
+    expect_throw("label must not be empty", [&] {
+        keyring.add_nsec("", secret);
+    });
+    expect_throw("label exceeds max length", [&] {
+        keyring.add_nsec(std::string(nsealr::kMaxSessionKeySourceLabelLength + 1U, 'x'), secret);
+    });
+    expect_throw("12 or 24 word indexes", [&] {
+        keyring.add_seedqr("short seed", {0U, 1U, 2U});
+    });
+    expect_throw("outside the English wordlist", [&] {
+        nsealr::SeedQrWordIndexes indexes(12U, 0U);
+        indexes[11] = 2048U;
+        keyring.add_seedqr("bad seed index", indexes);
+    });
+
+    for (std::size_t index = 0; index < nsealr::kMaxStatelessSessionKeySources; ++index) {
+        keyring.add_nsec("nsec source " + std::to_string(index), secret);
+    }
+    expect_throw("keyring is full", [&] {
+        keyring.add_nsec("overflow", secret);
     });
 }
 
@@ -2088,6 +2150,8 @@ int main() {
     test_qr_limits_match_shared_profile();
     test_nip19_nsec_decoder_matches_shared_vector();
     test_seedqr_decoders_match_shared_vector();
+    test_stateless_session_keyring_accepts_parsed_key_sources();
+    test_stateless_session_keyring_rejects_invalid_sources();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

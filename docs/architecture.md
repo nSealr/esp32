@@ -103,6 +103,10 @@ The first firmware foundation is host-buildable C++ under
   through the host-core SHA-256 helper. It is only a QR-vault key-source parser;
   it does not embed the BIP-39 English wordlist, derive NIP-06 keys, persist
   seed material, or sign.
+- `session_keyring`: bounded RAM-only host-core model for already parsed `nsec`
+  and SeedQR key sources. It lets future QR-vault import UX and lifecycle tests
+  share one volatile custody boundary, while deliberately avoiding NIP-06
+  derivation, persistence, policy state, or signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

@@ -299,6 +299,10 @@ tests with strict C++ warnings.
   word indexes. They must reject non-digit Standard SeedQR input, bad digit
   grouping, unsupported word counts, out-of-range indexes, bad BIP-39
   checksums, and unsupported CompactSeedQR byte lengths.
+- Host-core stateless session keyring tests must accept only already parsed
+  `nsec` and SeedQR key sources, enforce bounded source count and labels, reject
+  invalid BIP-39 word-index shapes, and keep the model disconnected from
+  derivation, persistence, policy, and signing.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

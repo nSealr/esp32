@@ -77,6 +77,10 @@ hardware readiness can differ, final vault behavior must converge.
   against the shared `nSealr/specs` vector. They validate BIP-39 word indexes
   and checksum bits for future RAM-only QR-vault session loading; they do not
   add a wordlist, NIP-06 derivation, storage, or signing.
+- Host-core stateless session keyring model for already parsed `nsec` and
+  SeedQR key sources. It is a bounded RAM-only container for future import UX
+  tests; it does not derive NIP-06 keys, persist material, expose policy state,
+  or connect a signing backend.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.
