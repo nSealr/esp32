@@ -570,6 +570,13 @@ descriptors: `esp32-qr-nip06-account-0` for the stateless QR route with
 USB/NIP-46 persistent route with `policy-scoped-automation-daily-use`. The
 scoped policy no longer lists smartcard routes.
 
+Status note, 2026-05-19: the same tests now consume the shared route-selection
+vectors `esp32-qr-sign-event-account-0` and `esp32-usb-sign-event-slot-0`. The
+QR selection remains QR transport, stateless, manual-only, physically approved,
+and `contains_secret_material: false`; the USB selection remains USB transport,
+device-persistent, scoped-automation capable, physically approved, and
+secretless at the descriptor layer. Runtime signing is still disabled.
+
 Status note, 2026-05-11: the ESP32 product target now separates account
 sources by route. The QR vault target must match Raspberry QR vault behavior
 with RAM-only mnemonic/passphrase/NIP-06/`nsec`/local-generation session

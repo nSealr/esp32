@@ -1,0 +1,25 @@
+{
+  "name": "esp32-usb-sign-event-slot-0",
+  "format": "nsealr-route-selection-vector-v0",
+  "request": {
+    "account_id": "acct-esp32-usb-slot-0",
+    "method": "sign_event",
+    "route_type": "esp32_usb_nip46"
+  },
+  "selection": {
+    "format": "nsealr-route-selection-v0",
+    "account_id": "acct-esp32-usb-slot-0",
+    "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "route_type": "esp32_usb_nip46",
+    "repository": "esp32",
+    "transport": "usb",
+    "custody": "device_persistent",
+    "trusted_review": "device_display",
+    "policy_support": "scoped_automation",
+    "policy_profile_id": "policy-scoped-automation-daily-use",
+    "physical_review": true,
+    "physical_approval": true,
+    "persistent_grants": true,
+    "contains_secret_material": false
+  }
+}

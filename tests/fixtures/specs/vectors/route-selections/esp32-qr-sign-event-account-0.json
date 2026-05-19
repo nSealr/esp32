@@ -1,0 +1,25 @@
+{
+  "name": "esp32-qr-sign-event-account-0",
+  "format": "nsealr-route-selection-vector-v0",
+  "request": {
+    "account_id": "acct-esp32-qr-nip06-account-0",
+    "method": "sign_event",
+    "route_type": "esp32_qr_vault"
+  },
+  "selection": {
+    "format": "nsealr-route-selection-v0",
+    "account_id": "acct-esp32-qr-nip06-account-0",
+    "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "route_type": "esp32_qr_vault",
+    "repository": "esp32",
+    "transport": "qr",
+    "custody": "stateless_session",
+    "trusted_review": "device_display",
+    "policy_support": "manual_only",
+    "policy_profile_id": "policy-manual-only-qr-vault",
+    "physical_review": true,
+    "physical_approval": true,
+    "persistent_grants": false,
+    "contains_secret_material": false
+  }
+}

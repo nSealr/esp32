@@ -46,10 +46,12 @@ route types:
   `stateless_session`, manual-only policy support, no persistent key-at-rest
   design, no policy automation, no TROPIC01 dependency, and
   `persistent_grants: false`. The shared descriptor is
-  `esp32-qr-nip06-account-0`, bound to `policy-manual-only-qr-vault`.
+  `esp32-qr-nip06-account-0`, bound to `policy-manual-only-qr-vault`, with
+  request routing pinned by `esp32-qr-sign-event-account-0`.
 - `esp32_usb_nip46`: future persistent daily-use route, transport `usb`,
   custody `device_persistent`, trusted review `device_display`, and
-  `policy-scoped-automation-daily-use`.
+  `policy-scoped-automation-daily-use`, with request routing pinned by
+  `esp32-usb-sign-event-slot-0`.
 
 The current `nsealr-account-descriptor-v0` USB vector
 `esp32-usb-device-slot-0` and grant vector `grant-esp32-usb-kind-1-session`
