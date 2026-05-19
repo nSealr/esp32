@@ -1,0 +1,68 @@
+{
+  "name": "esp32-usb-enable-kind-1-automation",
+  "format": "nsealr-policy-change-review-v0",
+  "proposal": {
+    "format": "nsealr-policy-change-proposal-v0",
+    "proposal_id": "proposal-esp32-usb-enable-kind-1-automation",
+    "account_id": "acct-esp32-usb-slot-0",
+    "route_type": "esp32_usb_nip46",
+    "action": "set_policy",
+    "current_policy_id": "policy-manual-only-persistent-device",
+    "proposed_policy_id": "policy-scoped-automation-daily-use",
+    "proposed_grant_ids": ["grant-esp32-usb-kind-1-session"],
+    "requested_by": {
+      "surface": "browser_extension",
+      "client_pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+      "label": "local companion test client"
+    },
+    "created_at": 1710000200,
+    "device_review_required": true,
+    "physical_approval_required": true,
+    "companion_authoritative": false,
+    "contains_secret_material": false
+  },
+  "review": {
+    "format": "nsealr-policy-change-review-pages-v0",
+    "proposal_id": "proposal-esp32-usb-enable-kind-1-automation",
+    "approval_digest": "74859ddf5324181cce3602869f9d91c5d4565d9088c5c672526b1d7b04137aa6",
+    "pages": [
+      {
+        "title": "Policy change",
+        "lines": [
+          "Action: set_policy",
+          "Account: acct-esp32-usb-slot-0",
+          "Route: esp32_usb_nip46"
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Requester",
+        "lines": [
+          "Surface: browser_extension",
+          "Client: 4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+          "Label: local companion test client"
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Policy",
+        "lines": [
+          "From: policy-manual-only-persistent-device",
+          "To: policy-scoped-automation-daily-use",
+          "Grants: 1",
+          "Grant: grant-esp32-usb-kind-1-session"
+        ],
+        "action": "next"
+      },
+      {
+        "title": "Decision",
+        "lines": [
+          "Review on device",
+          "Physical approval required",
+          "Companion cannot approve alone"
+        ],
+        "action": "approve_or_reject"
+      }
+    ]
+  }
+}

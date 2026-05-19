@@ -22,5 +22,5 @@
     "physical_approval": true,
     "persistent_grants": true
   },
-  "policy_profile_id": "policy-scoped-automation-daily-use"
+  "policy_profile_id": "policy-manual-only-persistent-device"
 }

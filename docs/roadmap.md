@@ -565,22 +565,31 @@ from the shared basic kind `1` fixture and verified the request-matched
 Status note, 2026-05-11: the ESP32 route split now references the shared
 identity/policy descriptors. `esp32_qr_vault` remains a stateless manual-only
 QR route with `persistent_grants: false`, while `esp32_usb_nip46` is the future
-persistent-slot route for `policy-scoped-automation-daily-use` and
-`grant-esp32-usb-kind-1-session`. These are conformance inputs only; signing
-remains disabled until the M8 production gates pass.
+persistent-slot route that starts from
+`policy-manual-only-persistent-device`. Scoped automation
+(`policy-scoped-automation-daily-use` plus `grant-esp32-usb-kind-1-session`)
+is reachable only through a device-reviewed policy-change proposal. These are
+conformance inputs only; signing remains disabled until the M8 production gates
+pass.
 
 Status note, 2026-05-19: the ESP32 tests now consume both shared ESP32 account
 descriptors: `esp32-qr-nip06-account-0` for the stateless QR route with
 `policy-manual-only-qr-vault`, and `esp32-usb-device-slot-0` for the future
-USB/NIP-46 persistent route with `policy-scoped-automation-daily-use`. The
-scoped policy no longer lists smartcard routes.
+USB/NIP-46 persistent route with `policy-manual-only-persistent-device` as the
+default. The scoped policy no longer lists smartcard routes.
 
 Status note, 2026-05-19: the same tests now consume the shared route-selection
 vectors `esp32-qr-sign-event-account-0` and `esp32-usb-sign-event-slot-0`. The
 QR selection remains QR transport, stateless, manual-only, physically approved,
 and `contains_secret_material: false`; the USB selection remains USB transport,
-device-persistent, scoped-automation capable, physically approved, and
-secretless at the descriptor layer. Runtime signing is still disabled.
+device-persistent, scoped-automation capable, physically approved, manual by
+default, and secretless at the descriptor layer. Runtime signing is still
+disabled.
+
+Status note, 2026-05-19: the ESP32 tests also consume the shared
+`esp32-usb-enable-kind-1-automation` policy-change review vector. That vector
+keeps scoped automation behind local device review and physical approval, with
+`companion_authoritative: false`.
 
 Status note, 2026-05-11: the ESP32 product target now separates account
 sources by route. The QR vault target must match Raspberry QR vault behavior

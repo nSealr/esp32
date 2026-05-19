@@ -62,11 +62,15 @@ tests with strict C++ warnings.
   `esp32_qr_vault` stateless/manual-only with `persistent_grants: false`, while
   `esp32-qr-nip06-account-0`, `policy-manual-only-qr-vault`,
   `esp32_usb_nip46`, `esp32-usb-device-slot-0`,
+  `policy-manual-only-persistent-device`,
+  `esp32-usb-enable-kind-1-automation`,
   `policy-scoped-automation-daily-use`, and
   `grant-esp32-usb-kind-1-session` remain future persistent-route contracts
   that do not enable signing. The same test consumes
   `esp32-qr-sign-event-account-0` and `esp32-usb-sign-event-slot-0` so
-  route-selection metadata cannot drift from account descriptors.
+  route-selection metadata cannot drift from account descriptors, and it keeps
+  scoped automation behind device-reviewed policy change plus physical
+  approval.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, trusted display, physical controls,

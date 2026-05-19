@@ -49,17 +49,21 @@ route types:
   `esp32-qr-nip06-account-0`, bound to `policy-manual-only-qr-vault`, with
   request routing pinned by `esp32-qr-sign-event-account-0`.
 - `esp32_usb_nip46`: future persistent daily-use route, transport `usb`,
-  custody `device_persistent`, trusted review `device_display`, and
-  `policy-scoped-automation-daily-use`, with request routing pinned by
-  `esp32-usb-sign-event-slot-0`.
+  custody `device_persistent`, trusted review `device_display`, and default
+  `policy-manual-only-persistent-device`, with request routing pinned by
+  `esp32-usb-sign-event-slot-0`. The future
+  `policy-scoped-automation-daily-use` profile is entered only through the
+  device-reviewed `esp32-usb-enable-kind-1-automation` policy-change proposal.
 
 The current `nsealr-account-descriptor-v0` USB vector
-`esp32-usb-device-slot-0` and grant vector `grant-esp32-usb-kind-1-session`
-are conformance contracts only. They do not authorize persistent grants on the
-current firmware and do not enable real signing. The firmware must still keep
-runtime signing disabled until provisioning/storage, display review,
-physical controls, Unicode review rendering, secure boot, flash encryption,
-debug lock, and companion signed-output verification are accepted.
+`esp32-usb-device-slot-0`, policy-change vector
+`esp32-usb-enable-kind-1-automation`, and grant vector
+`grant-esp32-usb-kind-1-session` are conformance contracts only. They do not
+authorize persistent grants on the current firmware and do not enable real
+signing. The firmware must still keep runtime signing disabled until
+provisioning/storage, display review, physical controls, Unicode review
+rendering, secure boot, flash encryption, debug lock, and companion
+signed-output verification are accepted.
 
 The host-core protocol layer now carries a `DeviceProtocolContext` with an
 explicit signer identity. `get_public_key`, the Event review author field, and

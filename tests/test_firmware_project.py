@@ -74,11 +74,19 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         usb_account = json.loads(
             (specs / "vectors/accounts/esp32-usb-device-slot-0.json").read_text(encoding="utf-8")
         )
-        usb_policy = json.loads(
+        usb_default_policy = json.loads(
+            (specs / "vectors/policies/manual-only-persistent-device.json").read_text(encoding="utf-8")
+        )
+        usb_scoped_policy = json.loads(
             (specs / "vectors/policies/scoped-automation-daily-use.json").read_text(encoding="utf-8")
         )
         usb_selection = json.loads(
             (specs / "vectors/route-selections/esp32-usb-sign-event-slot-0.json").read_text(encoding="utf-8")
+        )
+        usb_policy_change = json.loads(
+            (specs / "vectors/policy-changes/esp32-usb-enable-kind-1-automation.json").read_text(
+                encoding="utf-8"
+            )
         )
         grant = json.loads((specs / "vectors/grants/esp32-usb-kind-1-session.json").read_text(encoding="utf-8"))
 
@@ -104,16 +112,28 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertEqual(usb_account["signer_route"]["trusted_review"], "device_display")
         self.assertEqual(usb_account["signer_route"]["policy_support"], "scoped_automation")
         self.assertTrue(usb_account["capabilities"]["persistent_grants"])
-        self.assertEqual(usb_policy["policy_id"], usb_account["policy_profile_id"])
-        self.assertNotIn("smartcard", usb_policy["route_types"])
+        self.assertEqual(usb_default_policy["policy_id"], usb_account["policy_profile_id"])
+        self.assertEqual(usb_default_policy["mode"], "manual_only")
+        self.assertFalse(usb_default_policy["grants_allowed"])
+        self.assertIn("policy_change", usb_default_policy["manual_review_required"])
+        self.assertNotIn("smartcard", usb_default_policy["route_types"])
+        self.assertNotIn("smartcard", usb_scoped_policy["route_types"])
         self.assertEqual(usb_selection["selection"]["account_id"], usb_account["account_id"])
         self.assertEqual(usb_selection["selection"]["route_type"], usb_account["signer_route"]["type"])
         self.assertEqual(usb_selection["selection"]["transport"], usb_account["signer_route"]["transport"])
         self.assertEqual(usb_selection["selection"]["custody"], usb_account["signer_route"]["custody"])
+        self.assertEqual(usb_selection["selection"]["policy_profile_id"], usb_default_policy["policy_id"])
         self.assertTrue(usb_selection["selection"]["persistent_grants"])
         self.assertFalse(usb_selection["selection"]["contains_secret_material"])
         self.assertEqual(grant["route_type"], "esp32_usb_nip46")
         self.assertEqual(grant["permission"], {"method": "sign_event", "parameter": "1", "event_kind": 1})
+        self.assertEqual(usb_policy_change["proposal"]["account_id"], usb_account["account_id"])
+        self.assertEqual(usb_policy_change["proposal"]["route_type"], usb_account["signer_route"]["type"])
+        self.assertEqual(usb_policy_change["proposal"]["current_policy_id"], usb_default_policy["policy_id"])
+        self.assertEqual(usb_policy_change["proposal"]["proposed_policy_id"], usb_scoped_policy["policy_id"])
+        self.assertFalse(usb_policy_change["proposal"]["companion_authoritative"])
+        self.assertTrue(usb_policy_change["proposal"]["device_review_required"])
+        self.assertTrue(usb_policy_change["proposal"]["physical_approval_required"])
 
         docs = "\n".join(
             [
@@ -131,6 +151,8 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertIn("esp32_usb_nip46", docs)
         self.assertIn("esp32-usb-device-slot-0", docs)
         self.assertIn("esp32-usb-sign-event-slot-0", docs)
+        self.assertIn("policy-manual-only-persistent-device", docs)
+        self.assertIn("esp32-usb-enable-kind-1-automation", docs)
         self.assertIn("policy-scoped-automation-daily-use", docs)
         self.assertIn("grant-esp32-usb-kind-1-session", docs)
         self.assertIn("esp32_qr_vault", docs)

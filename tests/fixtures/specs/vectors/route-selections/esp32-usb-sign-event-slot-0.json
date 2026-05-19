@@ -16,7 +16,7 @@
     "custody": "device_persistent",
     "trusted_review": "device_display",
     "policy_support": "scoped_automation",
-    "policy_profile_id": "policy-scoped-automation-daily-use",
+    "policy_profile_id": "policy-manual-only-persistent-device",
     "physical_review": true,
     "physical_approval": true,
     "persistent_grants": true,

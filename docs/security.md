@@ -43,10 +43,13 @@ The current profile is `development_scaffold`:
   T-Display S3, touch approval remains disallowed, and production claim remains
   blocked
 - identity/policy descriptors: `esp32_usb_nip46`,
+  `policy-manual-only-persistent-device`,
+  `esp32-usb-enable-kind-1-automation`,
   `policy-scoped-automation-daily-use`, and
   `grant-esp32-usb-kind-1-session` are shared conformance contracts only;
   they do not enable persistent grants or signatures on this development
-  scaffold
+  scaffold, and scoped automation still requires device review plus physical
+  approval
 - future persistent-device vault: seed profiles, BIP-39 passphrase namespaces,
   NIP-06 accounts, standalone key slots, and per-public-key policy remain a
   production design target, not current firmware behavior; v0 uses one

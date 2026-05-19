@@ -22,11 +22,14 @@ stateless, manual-only QR route with `persistent_grants: false`, while
 `nsealr-account-descriptor-v0`. The ESP32 QR route is pinned by
 `esp32-qr-nip06-account-0`, `policy-manual-only-qr-vault`, and
 `esp32-qr-sign-event-account-0`; the USB route is pinned by
-`esp32-usb-device-slot-0`, `policy-scoped-automation-daily-use`,
-`esp32-usb-sign-event-slot-0`, and the test grant
-`grant-esp32-usb-kind-1-session`. The USB route does not clear any production
-signing gate yet; signing remains disabled until provisioning, storage, review,
-hardening, and signed-output verification are accepted.
+`esp32-usb-device-slot-0`, `policy-manual-only-persistent-device`, and
+`esp32-usb-sign-event-slot-0`. The scoped automation profile
+`policy-scoped-automation-daily-use` and test grant
+`grant-esp32-usb-kind-1-session` are reachable only through the device-reviewed
+`esp32-usb-enable-kind-1-automation` policy-change proposal. The USB route does
+not clear any production signing gate yet; signing remains disabled until
+provisioning, storage, review, hardening, and signed-output verification are
+accepted.
 
 The final account/custody split is also explicit. `esp32_qr_vault` should
 match the Raspberry QR vault behavior for shared features: RAM-only session
@@ -183,8 +186,9 @@ hardware readiness can differ, final vault behavior must converge.
   flash encryption, debug lock, companion verification, and an explicit runtime
   feature flag are all present.
 - Shared identity/policy descriptors are tracked without enabling signing:
-  `esp32_usb_nip46` is a persistent-slot route for future scoped automation,
-  and `esp32_qr_vault` remains manual-only/stateless with
+  `esp32_usb_nip46` starts from `policy-manual-only-persistent-device` and can
+  reach future scoped automation only through a device-reviewed policy-change
+  proposal, while `esp32_qr_vault` remains manual-only/stateless with
   `persistent_grants: false` and no TROPIC01 dependency.
 - Machine-readable ESP32-S3 USB signer security profile that records the
   current development-only hardening state and production blockers before any
