@@ -2,7 +2,7 @@
   "format": "nsealr-policy-profile-v0",
   "policy_id": "policy-scoped-automation-daily-use",
   "label": "Scoped automation for daily-use persistent signers",
-  "route_types": ["esp32_usb_nip46", "smartcard", "custom_hardware_wallet", "external_nip46"],
+  "route_types": ["esp32_usb_nip46", "custom_hardware_wallet", "external_nip46"],
   "mode": "scoped_automation",
   "grants_allowed": true,
   "manual_review_required": [
