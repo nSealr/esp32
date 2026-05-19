@@ -69,9 +69,10 @@ The host-core protocol layer now carries a `DeviceProtocolContext` with an
 explicit signer identity. `get_public_key`, the Event review author field, and
 the `approval_digest` signer-author binding all use that same identity. The
 development scaffold context still uses the deterministic fixture public key
-from the shared vectors, but future QR session account selection and persistent
-USB provisioning must inject the selected account identity instead of relying
-on a global development key.
+from the shared vectors, while the QR session account boundary can inject a
+selected RAM-only account identity before trusted review. Future persistent USB
+provisioning must use the same identity-context boundary instead of relying on
+a global development key.
 
 For the QR route, the target key-source behavior is the same as Raspberry QR
 vault behavior: a RAM-only session keyring fed by manual BIP-39 words,
@@ -164,6 +165,15 @@ The first firmware foundation is host-buildable C++ under
   host-core boundary that loads the stateless keyring only after final-page
   approval; rejection, malformed input, and early/non-terminal button streams
   leave the keyring unchanged.
+- `session_account`: selects a secretless account descriptor from the
+  RAM-only stateless session keyring for the ESP32 QR vault route and builds
+  the matching `DeviceProtocolContext` for trusted review. It validates stable
+  account ids, the `esp32_qr_vault` route, lowercase 32-byte public keys,
+  source indexes, and recovery/source shape: NIP-06 descriptors must point to
+  BIP-39 session sources with the expected `m/44'/1237'/account'/0/0` path,
+  while standalone `nsec` descriptors must point to `nsec` session sources and
+  carry no derivation path. It copies only account metadata and public identity;
+  it does not derive NIP-06 keys, persist secrets, evaluate policy, or sign.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

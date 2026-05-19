@@ -31,6 +31,10 @@
   The scaffold default remains the deterministic development fixture key; real
   account/provisioning work must supply the selected signer identity before
   any signing backend is connected.
+- Host-core ESP32 QR vault session-account selection boundary that binds a
+  RAM-only key source, account descriptor, route, and public key to the trusted
+  review identity without deriving keys, persisting policy, or enabling
+  signing.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
 - Dynamic serial request-id echo for valid `get_capabilities`,
@@ -437,6 +441,14 @@ unsupported serial-frame type smoke report as firmware protocol evidence. The
 report covers deterministic `malformed_frame` behavior for a shared negative
 transport vector and keeps `sign_event` in `signing_disabled`.
 
+Status note, 2026-05-19: the ESP32 QR vault host-core now has a session-account
+selection boundary for RAM-only sources. It validates that NIP-06 descriptors
+select BIP-39 session sources, standalone `nsec` descriptors select standalone
+session sources, the route remains `esp32_qr_vault`, and the selected public
+key becomes the signer identity used by Event review and `approval_digest`
+binding. This is still metadata binding only: no NIP-06 derivation, persistent
+storage, policy automation, or signing backend is connected.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
@@ -671,8 +683,8 @@ for future ESP32 QR vault camera adapters. Canonical NIP-19 `nsec`, plain
 BIP-39 English mnemonic QR text, SeedSigner Standard SeedQR digit streams, and
 CompactSeedQR entropy bytes all normalize into the same RAM-only
 `SessionKeySource` boundary before import review. This still does not add
-camera capture, NIP-06 derivation, account selection, persistence, response QR
-hardware, or real signing.
+camera capture, NIP-06 derivation, source/public-key proof, persistence,
+response QR hardware, or real signing.
 
 Status note, 2026-05-19: host-core now composes decoded QR session-source
 parsing with the local import-review button flow. Accepted `nsec`, plain
@@ -710,6 +722,11 @@ acceptance, and companion signed-output acceptance remain pending.
   timing on physical QR frames, hardware display output, and signing-vector
   consumption remain pending. Raw QR review flow is available in host-core for
   future camera/display/GPIO adapters.
+- QR session account selection. Status: host-core can bind a RAM-only BIP-39
+  or standalone `nsec` source to secretless account metadata and use the
+  selected public key as the trusted-review signer identity. NIP-06 derivation,
+  source/public-key proof, camera/import UX integration, and signing remain
+  pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
   vector. Real signing, response display hardware, scan-back, and end-to-end

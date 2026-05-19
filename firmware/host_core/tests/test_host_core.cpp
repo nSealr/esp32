@@ -21,6 +21,7 @@
 #include "nsealr/serial_frame.hpp"
 #include "nsealr/serial_review.hpp"
 #include "nsealr/seedqr.hpp"
+#include "nsealr/session_account.hpp"
 #include "nsealr/session_import_flow.hpp"
 #include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
@@ -1093,6 +1094,118 @@ void test_session_import_flow_blocks_early_or_nonterminal_approval() {
             1U);
     });
     assert(session_keyring.empty());
+}
+
+void test_session_account_selection_binds_qr_review_identity_without_derivation() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_bip39_seed(
+        "NIP-06 account 0",
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+
+    const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(
+        keyring,
+        nsealr::SessionAccountDescriptor{
+            "acct-esp32-qr-nip06-account-0",
+            "esp32_qr_vault",
+            nsealr::test_vectors::kNip06Account0PublicKey,
+            0U,
+            nsealr::SessionAccountRecoveryKind::Nip06,
+            "m/44'/1237'/0'/0/0",
+            0U,
+        });
+
+    assert(selected.account_id == "acct-esp32-qr-nip06-account-0");
+    assert(selected.route_type == "esp32_qr_vault");
+    assert(selected.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
+    assert(selected.source_index == 0U);
+    assert(selected.source_kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(selected.source_label == "NIP-06 account 0");
+    assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
+
+    const nsealr::DeviceProtocolContext context =
+        nsealr::device_protocol_context_for_session_account(selected);
+    const nsealr::QrSigningRequest request = nsealr::parse_qr_signing_request(
+        nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic));
+    const nsealr::TrustedReviewRequest review =
+        nsealr::build_qr_trusted_review_request(request, context.signer_identity);
+
+    assert(lines_contain_text(review.pages, nsealr::test_vectors::kNip06Account0PublicKey));
+    assert(!lines_contain_text(review.pages, std::string(nsealr::kDevelopmentFixturePublicKey)));
+}
+
+void test_session_account_selection_validates_source_route_and_recovery_shape() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_nsec("standalone nsec", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+
+    const nsealr::SessionAccountDescriptor standalone{
+        "acct-esp32-qr-nsec-0",
+        "esp32_qr_vault",
+        nsealr::test_vectors::kNip19NsecTestKey1PublicKey,
+        0U,
+        nsealr::SessionAccountRecoveryKind::StandaloneNsec,
+        "",
+        0U,
+    };
+    const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(keyring, standalone);
+    assert(selected.source_kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip19NsecTestKey1PublicKey);
+
+    expect_throw("requires a BIP-39 source", [&] {
+        (void)nsealr::select_session_account(
+            keyring,
+            nsealr::SessionAccountDescriptor{
+                "acct-esp32-qr-nip06-account-0",
+                "esp32_qr_vault",
+                nsealr::test_vectors::kNip06Account0PublicKey,
+                0U,
+                nsealr::SessionAccountRecoveryKind::Nip06,
+                "m/44'/1237'/0'/0/0",
+                0U,
+            });
+    });
+    expect_throw("source index is out of range", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.source_index = 1U;
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+    expect_throw("route_type must be esp32_qr_vault", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.route_type = "esp32_usb_nip46";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+    expect_throw("account_id must be a stable string id", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.account_id = "not stable";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+    expect_throw("public_key must be 32-byte lowercase hex", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.public_key = "not-a-public-key";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+    expect_throw("must not carry a derivation path", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.derivation_path = "m/44'/1237'/0'/0/0";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+
+    nsealr::StatelessSessionKeyring mnemonic_keyring;
+    mnemonic_keyring.add_bip39_seed(
+        "NIP-06 account 0",
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+    expect_throw("path does not match account index", [&] {
+        (void)nsealr::select_session_account(
+            mnemonic_keyring,
+            nsealr::SessionAccountDescriptor{
+                "acct-esp32-qr-nip06-account-0",
+                "esp32_qr_vault",
+                nsealr::test_vectors::kNip06Account0PublicKey,
+                0U,
+                nsealr::SessionAccountRecoveryKind::Nip06,
+                "m/44'/1237'/1'/0/0",
+                0U,
+            });
+    });
 }
 
 void test_qr_signing_request_rejections() {
@@ -2744,6 +2857,8 @@ int main() {
     test_session_import_flow_requires_local_approval_before_loading_keyring();
     test_session_import_flow_rejection_does_not_load_keyring();
     test_session_import_flow_blocks_early_or_nonterminal_approval();
+    test_session_account_selection_binds_qr_review_identity_without_derivation();
+    test_session_account_selection_validates_source_route_and_recovery_shape();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

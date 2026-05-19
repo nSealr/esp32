@@ -22,6 +22,7 @@ idf_component_register(
         "../../host_core/src/serial_frame.cpp"
         "../../host_core/src/serial_review.cpp"
         "../../host_core/src/seedqr.cpp"
+        "../../host_core/src/session_account.cpp"
         "../../host_core/src/session_import_flow.cpp"
         "../../host_core/src/session_import_review.cpp"
         "../../host_core/src/session_keyring.cpp"

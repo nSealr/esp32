@@ -32,6 +32,7 @@ host-core-test: generate-host-vectors
 		firmware/host_core/src/serial_frame.cpp \
 		firmware/host_core/src/serial_review.cpp \
 		firmware/host_core/src/seedqr.cpp \
+		firmware/host_core/src/session_account.cpp \
 		firmware/host_core/src/session_import_flow.cpp \
 		firmware/host_core/src/session_import_review.cpp \
 		firmware/host_core/src/session_keyring.cpp \
