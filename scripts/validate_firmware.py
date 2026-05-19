@@ -27,6 +27,7 @@ REQUIRED_SECURITY_BLOCKERS = {
     "physical_approval_controls",
     "unicode_review_rendering",
     "key_provisioning",
+    "source_public_key_proof",
     "secure_boot",
     "flash_encryption",
     "debug_lock",
@@ -168,6 +169,14 @@ def validate_security_profile(path: Path) -> None:
         raise ValueError(f"{path}: key_provisioning.status is required")
     if key_provisioning.get("persistent_secret_storage") != "not_implemented":
         raise ValueError(f"{path}: persistent secret storage must remain not_implemented")
+
+    source_public_key_proof = profile.get("source_public_key_proof")
+    if (
+        not isinstance(source_public_key_proof, dict)
+        or source_public_key_proof.get("status") != "not_implemented"
+        or source_public_key_proof.get("required_before_signing") is not True
+    ):
+        raise ValueError(f"{path}: source_public_key_proof must remain not_implemented and required before signing")
 
     blockers = profile.get("production_blockers")
     if not isinstance(blockers, list):

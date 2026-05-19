@@ -2458,6 +2458,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
                                                "approval_digest_binding",
                                                "unicode_review_rendering",
                                                "key_provisioning",
+                                               "source_public_key_proof",
                                                "secure_boot",
                                                "flash_encryption",
                                                "debug_lock",
@@ -2472,6 +2473,7 @@ void test_signing_policy_requires_every_runtime_gate_before_enablement() {
         .approval_digest_binding_verified = true,
         .unicode_review_rendering_accepted = true,
         .key_provisioning_ready = true,
+        .source_public_key_proof_ready = true,
         .secure_boot_enabled = true,
         .flash_encryption_enabled = true,
         .debug_locked = true,
@@ -2626,7 +2628,7 @@ void test_device_protocol_echoes_dynamic_request_ids() {
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-signing-status","method":"get_signing_status"})"));
 
     assert(signing_status_response == response_frame_for_test(
-        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","trusted_review_display","physical_approval_controls","unicode_review_rendering","key_provisioning","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"],"development_accepted_gates":["parser_limits","trusted_review_display","physical_approval_controls","approval_digest_binding"]}}})"));
+        R"({"version":1,"request_id":"req-alt-signing-status","ok":true,"result":{"signing_status":{"signing_enabled":false,"missing_gates":["runtime_signing_feature","trusted_review_display","physical_approval_controls","unicode_review_rendering","key_provisioning","source_public_key_proof","secure_boot","flash_encryption","debug_lock","companion_signed_output_verification"],"development_accepted_gates":["parser_limits","trusted_review_display","physical_approval_controls","approval_digest_binding"]}}})"));
 
     const std::string public_key_response = nsealr::handle_serial_frame(
         request_frame_for_test(R"({"version":1,"request_id":"req-alt-pubkey","method":"get_public_key"})"));

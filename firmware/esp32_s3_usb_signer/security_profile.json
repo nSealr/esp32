@@ -24,6 +24,11 @@
     "persistent_secret_storage": "not_implemented",
     "required_before_signing": true
   },
+  "source_public_key_proof": {
+    "status": "not_implemented",
+    "required_before_signing": true,
+    "scope": "prove each displayed public key is derived from or cryptographically bound to the selected source before signing"
+  },
   "companion_signed_output_verification": {
     "ready": false,
     "required_before_signing": true
@@ -96,6 +101,7 @@
     "physical_approval_controls",
     "unicode_review_rendering",
     "key_provisioning",
+    "source_public_key_proof",
     "secure_boot",
     "flash_encryption",
     "debug_lock",

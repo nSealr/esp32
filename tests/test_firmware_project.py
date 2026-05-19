@@ -249,6 +249,9 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("trusted_review_display", profile["production_blockers"])
         self.assertIn("physical_approval_controls", profile["production_blockers"])
         self.assertIn("unicode_review_rendering", profile["production_blockers"])
+        self.assertIn("source_public_key_proof", profile["production_blockers"])
+        self.assertEqual(profile["source_public_key_proof"]["status"], "not_implemented")
+        self.assertTrue(profile["source_public_key_proof"]["required_before_signing"])
         self.assertEqual(profile["unicode_review_rendering"]["status"], "ascii_safe_codepoint_fallback_only")
         self.assertTrue(profile["unicode_review_rendering"]["required_before_signing"])
         self.assertEqual(
@@ -345,6 +348,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("validated_development_security_profile", vector["implemented_controls"])
         self.assertIn("read_only_efuse_audit_report", vector["implemented_controls"])
         self.assertIn("production_signing", vector["not_implemented_controls"])
+        self.assertIn("source_public_key_proof", vector["not_implemented_controls"])
         self.assertIn("secure_boot_enabled", vector["not_implemented_controls"])
 
     def test_security_profile_validator_rejects_production_signing_without_hardening(self) -> None:
@@ -435,6 +439,15 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             profile_path.write_text(json.dumps(missing_unicode_rendering), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "unicode_review_rendering"):
+                validate_firmware.validate_security_profile(profile_path)
+
+        with TemporaryDirectory() as tmp:
+            profile_path = Path(tmp) / "security_profile.json"
+            missing_source_key_proof = dict(profile)
+            missing_source_key_proof.pop("source_public_key_proof", None)
+            profile_path.write_text(json.dumps(missing_source_key_proof), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "source_public_key_proof"):
                 validate_firmware.validate_security_profile(profile_path)
 
     def test_firmware_validator_requires_serial_review_component(self) -> None:

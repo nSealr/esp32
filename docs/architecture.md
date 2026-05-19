@@ -198,9 +198,9 @@ The first firmware foundation is host-buildable C++ under
 - `signing_policy`: host-buildable runtime-signing readiness gate. It requires
   the explicit runtime feature flag, parser limits, trusted display acceptance,
   physical approval controls, approval-digest binding, Unicode review rendering
-  acceptance, key provisioning, secure boot, flash encryption, debug lock, and
-  companion signed-output verification before firmware can be considered ready
-  to connect a signing backend.
+  acceptance, key provisioning, source public-key proof, secure boot, flash
+  encryption, debug lock, and companion signed-output verification before
+  firmware can be considered ready to connect a signing backend.
 - `approval_gate`: request-id and approval-digest bound approval state
   machine, checked against shared `nSealr/specs` review-screen vectors.
 - `review_controls`: page-by-page review button state machine for future
@@ -383,14 +383,15 @@ development gate entries before serialization so the `get_signing_status`
 diagnostic stays compatible with the shared response contract. Signing still
 remains disabled because runtime feature enablement, production acceptance for
 trusted display and physical controls, Unicode review rendering acceptance, key
-provisioning, secure boot, flash encryption, debug lock, and companion
-signed-output verification remain open.
+provisioning, source public-key proof, secure boot, flash encryption, debug
+lock, and companion signed-output verification remain open.
 
 `firmware/esp32_s3_usb_signer/security_profile.json` is the matching
 machine-readable security posture for the ESP-IDF scaffold. The v0 profile is
 development-only: runtime signing is disabled, production signing is not
 allowed, secure boot and flash encryption are not enabled, USB/JTAG debug
-access remains unlocked for bring-up, and key provisioning is not implemented.
+access remains unlocked for bring-up, key provisioning is not implemented, and
+source public-key proof is not implemented.
 Trusted display and physical controls have manual development evidence recorded
 in the profile, but they remain production blockers. The validator requires
 those blockers to stay explicit until a later production profile is designed

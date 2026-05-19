@@ -42,6 +42,9 @@ SigningReadinessStatus evaluate_signing_readiness(const SigningReadiness& readin
     if (!readiness.key_provisioning_ready) {
         status.missing_gates.push_back("key_provisioning");
     }
+    if (!readiness.source_public_key_proof_ready) {
+        status.missing_gates.push_back("source_public_key_proof");
+    }
     if (!readiness.secure_boot_enabled) {
         status.missing_gates.push_back("secure_boot");
     }

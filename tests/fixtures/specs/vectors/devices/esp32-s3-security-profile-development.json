@@ -37,6 +37,7 @@
     "physical_approval_controls",
     "unicode_review_rendering",
     "key_provisioning",
+    "source_public_key_proof",
     "secure_boot",
     "flash_encryption",
     "debug_lock",
@@ -50,9 +51,10 @@
   "not_implemented_controls": [
     "production_signing",
     "production_key_provisioning",
+    "source_public_key_proof",
     "secure_boot_enabled",
     "flash_encryption_enabled",
     "debug_access_locked"
   ],
-  "notes": "The ESP32 USB/NIP-46 signer has a validated development-only security profile and a read-only eFuse audit path. This does not enable secure boot, flash encryption, debug locking, persistent-secret provisioning, or production signing."
+  "notes": "The ESP32 USB/NIP-46 signer has a validated development-only security profile and a read-only eFuse audit path. This does not enable secure boot, flash encryption, debug locking, persistent-secret provisioning, source public-key proof, or production signing."
 }

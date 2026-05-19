@@ -189,9 +189,9 @@ hardware readiness can differ, final vault behavior must converge.
   that model the future display/button approval loop without enabling signing.
 - Host-buildable signing-readiness policy that keeps runtime signing disabled
   until parser limits, trusted display, physical controls, approval-digest
-  binding, Unicode review rendering acceptance, key provisioning, secure boot,
-  flash encryption, debug lock, companion verification, and an explicit runtime
-  feature flag are all present.
+  binding, Unicode review rendering acceptance, key provisioning, source
+  public-key proof, secure boot, flash encryption, debug lock, companion
+  verification, and an explicit runtime feature flag are all present.
 - Shared identity/policy descriptors are tracked without enabling signing:
   `esp32_usb_nip46` starts from `policy-manual-only-persistent-device` and can
   reach future scoped automation only through a device-reviewed policy-change

@@ -56,8 +56,8 @@ tests with strict C++ warnings.
 - Signing-policy tests proving runtime signing remains disabled until every M8
   gate is present: runtime feature flag, parser limits, trusted display,
   physical controls, approval-digest binding, Unicode review rendering
-  acceptance, key provisioning, secure boot, flash encryption, debug lock, and
-  companion signed-output verification.
+  acceptance, key provisioning, source public-key proof, secure boot, flash
+  encryption, debug lock, and companion signed-output verification.
 - Identity/policy route-split tests proving shared descriptors keep
   `esp32_qr_vault` stateless/manual-only with `persistent_grants: false`, while
   `esp32-qr-nip06-account-0`, `policy-manual-only-qr-vault`,
@@ -73,8 +73,8 @@ tests with strict C++ warnings.
   approval.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
-  encryption, debug lock, key provisioning, trusted display, physical controls,
-  and signed-output verification listed as blockers.
+  encryption, debug lock, key provisioning, source public-key proof, trusted
+  display, physical controls, and signed-output verification listed as blockers.
 - Security-profile validation requiring manual development acceptance evidence
   for trusted display and physical approval controls while keeping both gates as
   production blockers and disallowing touch approval.
@@ -237,8 +237,9 @@ tests with strict C++ warnings.
   trusted-review display, physical approval controls, and approval-digest
   binding. The signing-policy tests also keep those diagnostic gate lists
   duplicate-free before they are serialized. Trusted display, physical
-  controls, and Unicode review rendering still remain in `missing_gates` until
-  production acceptance is complete.
+  controls, Unicode review rendering, and source public-key proof still remain
+  in `missing_gates` until production acceptance and derivation/proof coverage
+  are complete.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
 - Device protocol and review tests proving an explicit signer identity context

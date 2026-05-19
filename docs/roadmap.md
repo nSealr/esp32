@@ -91,12 +91,13 @@
 - Host-buildable runtime signing-readiness gate covering runtime feature flag,
   parser limits, trusted display acceptance, physical controls,
   approval-digest binding, Unicode review rendering acceptance, key
-  provisioning, secure boot, flash encryption, debug lock, and companion
-  signed-output verification.
+  provisioning, source public-key proof, secure boot, flash encryption, debug
+  lock, and companion signed-output verification.
 - Machine-readable development security profile for the ESP32-S3 USB signer,
   explicitly blocking production signing until runtime signing, trusted
-  display, physical controls, key provisioning, secure boot, flash encryption,
-  debug lock, and companion signed-output verification are complete.
+  display, physical controls, key provisioning, source public-key proof, secure
+  boot, flash encryption, debug lock, and companion signed-output verification
+  are complete.
 - Machine-readable firmware protocol evidence in that profile, kept separate
   from display/control acceptance and signed-output verification, so current
   hardware smokes can prove valid protocol handling, deterministic invalid
@@ -271,8 +272,8 @@ the already implemented host-core gates as satisfied: parser/resource limits
 and approval-digest binding. The diagnostic response still reports
 `signing_enabled: false`; remaining blockers are runtime signing feature,
 trusted review display acceptance, physical approval controls, Unicode review
-rendering acceptance, key provisioning, secure boot, flash encryption, debug
-lock, and companion signed-output verification.
+rendering acceptance, key provisioning, source public-key proof, secure boot,
+flash encryption, debug lock, and companion signed-output verification.
 
 Status note, 2026-05-10: the shared `get_signing_status` contract now also
 reports `development_accepted_gates`. The T-Display S3 scaffold lists parser
@@ -485,8 +486,9 @@ and NIP-06 derivation remain disconnected.
 Hard blocker before real `sign_event`: the M7.5 pre-signing hardening gate
 must pass. That means host-core parser/resource limits, shared malicious-vector
 rejection where feasible, display review driver acceptance, physical button
-acceptance, `approval_digest` binding, key provisioning/storage design, secure
-boot/debug policy, and companion verification of signed output are all tested.
+acceptance, `approval_digest` binding, key provisioning/storage design, source
+public-key proof, secure boot/debug policy, and companion verification of signed
+output are all tested.
 Until then runtime signing remains disabled.
 
 Status note, 2026-05-08: the host-core serial/USB path now builds a
@@ -550,9 +552,9 @@ does not enable signing.
 Status note, 2026-05-08: the ESP32-S3 USB signer scaffold now includes a
 validated `security_profile.json`. The v0 profile is `development_scaffold`,
 keeps runtime and production signing disabled, records secure boot, flash
-encryption, debug lock, key provisioning, trusted display, physical controls,
-and signed-output verification as production blockers, and is enforced by
-`make ci`.
+encryption, debug lock, key provisioning, source public-key proof, trusted
+display, physical controls, and signed-output verification as production
+blockers, and is enforced by `make ci`.
 
 Status note, 2026-05-09: `security_profile.json` now records T-Display S3
 manual development acceptance evidence for trusted display and physical
@@ -567,7 +569,10 @@ the production blockers intact. The field is diagnostic evidence for the
 development scaffold, not permission to connect a signing backend. The
 host-core signing policy now also normalizes duplicate development gate entries
 before `get_signing_status` serialization so firmware diagnostics remain
-compatible with the shared response contract. Revision `311368a` was rebuilt
+compatible with the shared response contract. Source public-key proof remains a
+separate production blocker until NIP-06 or standalone-key public-key derivation
+is proven inside the firmware boundary instead of trusting only secretless
+account metadata. Revision `311368a` was rebuilt
 with ESP-IDF `v5.5.4`, flashed to the attached T-Display S3 on
 `/dev/cu.usbmodem1101`, and passed the 39-exchange disabled-signing protocol
 smoke after that change.

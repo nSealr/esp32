@@ -16,6 +16,7 @@ The current profile is `development_scaffold`:
   through `make idf-audit-security-fuses` and tracked separately as
   `security_fuse_audit_evidence`
 - key provisioning: not implemented
+- source public-key proof: not implemented
 - persistent secret storage: not implemented
 - companion signed-output verification gate: not ready
 - trusted review display: manual development acceptance passed on T-Display S3,
@@ -77,6 +78,7 @@ Before any real signing path can be enabled, the production profile must prove:
 - separate physical approve/reject controls
 - request and `approval_digest` binding
 - production key provisioning and recovery policy
+- source public-key proof for each selected account/source
 - secure boot policy
 - flash encryption or equivalent persistent-secret policy
 - locked debug access
