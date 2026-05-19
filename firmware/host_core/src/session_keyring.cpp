@@ -1,6 +1,7 @@
 #include "nsealr/session_keyring.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
@@ -35,14 +36,28 @@ void require_valid_seed_word_indexes(const Bip39WordIndexes& word_indexes) {
     }
 }
 
-void wipe_source(SessionKeySource& source) {
-    std::fill(source.nsec_secret_key.begin(), source.nsec_secret_key.end(), 0U);
-    std::fill(source.bip39_word_indexes.values.begin(), source.bip39_word_indexes.values.end(), 0U);
+template <typename T, std::size_t N>
+void wipe_array(std::array<T, N>& values) noexcept {
+    volatile T* data = values.data();
+    for (std::size_t index = 0; index < values.size(); ++index) {
+        data[index] = 0;
+    }
+}
+
+void wipe_source(SessionKeySource& source) noexcept {
+    wipe_array(source.nsec_secret_key);
+    wipe_array(source.bip39_word_indexes.values);
     source.bip39_word_indexes.count = 0;
+    std::fill(source.label.begin(), source.label.end(), '\0');
     source.label.clear();
+    source.kind = SessionKeySourceKind::NsecSecretKey;
 }
 
 }  // namespace
+
+StatelessSessionKeyring::~StatelessSessionKeyring() noexcept {
+    clear();
+}
 
 void StatelessSessionKeyring::add_nsec(std::string label, const NsecSecretKey& secret_key) {
     require_valid_label(label);
@@ -84,7 +99,7 @@ void StatelessSessionKeyring::add_source(const SessionKeySource& source) {
     add_bip39_seed(source.label, std::move(word_indexes));
 }
 
-void StatelessSessionKeyring::clear() {
+void StatelessSessionKeyring::clear() noexcept {
     for (std::size_t index = 0; index < size_; ++index) {
         wipe_source(sources_[index]);
     }

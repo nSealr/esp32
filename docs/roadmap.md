@@ -596,6 +596,12 @@ RAM-only container for future import UX and lifecycle tests. It does not derive
 NIP-06 keys, persist material, expose policy state, or connect a signing
 backend.
 
+Status note, 2026-05-19: the stateless session keyring now wipes active
+`nsec` and BIP-39 source slots on `clear()` and destruction, and copy/move
+operations are disabled so volatile QR-vault key material is not accidentally
+duplicated by host-core ownership changes. Hardware reset behavior and
+physical lifecycle acceptance remain pending.
+
 Status note, 2026-05-18: host-core now builds secret-hidden import review
 summaries for parsed `nsec` and BIP-39 session sources. These summaries expose
 type, label, word count when applicable, and a deterministic fingerprint while

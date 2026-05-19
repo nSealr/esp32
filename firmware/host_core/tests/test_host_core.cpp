@@ -1,4 +1,5 @@
 #include <cassert>
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <iostream>
@@ -89,6 +90,13 @@ void expect_throw(const std::string& expected, const auto& fn) {
         return;
     }
     assert(false && "expected exception");
+}
+
+template <typename T, std::size_t N>
+bool all_zero(const std::array<T, N>& values) {
+    return std::all_of(values.begin(), values.end(), [](const T& value) {
+        return value == 0;
+    });
 }
 
 int hex_nibble_for_test(char ch) {
@@ -642,6 +650,36 @@ void test_stateless_session_keyring_accepts_parsed_key_sources() {
 
     keyring.clear();
     assert(keyring.empty());
+}
+
+void test_stateless_session_keyring_clear_wipes_active_sources() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+    const std::vector<std::uint16_t> seed_indexes = nsealr::test_vectors::seedqr_vector_1_word_indexes();
+
+    keyring.add_nsec("nsec test vector", secret);
+    keyring.add_bip39_seed("SeedQR vector 1", seed_indexes);
+    const nsealr::SessionKeySource& nsec_source = keyring.source_at(0);
+    const nsealr::SessionKeySource& seed_source = keyring.source_at(1);
+
+    assert(!all_zero(nsec_source.nsec_secret_key));
+    assert(seed_source.bip39_word_indexes.count == seed_indexes.size());
+    assert(!all_zero(seed_source.bip39_word_indexes.values));
+
+    keyring.clear();
+
+    assert(keyring.empty());
+    assert(nsec_source.label.empty());
+    assert(all_zero(nsec_source.nsec_secret_key));
+    assert(nsec_source.bip39_word_indexes.count == 0U);
+    assert(all_zero(nsec_source.bip39_word_indexes.values));
+    assert(seed_source.label.empty());
+    assert(all_zero(seed_source.nsec_secret_key));
+    assert(seed_source.bip39_word_indexes.count == 0U);
+    assert(all_zero(seed_source.bip39_word_indexes.values));
+    expect_throw("index is out of range", [&] {
+        (void)keyring.source_at(0);
+    });
 }
 
 void test_stateless_session_keyring_rejects_invalid_sources() {
@@ -2342,6 +2380,7 @@ int main() {
     test_seedqr_decoders_match_shared_vector();
     test_bip39_english_mnemonic_parser_matches_shared_vector();
     test_stateless_session_keyring_accepts_parsed_key_sources();
+    test_stateless_session_keyring_clear_wipes_active_sources();
     test_stateless_session_keyring_rejects_invalid_sources();
     test_session_import_review_hides_secret_material();
     test_session_import_flow_requires_local_approval_before_loading_keyring();

@@ -39,10 +39,17 @@ struct SessionKeySource {
 
 class StatelessSessionKeyring {
 public:
+    StatelessSessionKeyring() = default;
+    ~StatelessSessionKeyring() noexcept;
+    StatelessSessionKeyring(const StatelessSessionKeyring&) = delete;
+    StatelessSessionKeyring& operator=(const StatelessSessionKeyring&) = delete;
+    StatelessSessionKeyring(StatelessSessionKeyring&&) = delete;
+    StatelessSessionKeyring& operator=(StatelessSessionKeyring&&) = delete;
+
     void add_nsec(std::string label, const NsecSecretKey& secret_key);
     void add_bip39_seed(std::string label, Bip39WordIndexes word_indexes);
     void add_source(const SessionKeySource& source);
-    void clear();
+    void clear() noexcept;
 
     [[nodiscard]] bool empty() const;
     [[nodiscard]] std::size_t size() const;
