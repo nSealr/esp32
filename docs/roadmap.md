@@ -620,6 +620,13 @@ operations are disabled so volatile QR-vault key material is not accidentally
 duplicated by host-core ownership changes. Hardware reset behavior and
 physical lifecycle acceptance remain pending.
 
+Status note, 2026-05-19: `SessionKeySource` values now wipe sensitive arrays on
+destruction, assignment replacement, and move-source cleanup, so parsed or
+generated session-source temporaries follow the same best-effort RAM hygiene as
+keyring slots. This does not change the security claim: physical extraction
+resistance, lifecycle reset evidence, derivation, response QR hardware, and
+real signing remain pending.
+
 Status note, 2026-05-18: host-core now builds secret-hidden import review
 summaries for parsed `nsec` and BIP-39 session sources. These summaries expose
 type, label, word count when applicable, and a deterministic fingerprint while

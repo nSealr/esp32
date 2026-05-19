@@ -326,8 +326,9 @@ tests with strict C++ warnings.
 - Host-core stateless session keyring tests must accept only already parsed
   `nsec` and BIP-39 key sources, enforce bounded source count and labels,
   reject invalid BIP-39 word-index shapes, prove active sources are wiped on
-  clear, and keep the model disconnected from NIP-06 derivation, persistence,
-  policy, and signing.
+  clear, and prove `SessionKeySource` value operations wipe moved-from and
+  assignment-replaced sensitive material. The model must stay disconnected
+  from NIP-06 derivation, persistence, policy, and signing.
 - Host-core session import review tests must prove parsed `nsec` and BIP-39
   key sources render secret-hidden review pages with deterministic
   fingerprints, `review_id` values, and import approval digests against shared

@@ -92,7 +92,10 @@ hardware readiness can differ, final vault behavior must converge.
   review. It does not derive NIP-06 keys, persist material, or sign.
 - Host-core stateless session keyring model for already parsed `nsec` and
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
-  tests; it does not derive NIP-06 keys, persist material, expose policy state,
+  tests. The source value type and keyring wipe active `nsec` and BIP-39 word
+  index material on clear, destruction, assignment replacement, and moves; this
+  is still best-effort process hygiene, not a hardware anti-extraction claim.
+  The model does not derive NIP-06 keys, persist material, expose policy state,
   or connect a signing backend.
 - Host-core secret-hidden session import review summaries for parsed `nsec`
   and BIP-39 sources. The review shows source type, label, word count when

@@ -125,9 +125,12 @@ The first firmware foundation is host-buildable C++ under
 - `session_keyring`: bounded RAM-only host-core model for already parsed `nsec`
   and BIP-39 key sources. It lets future QR-vault import UX and lifecycle tests
   share one volatile custody boundary, wipes active sources on `clear()` and
-  destruction, and disables keyring copy/move operations so RAM-only material
-  is not duplicated by ordinary container semantics. It deliberately avoids
-  NIP-06 derivation, persistence, policy state, or signing.
+  destruction, wipes `SessionKeySource` values during destruction, assignment
+  replacement, and moves, and disables keyring copy/move operations so the
+  container itself is not duplicated by ordinary value semantics. This is
+  best-effort firmware/process hygiene for RAM-only material, not a hardware
+  anti-extraction claim. It deliberately avoids NIP-06 derivation,
+  persistence, policy state, or signing.
 - `session_import_review`: builds a secret-hidden import review summary for a
   parsed session key source. It records type, label, word count for BIP-39, and
   a deterministic source fingerprint without exposing raw `nsec` material or

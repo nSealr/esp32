@@ -724,6 +724,47 @@ void test_stateless_session_keyring_clear_wipes_active_sources() {
     });
 }
 
+void test_session_key_source_value_semantics_wipe_sensitive_material() {
+    const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
+    nsealr::SessionKeySource original;
+    original.kind = nsealr::SessionKeySourceKind::NsecSecretKey;
+    original.label = "temporary nsec";
+    original.nsec_secret_key = secret;
+
+    nsealr::SessionKeySource moved(std::move(original));
+
+    assert(moved.kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(moved.label == "temporary nsec");
+    assert(moved.nsec_secret_key == secret);
+    assert(original.label.empty());
+    assert(all_zero(original.nsec_secret_key));
+    assert(original.bip39_word_indexes.count == 0U);
+    assert(all_zero(original.bip39_word_indexes.values));
+
+    nsealr::SessionKeySource assigned;
+    assigned = moved;
+    assert(assigned.kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(assigned.nsec_secret_key == secret);
+
+    nsealr::SessionKeySource seed = nsealr::parse_session_source_qr_text(
+        "SeedQR vector 1",
+        nsealr::test_vectors::kSeedQrVector1StandardDigits);
+    assigned = seed;
+    assert(assigned.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(all_zero(assigned.nsec_secret_key));
+    assert_session_seed_words_equal(
+        assigned.bip39_word_indexes,
+        nsealr::test_vectors::seedqr_vector_1_word_indexes());
+
+    nsealr::SessionKeySource moved_seed;
+    moved_seed = std::move(seed);
+    assert(moved_seed.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(moved_seed.label == "SeedQR vector 1");
+    assert(seed.label.empty());
+    assert(seed.bip39_word_indexes.count == 0U);
+    assert(all_zero(seed.bip39_word_indexes.values));
+}
+
 void test_stateless_session_keyring_rejects_invalid_sources() {
     nsealr::StatelessSessionKeyring keyring;
     const nsealr::NsecSecretKey secret = nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1);
@@ -2629,6 +2670,7 @@ int main() {
     test_bip39_english_mnemonic_parser_matches_shared_vector();
     test_stateless_session_keyring_accepts_parsed_key_sources();
     test_stateless_session_keyring_clear_wipes_active_sources();
+    test_session_key_source_value_semantics_wipe_sensitive_material();
     test_stateless_session_keyring_rejects_invalid_sources();
     test_session_source_generation_uses_ram_only_source_boundary();
     test_session_source_generation_rejects_invalid_entropy();

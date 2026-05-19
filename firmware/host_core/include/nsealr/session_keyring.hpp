@@ -31,6 +31,15 @@ struct SessionSeedWordIndexes {
 };
 
 struct SessionKeySource {
+    SessionKeySource() = default;
+    SessionKeySource(const SessionKeySource&) = default;
+    SessionKeySource(SessionKeySource&& other);
+    SessionKeySource& operator=(const SessionKeySource& other);
+    SessionKeySource& operator=(SessionKeySource&& other);
+    ~SessionKeySource() noexcept;
+
+    void wipe() noexcept;
+
     SessionKeySourceKind kind = SessionKeySourceKind::NsecSecretKey;
     std::string label;
     NsecSecretKey nsec_secret_key{};

@@ -44,16 +44,51 @@ void wipe_array(std::array<T, N>& values) noexcept {
     }
 }
 
-void wipe_source(SessionKeySource& source) noexcept {
-    wipe_array(source.nsec_secret_key);
-    wipe_array(source.bip39_word_indexes.values);
-    source.bip39_word_indexes.count = 0;
-    std::fill(source.label.begin(), source.label.end(), '\0');
-    source.label.clear();
-    source.kind = SessionKeySourceKind::NsecSecretKey;
+}  // namespace
+
+SessionKeySource::SessionKeySource(SessionKeySource&& other)
+    : kind(other.kind),
+      label(std::move(other.label)),
+      nsec_secret_key(other.nsec_secret_key),
+      bip39_word_indexes(other.bip39_word_indexes) {
+    other.wipe();
 }
 
-}  // namespace
+SessionKeySource& SessionKeySource::operator=(const SessionKeySource& other) {
+    if (this != &other) {
+        wipe();
+        kind = other.kind;
+        label = other.label;
+        nsec_secret_key = other.nsec_secret_key;
+        bip39_word_indexes = other.bip39_word_indexes;
+    }
+    return *this;
+}
+
+SessionKeySource& SessionKeySource::operator=(SessionKeySource&& other) {
+    if (this != &other) {
+        wipe();
+        kind = other.kind;
+        label = std::move(other.label);
+        nsec_secret_key = other.nsec_secret_key;
+        bip39_word_indexes = other.bip39_word_indexes;
+        other.wipe();
+    }
+    return *this;
+}
+
+SessionKeySource::~SessionKeySource() noexcept {
+    wipe();
+}
+
+void SessionKeySource::wipe() noexcept {
+    wipe_array(nsec_secret_key);
+    wipe_array(bip39_word_indexes.values);
+    bip39_word_indexes.count = 0;
+    std::fill(label.begin(), label.end(), '\0');
+    label.clear();
+    kind = SessionKeySourceKind::NsecSecretKey;
+}
 
 StatelessSessionKeyring::~StatelessSessionKeyring() noexcept {
     clear();
@@ -104,7 +139,7 @@ void StatelessSessionKeyring::add_source(const SessionKeySource& source) {
 
 void StatelessSessionKeyring::clear() noexcept {
     for (std::size_t index = 0; index < size_; ++index) {
-        wipe_source(sources_[index]);
+        sources_[index].wipe();
     }
     size_ = 0;
 }
