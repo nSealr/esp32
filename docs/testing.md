@@ -214,6 +214,10 @@ tests with strict C++ warnings.
   production acceptance is complete.
 - Device protocol tests proving the shared ESP32-S3 scaffold `get_public_key`
   request returns the shared deterministic development public key response.
+- Device protocol and review tests proving an explicit signer identity context
+  changes `get_public_key`, Event review author display, and the review
+  `approval_digest` together, while invalid public-key context is rejected
+  before response generation.
 - Device protocol tests proving the shared `sign_event` fixture returns the
   shared `signing_disabled` scaffold response.
 - Device protocol tests proving valid serial-frame request payloads with

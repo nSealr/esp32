@@ -11,26 +11,46 @@ namespace {
 
 TrustedReviewRequest build_serial_display_review_request(
     const std::string& request_json,
+    const SignerIdentity& identity,
     ReviewDisplayLimits limits) {
     const QrSigningRequest request = parse_qr_signing_request(QrEnvelope{"serial", request_json});
-    return build_qr_display_review_request(request, limits);
+    return build_qr_display_review_request(request, identity, limits);
 }
 
 }  // namespace
 
 TrustedReviewRequest build_serial_sign_event_trusted_review_request(const std::string& request_json) {
+    return build_serial_sign_event_trusted_review_request(request_json, development_fixture_signer_identity());
+}
+
+TrustedReviewRequest build_serial_sign_event_trusted_review_request(
+    const std::string& request_json,
+    const SignerIdentity& identity) {
     const QrSigningRequest request = parse_qr_signing_request(QrEnvelope{"serial", request_json});
-    return build_qr_trusted_review_request(request);
+    return build_qr_trusted_review_request(request, identity);
 }
 
 TrustedReviewSession begin_serial_sign_event_trusted_review(
     const std::string& request_json,
     ReviewDisplayLimits limits) {
-    return TrustedReviewSession{build_serial_display_review_request(request_json, limits), limits};
+    return begin_serial_sign_event_trusted_review(request_json, development_fixture_signer_identity(), limits);
+}
+
+TrustedReviewSession begin_serial_sign_event_trusted_review(
+    const std::string& request_json,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits) {
+    return TrustedReviewSession{build_serial_display_review_request(request_json, identity, limits), limits};
 }
 
 SerialReviewFlow::SerialReviewFlow(const std::string& request_json, ReviewDisplayLimits limits)
-    : review_request_(build_serial_display_review_request(request_json, limits)),
+    : SerialReviewFlow(request_json, development_fixture_signer_identity(), limits) {}
+
+SerialReviewFlow::SerialReviewFlow(
+    const std::string& request_json,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits)
+    : review_request_(build_serial_display_review_request(request_json, identity, limits)),
       session_(TrustedReviewRequest{review_request_}, limits) {}
 
 const std::string& SerialReviewFlow::request_id() const {
@@ -61,11 +81,19 @@ SerialReviewIoFlowResult run_serial_review_io_flow(
     SerialReviewIo& io,
     ReviewDisplayLimits limits,
     std::size_t max_steps) {
+    return run_serial_review_io_flow(io, development_fixture_signer_identity(), limits, max_steps);
+}
+
+SerialReviewIoFlowResult run_serial_review_io_flow(
+    SerialReviewIo& io,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits,
+    std::size_t max_steps) {
     if (max_steps == 0) {
         throw std::invalid_argument("serial review IO max steps must be non-zero");
     }
 
-    SerialReviewFlow flow{io.read_request_json(), limits};
+    SerialReviewFlow flow{io.read_request_json(), identity, limits};
     std::optional<bool> decision;
     std::vector<SerialReviewTranscriptStep> transcript;
     transcript.reserve(max_steps);

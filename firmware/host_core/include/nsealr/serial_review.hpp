@@ -5,18 +5,30 @@
 #include <string>
 #include <vector>
 
+#include "nsealr/signer_identity.hpp"
 #include "nsealr/trusted_review.hpp"
 
 namespace nsealr {
 
 TrustedReviewRequest build_serial_sign_event_trusted_review_request(const std::string& request_json);
+TrustedReviewRequest build_serial_sign_event_trusted_review_request(
+    const std::string& request_json,
+    const SignerIdentity& identity);
 TrustedReviewSession begin_serial_sign_event_trusted_review(
     const std::string& request_json,
+    ReviewDisplayLimits limits = {});
+TrustedReviewSession begin_serial_sign_event_trusted_review(
+    const std::string& request_json,
+    const SignerIdentity& identity,
     ReviewDisplayLimits limits = {});
 
 class SerialReviewFlow {
 public:
     explicit SerialReviewFlow(const std::string& request_json, ReviewDisplayLimits limits = {});
+    SerialReviewFlow(
+        const std::string& request_json,
+        const SignerIdentity& identity,
+        ReviewDisplayLimits limits = {});
 
     [[nodiscard]] const std::string& request_id() const;
     [[nodiscard]] const std::string& approval_digest() const;
@@ -57,6 +69,11 @@ struct SerialReviewIoFlowResult {
 
 SerialReviewIoFlowResult run_serial_review_io_flow(
     SerialReviewIo& io,
+    ReviewDisplayLimits limits = {},
+    std::size_t max_steps = 32);
+SerialReviewIoFlowResult run_serial_review_io_flow(
+    SerialReviewIo& io,
+    const SignerIdentity& identity,
     ReviewDisplayLimits limits = {},
     std::size_t max_steps = 32);
 

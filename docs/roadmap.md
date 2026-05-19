@@ -26,6 +26,11 @@
   signing-readiness gates for the current scaffold profile.
 - Shared-spec `get_public_key` development response through host-core protocol
   handling.
+- Host-core signer identity context that keeps `get_public_key`, Event review
+  author display, and `approval_digest` author binding on the same public key.
+  The scaffold default remains the deterministic development fixture key; real
+  account/provisioning work must supply the selected signer identity before
+  any signing backend is connected.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
 - Dynamic serial request-id echo for valid `get_capabilities`,

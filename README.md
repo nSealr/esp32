@@ -148,6 +148,11 @@ hardware readiness can differ, final vault behavior must converge.
   contract used by the companion.
 - ESP32-S3 scaffold `get_public_key` response using the shared deterministic
   development-only fixture key.
+- Host-core signer identity context that binds `get_public_key`, Event review
+  author display, and approval digest generation to the same public key. The
+  default scaffold context still uses the deterministic development fixture
+  key; production account/provisioning work must replace that context before
+  any signing backend is connected.
 - ESP32-S3 scaffold request dispatcher that parses valid serial-frame request
   payloads and echoes dynamic `request_id` values for `get_capabilities`,
   `get_signing_status`, `get_public_key`, and disabled `sign_event` responses.

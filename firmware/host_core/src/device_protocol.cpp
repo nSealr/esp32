@@ -240,9 +240,10 @@ std::string capability_response_json(const std::string& request_id) {
            R"(","ok":true,"result":{"capabilities":{"device":{"name":"nSealr ESP32-S3 USB Signer Scaffold","firmware":"nsealr-esp32-s3-usb-signer","hardware":"esp32-s3-devkitc-1"},"protocols":["nsealr.signing.v0","nsealr.serial-frame.v0"],"methods":["get_capabilities","get_signing_status","get_public_key","sign_event"],"transports":["usb-serial-jtag"],"signing_enabled":false,"requires_physical_approval":true}}})";
 }
 
-std::string public_key_response_json(const std::string& request_id) {
+std::string public_key_response_json(const std::string& request_id, const SignerIdentity& identity) {
+    require_valid_signer_identity(identity);
     return std::string(R"({"version":1,"request_id":")") + request_id +
-           R"(","ok":true,"result":{"public_key":"4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"}})";
+           R"(","ok":true,"result":{"public_key":")" + identity.public_key + R"("}})";
 }
 
 std::string signing_disabled_response_json(const std::string& request_id) {
@@ -286,13 +287,29 @@ std::string signing_status_response_json(const std::string& request_id) {
 
 }  // namespace
 
+DeviceProtocolContext development_device_protocol_context() {
+    return DeviceProtocolContext{development_fixture_signer_identity()};
+}
+
 std::string handle_serial_frame(const std::string& line) {
-    return handle_serial_frame_with_review_preview(line).response_frame;
+    return handle_serial_frame(line, development_device_protocol_context());
+}
+
+std::string handle_serial_frame(const std::string& line, const DeviceProtocolContext& context) {
+    return handle_serial_frame_with_review_preview(line, context).response_frame;
 }
 
 SerialFrameHandlingResult handle_serial_frame_with_review_preview(
     const std::string& line,
     ReviewDisplayLimits limits) {
+    return handle_serial_frame_with_review_preview(line, development_device_protocol_context(), limits);
+}
+
+SerialFrameHandlingResult handle_serial_frame_with_review_preview(
+    const std::string& line,
+    const DeviceProtocolContext& context,
+    ReviewDisplayLimits limits) {
+    require_valid_signer_identity(context.signer_identity);
     const SerialFrame request = decode_serial_frame(line);
     if (request.type != FrameType::Request) {
         return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
@@ -322,7 +339,7 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
             return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
         }
         return SerialFrameHandlingResult{
-            encode_serial_frame(response_frame(public_key_response_json(metadata.request_id))),
+            encode_serial_frame(response_frame(public_key_response_json(metadata.request_id, context.signer_identity))),
             std::nullopt};
     }
     if (metadata.method == "get_signing_status") {
@@ -337,7 +354,8 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
         std::optional<ReviewDisplayFrame> review_frame;
         std::optional<TrustedReviewSession> review_session;
         try {
-            TrustedReviewSession session = begin_serial_sign_event_trusted_review(request_json, limits);
+            TrustedReviewSession session =
+                begin_serial_sign_event_trusted_review(request_json, context.signer_identity, limits);
             review_frame = session.current_frame();
             review_session = std::move(session);
         } catch (const QrEnvelopeError&) {

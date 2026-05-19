@@ -61,6 +61,14 @@ runtime signing disabled until provisioning/storage, display review,
 physical controls, Unicode review rendering, secure boot, flash encryption,
 debug lock, and companion signed-output verification are accepted.
 
+The host-core protocol layer now carries a `DeviceProtocolContext` with an
+explicit signer identity. `get_public_key`, the Event review author field, and
+the `approval_digest` signer-author binding all use that same identity. The
+development scaffold context still uses the deterministic fixture public key
+from the shared vectors, but future QR session account selection and persistent
+USB provisioning must inject the selected account identity instead of relying
+on a global development key.
+
 For the QR route, the target key-source behavior is the same as Raspberry QR
 vault behavior: a RAM-only session keyring fed by manual BIP-39 words,
 SeedSigner Standard SeedQR, CompactSeedQR, plain mnemonic QR, `nsec` QR, or

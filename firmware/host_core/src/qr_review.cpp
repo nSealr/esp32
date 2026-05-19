@@ -28,14 +28,12 @@ struct StyledReviewLines {
     std::vector<ReviewBodyLineStyle> styles;
 };
 
-constexpr std::string_view kDevelopmentReviewAuthorPubkey =
-    "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
-
-QrReviewData review_data_for(const QrEventTemplate& event_template) {
+QrReviewData review_data_for(const QrEventTemplate& event_template, const SignerIdentity& identity) {
+    require_valid_signer_identity(identity);
     return QrReviewData{
         event_template.kind,
         event_template.created_at,
-        std::string{kDevelopmentReviewAuthorPubkey},
+        identity.public_key,
         event_template.content,
         event_template.content.size(),
         event_template.tags.size(),
@@ -229,12 +227,16 @@ void append_tag_item_lines(
     }
 }
 
-StyledReviewLines detailed_event_lines(const QrEventTemplate& event_template, ReviewDisplayLimits limits) {
+StyledReviewLines detailed_event_lines(
+    const QrEventTemplate& event_template,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits) {
+    require_valid_signer_identity(identity);
     StyledReviewLines out;
     append_styled_line(out, "Kind " + std::to_string(event_template.kind), ReviewBodyLineStyle::Meta);
     append_styled_line(out, "Created " + std::to_string(event_template.created_at), ReviewBodyLineStyle::Meta);
     append_styled_line(out, "Author", ReviewBodyLineStyle::Meta);
-    append_tag_item_lines(out, std::string{kDevelopmentReviewAuthorPubkey}, limits.max_compact_line_chars);
+    append_tag_item_lines(out, identity.public_key, limits.max_compact_line_chars);
     return out;
 }
 
@@ -486,17 +488,31 @@ std::string canonical_approval_payload(
 }  // namespace
 
 std::vector<TrustedReviewPage> build_qr_review_pages(const QrSigningRequest& request) {
-    return review_pages_for(review_data_for(request.event_template));
+    return build_qr_review_pages(request, development_fixture_signer_identity());
+}
+
+std::vector<TrustedReviewPage> build_qr_review_pages(
+    const QrSigningRequest& request,
+    const SignerIdentity& identity) {
+    return review_pages_for(review_data_for(request.event_template, identity));
 }
 
 std::vector<TrustedReviewPage> build_qr_display_review_pages(
     const QrSigningRequest& request,
     ReviewDisplayLimits limits) {
+    return build_qr_display_review_pages(request, development_fixture_signer_identity(), limits);
+}
+
+std::vector<TrustedReviewPage> build_qr_display_review_pages(
+    const QrSigningRequest& request,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits) {
     validate_display_page_limits(limits);
+    require_valid_signer_identity(identity);
 
     const QrEventTemplate& event_template = request.event_template;
     std::vector<TrustedReviewPage> pages;
-    append_display_pages(pages, "Event", detailed_event_lines(event_template, limits), limits, 1, 4);
+    append_display_pages(pages, "Event", detailed_event_lines(event_template, identity, limits), limits, 1, 4);
 
     append_display_pages(pages, "Content", detailed_content_lines(event_template.content, limits), limits, 2, 4);
     append_display_pages(pages, "Tags", detailed_tag_lines(event_template.tags, limits), limits, 3, 4);
@@ -514,7 +530,13 @@ std::vector<TrustedReviewPage> build_qr_display_review_pages(
 }
 
 TrustedReviewRequest build_qr_trusted_review_request(const QrSigningRequest& request) {
-    const QrReviewData review = review_data_for(request.event_template);
+    return build_qr_trusted_review_request(request, development_fixture_signer_identity());
+}
+
+TrustedReviewRequest build_qr_trusted_review_request(
+    const QrSigningRequest& request,
+    const SignerIdentity& identity) {
+    const QrReviewData review = review_data_for(request.event_template, identity);
     std::vector<TrustedReviewPage> pages = review_pages_for(review);
     const std::string digest = sha256_hex(canonical_approval_payload(request, review, pages));
     return TrustedReviewRequest{
@@ -527,13 +549,27 @@ TrustedReviewRequest build_qr_trusted_review_request(const QrSigningRequest& req
 TrustedReviewRequest build_qr_display_review_request(
     const QrSigningRequest& request,
     ReviewDisplayLimits limits) {
-    TrustedReviewRequest review_request = build_qr_trusted_review_request(request);
-    review_request.pages = build_qr_display_review_pages(request, limits);
+    return build_qr_display_review_request(request, development_fixture_signer_identity(), limits);
+}
+
+TrustedReviewRequest build_qr_display_review_request(
+    const QrSigningRequest& request,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits) {
+    TrustedReviewRequest review_request = build_qr_trusted_review_request(request, identity);
+    review_request.pages = build_qr_display_review_pages(request, identity, limits);
     return review_request;
 }
 
 TrustedReviewSession begin_qr_trusted_review(const QrSigningRequest& request, ReviewDisplayLimits limits) {
-    return TrustedReviewSession{build_qr_display_review_request(request, limits), limits};
+    return begin_qr_trusted_review(request, development_fixture_signer_identity(), limits);
+}
+
+TrustedReviewSession begin_qr_trusted_review(
+    const QrSigningRequest& request,
+    const SignerIdentity& identity,
+    ReviewDisplayLimits limits) {
+    return TrustedReviewSession{build_qr_display_review_request(request, identity, limits), limits};
 }
 
 }  // namespace nsealr

@@ -1057,6 +1057,39 @@ void test_qr_trusted_review_request_matches_shared_tagged_vector() {
     assert_trusted_review_pages(review_request.pages, expected.pages);
 }
 
+void test_qr_review_binds_configured_signer_identity() {
+    const std::string alternate_pubkey = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const nsealr::SignerIdentity alternate_identity{alternate_pubkey};
+    const nsealr::QrEnvelope envelope =
+        nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic);
+    const nsealr::QrSigningRequest request = nsealr::parse_qr_signing_request(envelope);
+
+    const nsealr::TrustedReviewRequest default_review =
+        nsealr::build_qr_trusted_review_request(request);
+    const nsealr::TrustedReviewRequest alternate_review =
+        nsealr::build_qr_trusted_review_request(request, alternate_identity);
+
+    assert(alternate_review.request_id == default_review.request_id);
+    assert(alternate_review.approval_digest != default_review.approval_digest);
+    assert(lines_contain(alternate_review.pages.front().lines, alternate_pubkey));
+    assert(!lines_contain(alternate_review.pages.front().lines, std::string{nsealr::kDevelopmentFixturePublicKey}));
+
+    const std::vector<nsealr::TrustedReviewPage> display_pages =
+        nsealr::build_qr_display_review_pages(
+            request,
+            alternate_identity,
+            nsealr_esp32::t_display_s3_review_limits());
+    const std::string event_text = joined_lines_for_title(display_pages, "Event");
+
+    assert(event_text.find(alternate_pubkey.substr(0, 48)) != std::string::npos);
+    assert(event_text.find(alternate_pubkey.substr(48)) != std::string::npos);
+    assert(event_text.find(std::string{nsealr::kDevelopmentFixturePublicKey}.substr(0, 48)) == std::string::npos);
+
+    expect_throw("signer public key", [&] {
+        (void)nsealr::build_qr_trusted_review_request(request, nsealr::SignerIdentity{"not-a-pubkey"});
+    });
+}
+
 void test_qr_display_review_pages_show_full_tag_values_without_ellipsis() {
     const std::string pubkey = "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
     const nsealr::QrSigningRequest request = nsealr::parse_qr_signing_request(nsealr::QrEnvelope{
@@ -1888,6 +1921,37 @@ void test_serial_review_session_uses_full_scroll_display_pages() {
     assert(tag_text.find("nsealr") != std::string::npos);
 }
 
+void test_serial_review_binds_configured_signer_identity() {
+    const std::string alternate_pubkey = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    const nsealr::SignerIdentity alternate_identity{alternate_pubkey};
+    const std::string request_json =
+        R"({"version":1,"request_id":"req-alt-author","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"alternate author"}}})";
+
+    const nsealr::TrustedReviewRequest default_review =
+        nsealr::build_serial_sign_event_trusted_review_request(request_json);
+    const nsealr::TrustedReviewRequest alternate_review =
+        nsealr::build_serial_sign_event_trusted_review_request(request_json, alternate_identity);
+
+    assert(alternate_review.approval_digest != default_review.approval_digest);
+    assert(lines_contain(alternate_review.pages.front().lines, alternate_pubkey));
+
+    nsealr::TrustedReviewSession session = nsealr::begin_serial_sign_event_trusted_review(
+        request_json,
+        alternate_identity,
+        nsealr_esp32::t_display_s3_review_limits());
+    const std::string event_text = joined_lines_for_title(
+        nsealr::build_qr_display_review_pages(
+            nsealr::parse_qr_signing_request(nsealr::QrEnvelope{"serial", request_json}),
+            alternate_identity,
+            nsealr_esp32::t_display_s3_review_limits()),
+        "Event");
+
+    assert(session.current_frame().title == "Event");
+    assert(event_text.find(alternate_pubkey.substr(0, 48)) != std::string::npos);
+    assert(event_text.find(alternate_pubkey.substr(48)) != std::string::npos);
+    assert(!session.can_sign());
+}
+
 void test_serial_review_session_uses_two_axis_navigation_for_scroll_windows() {
     std::string tags_json;
     for (int index = 0; index < 16; ++index) {
@@ -2105,6 +2169,36 @@ void test_device_protocol_reports_development_public_key() {
     const nsealr::SerialFrame decoded = nsealr::decode_serial_frame(response);
     assert(decoded.type == nsealr::FrameType::Response);
     assert(decoded.payload_base64url == nsealr::test_vectors::kPublicKeyResponsePayloadBase64Url);
+}
+
+void test_device_protocol_binds_configured_signer_identity() {
+    const std::string alternate_pubkey = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+    const nsealr::DeviceProtocolContext context{nsealr::SignerIdentity{alternate_pubkey}};
+
+    const std::string public_key_response = nsealr::handle_serial_frame(
+        request_frame_for_test(R"({"version":1,"request_id":"req-context-pubkey","method":"get_public_key"})"),
+        context);
+
+    assert(public_key_response == response_frame_for_test(
+                                      R"({"version":1,"request_id":"req-context-pubkey","ok":true,"result":{"public_key":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}})"));
+
+    const nsealr::SerialFrameHandlingResult result = nsealr::handle_serial_frame_with_review_preview(
+        request_frame_for_test(
+            R"({"version":1,"request_id":"req-context-sign","method":"sign_event","params":{"event_template":{"created_at":1710000000,"kind":1,"tags":[],"content":"context identity"}}})"),
+        context,
+        nsealr_esp32::t_display_s3_review_limits());
+
+    assert(result.review_session.has_value());
+    const nsealr::ReviewDisplayFrame event_frame = result.review_session->current_frame();
+    assert(event_frame.title == "Event");
+    assert(lines_contain(event_frame.body_lines, alternate_pubkey.substr(0, 48)));
+    assert(lines_contain(event_frame.body_lines, alternate_pubkey.substr(48)));
+
+    expect_throw("signer public key", [&] {
+        (void)nsealr::handle_serial_frame(
+            request_frame_for_test(R"({"version":1,"request_id":"req-bad-context","method":"get_public_key"})"),
+            nsealr::DeviceProtocolContext{nsealr::SignerIdentity{"bad"}});
+    });
 }
 
 void test_device_protocol_reports_signing_status_gates() {
@@ -2485,6 +2579,7 @@ int main() {
     test_qr_trusted_review_request_matches_shared_basic_vector();
     test_qr_review_pages_match_shared_tagged_vector();
     test_qr_trusted_review_request_matches_shared_tagged_vector();
+    test_qr_review_binds_configured_signer_identity();
     test_qr_display_review_pages_show_full_tag_values_without_ellipsis();
     test_qr_display_review_pages_group_logical_sections_with_compact_styles();
     test_qr_display_review_pages_match_shared_detail_page_vectors();
@@ -2520,6 +2615,7 @@ int main() {
     test_trusted_review_session_allows_backward_review_before_approval();
     test_serial_sign_event_review_matches_shared_review_contract();
     test_serial_review_session_uses_full_scroll_display_pages();
+    test_serial_review_binds_configured_signer_identity();
     test_serial_review_session_uses_two_axis_navigation_for_scroll_windows();
     test_serial_review_io_flow_drives_request_display_and_buttons_without_signing();
     test_signing_policy_requires_every_runtime_gate_before_enablement();
@@ -2528,6 +2624,7 @@ int main() {
     test_device_protocol_exposes_review_frame_before_disabled_signing_response();
     test_device_protocol_exposes_review_session_for_manual_display_navigation();
     test_device_protocol_reports_development_public_key();
+    test_device_protocol_binds_configured_signer_identity();
     test_device_protocol_reports_signing_status_gates();
     test_device_protocol_echoes_dynamic_request_ids();
     test_device_protocol_rejects_invalid_dynamic_request_metadata();
