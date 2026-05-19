@@ -1,0 +1,21 @@
+{
+  "format": "nsealr-policy-profile-v0",
+  "policy_id": "policy-manual-only-qr-vault",
+  "label": "Manual-only QR vault policy",
+  "route_types": ["raspberry_qr_vault", "esp32_qr_vault"],
+  "mode": "manual_only",
+  "grants_allowed": false,
+  "manual_review_required": [
+    "sign_event",
+    "connect",
+    "nip04_decrypt",
+    "nip44_decrypt",
+    "unknown_method"
+  ],
+  "forbidden_permissions": ["wildcard", "export_secret", "decrypt_without_review"],
+  "risk_tiers": {
+    "sign_event": "manual",
+    "decrypt": "manual",
+    "unknown": "manual"
+  }
+}

@@ -19,10 +19,13 @@ board into a separate repository.
 The shared identity/policy route split is explicit: `esp32_qr_vault` remains a
 stateless, manual-only QR route with `persistent_grants: false`, while
 `esp32_usb_nip46` is the future persistent daily-use route described by
-`nsealr-account-descriptor-v0`, `policy-scoped-automation-daily-use`, and the
-test grant `grant-esp32-usb-kind-1-session`. The USB route does not clear any
-production signing gate yet; signing remains disabled until provisioning,
-storage, review, hardening, and signed-output verification are accepted.
+`nsealr-account-descriptor-v0`. The ESP32 QR route is pinned by
+`esp32-qr-nip06-account-0` plus `policy-manual-only-qr-vault`; the USB route
+is pinned by `esp32-usb-device-slot-0`, `policy-scoped-automation-daily-use`,
+and the test grant `grant-esp32-usb-kind-1-session`. The USB route does not
+clear any production signing gate yet; signing remains disabled until
+provisioning, storage, review, hardening, and signed-output verification are
+accepted.
 
 The final account/custody split is also explicit. `esp32_qr_vault` should
 match the Raspberry QR vault behavior for shared features: RAM-only session

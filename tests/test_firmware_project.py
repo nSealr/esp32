@@ -64,15 +64,24 @@ class FirmwareProjectValidationTests(unittest.TestCase):
 
     def test_identity_policy_docs_pin_esp32_route_split(self) -> None:
         specs = specs_dir()
-        account = json.loads((specs / "vectors/accounts/esp32-usb-device-slot-0.json").read_text(encoding="utf-8"))
-        policy = json.loads((specs / "vectors/policies/scoped-automation-daily-use.json").read_text(encoding="utf-8"))
+        qr_account = json.loads((specs / "vectors/accounts/esp32-qr-nip06-account-0.json").read_text(encoding="utf-8"))
+        qr_policy = json.loads((specs / "vectors/policies/manual-only-qr-vault.json").read_text(encoding="utf-8"))
+        usb_account = json.loads((specs / "vectors/accounts/esp32-usb-device-slot-0.json").read_text(encoding="utf-8"))
+        usb_policy = json.loads((specs / "vectors/policies/scoped-automation-daily-use.json").read_text(encoding="utf-8"))
         grant = json.loads((specs / "vectors/grants/esp32-usb-kind-1-session.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(account["signer_route"]["type"], "esp32_usb_nip46")
-        self.assertEqual(account["signer_route"]["custody"], "device_persistent")
-        self.assertEqual(account["signer_route"]["policy_support"], "scoped_automation")
-        self.assertTrue(account["capabilities"]["persistent_grants"])
-        self.assertEqual(policy["policy_id"], account["policy_profile_id"])
+        self.assertEqual(qr_account["signer_route"]["type"], "esp32_qr_vault")
+        self.assertEqual(qr_account["signer_route"]["custody"], "stateless_session")
+        self.assertEqual(qr_account["signer_route"]["policy_support"], "manual_only")
+        self.assertFalse(qr_account["capabilities"]["persistent_grants"])
+        self.assertEqual(qr_policy["policy_id"], qr_account["policy_profile_id"])
+
+        self.assertEqual(usb_account["signer_route"]["type"], "esp32_usb_nip46")
+        self.assertEqual(usb_account["signer_route"]["custody"], "device_persistent")
+        self.assertEqual(usb_account["signer_route"]["policy_support"], "scoped_automation")
+        self.assertTrue(usb_account["capabilities"]["persistent_grants"])
+        self.assertEqual(usb_policy["policy_id"], usb_account["policy_profile_id"])
+        self.assertNotIn("smartcard", usb_policy["route_types"])
         self.assertEqual(grant["route_type"], "esp32_usb_nip46")
         self.assertEqual(grant["permission"], {"method": "sign_event", "parameter": "1", "event_kind": 1})
 
@@ -86,7 +95,10 @@ class FirmwareProjectValidationTests(unittest.TestCase):
             ]
         )
         self.assertIn("nsealr-account-descriptor-v0", docs)
+        self.assertIn("esp32-qr-nip06-account-0", docs)
+        self.assertIn("policy-manual-only-qr-vault", docs)
         self.assertIn("esp32_usb_nip46", docs)
+        self.assertIn("esp32-usb-device-slot-0", docs)
         self.assertIn("policy-scoped-automation-daily-use", docs)
         self.assertIn("grant-esp32-usb-kind-1-session", docs)
         self.assertIn("esp32_qr_vault", docs)

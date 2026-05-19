@@ -60,7 +60,9 @@ tests with strict C++ warnings.
   companion signed-output verification.
 - Identity/policy route-split tests proving shared descriptors keep
   `esp32_qr_vault` stateless/manual-only with `persistent_grants: false`, while
-  `esp32_usb_nip46`, `policy-scoped-automation-daily-use`, and
+  `esp32-qr-nip06-account-0`, `policy-manual-only-qr-vault`,
+  `esp32_usb_nip46`, `esp32-usb-device-slot-0`,
+  `policy-scoped-automation-daily-use`, and
   `grant-esp32-usb-kind-1-session` remain future persistent-route contracts
   that do not enable signing.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains

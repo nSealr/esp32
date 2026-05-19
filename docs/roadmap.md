@@ -564,6 +564,12 @@ persistent-slot route for `policy-scoped-automation-daily-use` and
 `grant-esp32-usb-kind-1-session`. These are conformance inputs only; signing
 remains disabled until the M8 production gates pass.
 
+Status note, 2026-05-19: the ESP32 tests now consume both shared ESP32 account
+descriptors: `esp32-qr-nip06-account-0` for the stateless QR route with
+`policy-manual-only-qr-vault`, and `esp32-usb-device-slot-0` for the future
+USB/NIP-46 persistent route with `policy-scoped-automation-daily-use`. The
+scoped policy no longer lists smartcard routes.
+
 Status note, 2026-05-11: the ESP32 product target now separates account
 sources by route. The QR vault target must match Raspberry QR vault behavior
 with RAM-only mnemonic/passphrase/NIP-06/`nsec`/local-generation session
