@@ -85,6 +85,11 @@ hardware readiness can differ, final vault behavior must converge.
   canonical RAM-only representation for manual words, plain mnemonic QR, and
   SeedQR-derived indexes; it does not derive NIP-06 keys, persist material, or
   sign.
+- Host-core decoded session-source QR parser for future camera adapters. It
+  accepts canonical NIP-19 `nsec`, plain BIP-39 English mnemonic QR text,
+  SeedSigner Standard SeedQR digit streams, and CompactSeedQR entropy bytes,
+  then routes each source into the same RAM-only key-source type used by import
+  review. It does not derive NIP-06 keys, persist material, or sign.
 - Host-core stateless session keyring model for already parsed `nsec` and
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests; it does not derive NIP-06 keys, persist material, expose policy state,

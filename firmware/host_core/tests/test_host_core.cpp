@@ -25,6 +25,7 @@
 #include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
 #include "nsealr/session_source_generation.hpp"
+#include "nsealr/session_source_qr.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
 #include "nsealr/utf8.hpp"
@@ -806,6 +807,68 @@ void test_session_source_generation_rejects_invalid_entropy() {
         nsealr::NsecSecretKey generated_secret{};
         generated_secret.back() = 1U;
         (void)nsealr::generate_nsec_session_source("", generated_secret);
+    });
+}
+
+void test_session_source_qr_parses_ram_only_sources() {
+    const nsealr::SessionKeySource nsec_source = nsealr::parse_session_source_qr_text(
+        "nsec QR",
+        std::string("\n") + nsealr::test_vectors::kNip19NsecTestKey1 + "\t");
+    const nsealr::SessionKeySource mnemonic_source = nsealr::parse_session_source_qr_text(
+        "plain mnemonic QR",
+        nsealr::test_vectors::kNip06Account0Mnemonic);
+    const nsealr::SessionKeySource standard_seedqr_source = nsealr::parse_session_source_qr_text(
+        "Standard SeedQR",
+        nsealr::test_vectors::kSeedQrVector1StandardDigits);
+    const nsealr::SessionKeySource compact_seedqr_source = nsealr::parse_compact_seedqr_session_source(
+        "CompactSeedQR",
+        bytes_from_hex_for_test(nsealr::test_vectors::kSeedQrVector1CompactHex));
+
+    assert(nsec_source.kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(nsec_source.label == "nsec QR");
+    assert(nsec_source.nsec_secret_key == nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(nsec_source.bip39_word_indexes.count == 0U);
+
+    assert(mnemonic_source.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(mnemonic_source.label == "plain mnemonic QR");
+    assert_session_seed_words_equal(
+        mnemonic_source.bip39_word_indexes,
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+
+    const std::vector<std::uint16_t> seedqr_indexes = nsealr::test_vectors::seedqr_vector_1_word_indexes();
+    assert(standard_seedqr_source.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(standard_seedqr_source.label == "Standard SeedQR");
+    assert_session_seed_words_equal(standard_seedqr_source.bip39_word_indexes, seedqr_indexes);
+    assert(compact_seedqr_source.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(compact_seedqr_source.label == "CompactSeedQR");
+    assert_session_seed_words_equal(compact_seedqr_source.bip39_word_indexes, seedqr_indexes);
+
+    const nsealr::SessionImportReview nsec_review = nsealr::build_session_import_review(nsec_source);
+    const nsealr::SessionImportReview mnemonic_review = nsealr::build_session_import_review(mnemonic_source);
+    assert(lines_contain_text(nsec_review.pages, "Secret: hidden"));
+    assert(lines_contain_text(mnemonic_review.pages, "Secret: hidden"));
+    assert(!lines_contain_text(nsec_review.pages, nsealr::test_vectors::kNip19NsecTestKey1SecretKey));
+    assert(!lines_contain_text(mnemonic_review.pages, "leader"));
+}
+
+void test_session_source_qr_rejects_invalid_inputs() {
+    expect_throw("must not be empty", [] {
+        (void)nsealr::parse_session_source_qr_text("empty QR", " \n\t");
+    });
+    expect_throw("label must not be empty", [] {
+        (void)nsealr::parse_session_source_qr_text("", nsealr::test_vectors::kNip19NsecTestKey1);
+    });
+    expect_throw("malformed", [] {
+        (void)nsealr::parse_session_source_qr_text("bad nsec QR", "nsec1short");
+    });
+    expect_throw("four digits per word", [] {
+        (void)nsealr::parse_session_source_qr_text("bad Standard SeedQR", "000");
+    });
+    expect_throw("ASCII English words", [] {
+        (void)nsealr::parse_session_source_qr_text("bad mnemonic QR", "not a valid session source!");
+    });
+    expect_throw("16 or 32", [] {
+        (void)nsealr::parse_compact_seedqr_session_source("bad CompactSeedQR", {0x00U, 0x01U});
     });
 }
 
@@ -2569,6 +2632,8 @@ int main() {
     test_stateless_session_keyring_rejects_invalid_sources();
     test_session_source_generation_uses_ram_only_source_boundary();
     test_session_source_generation_rejects_invalid_entropy();
+    test_session_source_qr_parses_ram_only_sources();
+    test_session_source_qr_rejects_invalid_inputs();
     test_session_import_review_hides_secret_material();
     test_session_import_flow_requires_local_approval_before_loading_keyring();
     test_session_import_flow_rejection_does_not_load_keyring();

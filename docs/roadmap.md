@@ -645,6 +645,14 @@ secret-hidden import review and RAM-only keyring boundary; hardware RNG wiring,
 backup/export UI, hardware review acceptance, response QR output, reset-loss
 evidence, and real signing remain pending.
 
+Status note, 2026-05-19: host-core now has a decoded session-source QR parser
+for future ESP32 QR vault camera adapters. Canonical NIP-19 `nsec`, plain
+BIP-39 English mnemonic QR text, SeedSigner Standard SeedQR digit streams, and
+CompactSeedQR entropy bytes all normalize into the same RAM-only
+`SessionKeySource` boundary before import review. This still does not add
+camera capture, NIP-06 derivation, account selection, persistence, response QR
+hardware, or real signing.
+
 Status note, 2026-05-19: host-core now also encodes already-produced response
 JSON into static `nsealr1:` and animated `nsealr1a:` QR envelopes against the
 shared signed-response vector. This makes QR response transport partial only:

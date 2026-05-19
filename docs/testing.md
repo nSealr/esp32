@@ -113,6 +113,12 @@ tests with strict C++ warnings.
   secondary QR vault candidate, requiring the case-plus-OV5640 SKU and keeping
   real driver work blocked until AXS15231B/QSPI display, camera, and physical
   approval-control acceptance are tested.
+- Host-core session-source QR parser tests proving decoded future camera
+  payloads for canonical NIP-19 `nsec`, plain BIP-39 mnemonic QR text,
+  SeedSigner Standard SeedQR, and CompactSeedQR all become the same RAM-only
+  `SessionKeySource` boundary and still hide secret material in import-review
+  pages. Invalid decoded QR inputs are rejected before keyring load, derivation,
+  persistence, or signing.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold

@@ -145,6 +145,12 @@ The first firmware foundation is host-buildable C++ under
   routes them into the same RAM-only source/review boundary as imports. This is
   a host-core contract for future hardware RNG wiring and backup/export UX; it
   does not persist generated material, derive NIP-06 keys, or enable signing.
+- `session_source_qr`: normalizes decoded QR session-source inputs for future
+  camera adapters. It maps canonical NIP-19 `nsec`, plain BIP-39 English
+  mnemonic QR text, SeedSigner Standard SeedQR digit streams, and CompactSeedQR
+  entropy bytes into the same RAM-only `SessionKeySource` boundary used by
+  import review. It deliberately does not derive NIP-06 keys, persist material,
+  select accounts, or enable signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.
