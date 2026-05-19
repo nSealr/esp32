@@ -2217,6 +2217,12 @@ std::string bip39_english_mnemonic_from_indexes(const Bip39WordIndexes& indexes)
     return out.str();
 }
 
+std::vector<std::uint8_t> bip39_entropy_from_indexes(const Bip39WordIndexes& indexes) {
+    require_valid_bip39_indexes(indexes);
+    require_valid_bip39_checksum(indexes);
+    return entropy_from_indexes(indexes);
+}
+
 void require_valid_bip39_checksum(const Bip39WordIndexes& indexes) {
     require_valid_bip39_indexes(indexes);
     const std::size_t checksum_bits = checksum_bits_for_word_count(indexes.size());

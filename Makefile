@@ -36,6 +36,7 @@ host-core-test: generate-host-vectors
 		firmware/host_core/src/session_import_flow.cpp \
 		firmware/host_core/src/session_import_review.cpp \
 		firmware/host_core/src/session_keyring.cpp \
+		firmware/host_core/src/session_source_backup.cpp \
 		firmware/host_core/src/session_source_generation.cpp \
 		firmware/host_core/src/session_source_qr.cpp \
 		firmware/host_core/src/session_source_qr_import_flow.cpp \

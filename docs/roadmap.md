@@ -681,9 +681,12 @@ Status note, 2026-05-19: host-core now has a local session-source generation
 boundary for the ESP32 QR vault target. Explicit 16- or 32-byte entropy can
 become a checked BIP-39 source, and explicit valid secp256k1 scalar entropy can
 become a standalone `nsec`-equivalent source. Both paths feed the same
-secret-hidden import review and RAM-only keyring boundary; hardware RNG wiring,
-backup/export UI, hardware review acceptance, response QR output, reset-loss
-evidence, and real signing remain pending.
+secret-hidden import review and RAM-only keyring boundary. Host-core also now
+consumes shared danger-zone backup review vectors: BIP-39 words/SeedQR or
+NIP-19 `nsec` recovery payloads are produced only after the backup review
+reaches the final page and is approved. Hardware RNG wiring, physical backup
+display/output acceptance, response QR output, reset-loss evidence, and real
+signing remain pending.
 
 Status note, 2026-05-19: host-core now has a decoded session-source QR parser
 for future ESP32 QR vault camera adapters. Canonical NIP-19 `nsec`, plain

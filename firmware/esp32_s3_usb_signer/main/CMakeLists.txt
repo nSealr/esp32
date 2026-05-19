@@ -26,6 +26,7 @@ idf_component_register(
         "../../host_core/src/session_import_flow.cpp"
         "../../host_core/src/session_import_review.cpp"
         "../../host_core/src/session_keyring.cpp"
+        "../../host_core/src/session_source_backup.cpp"
         "../../host_core/src/session_source_generation.cpp"
         "../../host_core/src/session_source_qr.cpp"
         "../../host_core/src/session_source_qr_import_flow.cpp"

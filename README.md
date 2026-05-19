@@ -124,8 +124,10 @@ hardware readiness can differ, final vault behavior must converge.
 - Host-core local session-source generation for the future ESP32 QR vault.
   Explicit entropy inputs can become generated BIP-39 or standalone
   `nsec`-equivalent sources in the same RAM-only import/review/keyring
-  boundary. Hardware RNG wiring, backup/export UI, and physical acceptance
-  remain pending.
+  boundary. Host-core now also models the separate danger-zone backup review
+  that can reveal BIP-39 words/SeedQR or NIP-19 `nsec` recovery payloads only
+  after final-page local approval. Hardware RNG wiring, physical backup
+  display/output acceptance, and physical acceptance remain pending.
 - Host-core QR response-envelope encoding for already-produced response JSON.
   Static `nsealr1:` and animated `nsealr1a:` output match the shared signed
   response vector, but firmware signing, response display hardware, camera

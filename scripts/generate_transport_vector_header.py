@@ -309,6 +309,62 @@ def session_import_review_vector_factories(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def session_source_backup_vector_factories(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct SessionSourceBackupVector {",
+        "    const char* name;",
+        "    const char* source_type;",
+        "    const char* label;",
+        "    const char* fingerprint;",
+        "    const char* backup_format;",
+        "    const char* review_id;",
+        "    const char* approval_digest;",
+        "    const char* backup_mnemonic;",
+        "    const char* backup_standard_seedqr_digits;",
+        "    const char* backup_compact_seedqr_hex;",
+        "    const char* backup_nsec;",
+        "    std::vector<nsealr::TrustedReviewPage> pages;",
+        "};",
+        "",
+        "inline std::vector<SessionSourceBackupVector> session_source_backup_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        payload = vector["backup_payload"]
+        lines.extend(
+            [
+                "        SessionSourceBackupVector{",
+                f"            {cpp_string(vector['name'])},",
+                f"            {cpp_string(vector['source_type'])},",
+                f"            {cpp_string(vector['label'])},",
+                f"            {cpp_string(vector['fingerprint'])},",
+                f"            {cpp_string(vector['backup_format'])},",
+                f"            {cpp_string(vector['review_id'])},",
+                f"            {cpp_string(vector['approval_digest'])},",
+                f"            {cpp_string(payload.get('mnemonic', ''))},",
+                f"            {cpp_string(payload.get('standard_seedqr_digits', ''))},",
+                f"            {cpp_string(payload.get('compact_seedqr_hex', ''))},",
+                f"            {cpp_string(payload.get('nsec', ''))},",
+                "            {",
+            ]
+        )
+        for page in vector["pages"]:
+            lines.extend(trusted_review_page_initializer(page))
+        lines.extend(
+            [
+                "            },",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def cpp_session_account_recovery_kind(recovery_type: str) -> str:
     if recovery_type == "nip06":
         return "nsealr::SessionAccountRecoveryKind::Nip06"
@@ -419,6 +475,10 @@ def main() -> int:
     session_import_review_vectors = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/session-import-reviews").glob("*.json"))
+    ]
+    session_source_backup_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/session-source-backups").glob("*.json"))
     ]
     nip06_key_vector = json.loads((specs / "vectors/keys/nip06-account-0-leader.json").read_text(encoding="utf-8"))
     basic_review_screen = json.loads(
@@ -558,6 +618,8 @@ def main() -> int:
                 *review_detail_page_vector_factories(review_detail_page_vectors, reviews_by_name),
                 "",
                 *session_import_review_vector_factories(session_import_review_vectors),
+                "",
+                *session_source_backup_vector_factories(session_source_backup_vectors),
                 "",
                 *session_account_descriptor_factory(
                     "esp32_qr_nip06_account_0_descriptor",

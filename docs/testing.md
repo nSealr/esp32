@@ -364,6 +364,9 @@ tests with strict C++ warnings.
   standalone `nsec`-equivalent sources enter the same secret-hidden RAM-only
   source boundary, invalid entropy is rejected, and generated secrets do not
   appear in import-review pages.
+- Host-core session-source backup tests must prove BIP-39 words/SeedQR and
+  NIP-19 `nsec` recovery payloads match shared backup vectors and are revealed
+  only after the separate danger-zone review reaches the final approval page.
 - Host-core QR response-envelope tests must prove already-produced response
   JSON can be encoded as static `nsealr1:` and animated `nsealr1a:` output
   against the shared signed-response vector without enabling firmware signing.

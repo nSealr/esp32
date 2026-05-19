@@ -23,6 +23,7 @@ using Bip39WordIndexes = std::vector<std::uint16_t>;
 [[nodiscard]] const char* bip39_english_word_at(std::uint16_t index);
 [[nodiscard]] Bip39WordIndexes parse_bip39_english_mnemonic_indexes(std::string_view mnemonic);
 [[nodiscard]] std::string bip39_english_mnemonic_from_indexes(const Bip39WordIndexes& indexes);
+[[nodiscard]] std::vector<std::uint8_t> bip39_entropy_from_indexes(const Bip39WordIndexes& indexes);
 void require_valid_bip39_checksum(const Bip39WordIndexes& indexes);
 
 }  // namespace nsealr

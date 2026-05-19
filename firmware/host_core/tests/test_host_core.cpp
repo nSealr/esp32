@@ -25,6 +25,7 @@
 #include "nsealr/session_import_flow.hpp"
 #include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
+#include "nsealr/session_source_backup.hpp"
 #include "nsealr/session_source_generation.hpp"
 #include "nsealr/session_source_qr.hpp"
 #include "nsealr/session_source_qr_import_flow.hpp"
@@ -159,6 +160,18 @@ nsealr::test_vectors::SessionImportReviewVector session_import_review_vector_by_
         }
     }
     assert(false && "missing session import review vector");
+    return {};
+}
+
+nsealr::test_vectors::SessionSourceBackupVector session_source_backup_vector_by_name(
+    const std::string& name) {
+    for (const nsealr::test_vectors::SessionSourceBackupVector& vector :
+         nsealr::test_vectors::session_source_backup_vectors()) {
+        if (std::string(vector.name) == name) {
+            return vector;
+        }
+    }
+    assert(false && "missing session source backup vector");
     return {};
 }
 
@@ -850,6 +863,90 @@ void test_session_source_generation_rejects_invalid_entropy() {
         nsealr::NsecSecretKey generated_secret{};
         generated_secret.back() = 1U;
         (void)nsealr::generate_nsec_session_source("", generated_secret);
+    });
+}
+
+void test_session_source_backup_review_matches_shared_danger_zone_vectors() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_bip39_seed("SeedQR vector 1", nsealr::test_vectors::seedqr_vector_1_word_indexes());
+    keyring.add_nsec("nsec test vector", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+
+    const nsealr::SessionSourceBackupReview seed_review =
+        nsealr::build_session_source_backup_review(keyring.source_at(0));
+    const nsealr::SessionSourceBackupReview nsec_review =
+        nsealr::build_session_source_backup_review(keyring.source_at(1));
+    const nsealr::test_vectors::SessionSourceBackupVector seed_vector =
+        session_source_backup_vector_by_name("seedqr-vector-1-backup");
+    const nsealr::test_vectors::SessionSourceBackupVector nsec_vector =
+        session_source_backup_vector_by_name("nsec-test-key-1-backup");
+
+    assert(seed_review.review_id == std::string(seed_vector.review_id));
+    assert(seed_review.approval_digest == std::string(seed_vector.approval_digest));
+    assert_detailed_trusted_review_pages(seed_review.pages, seed_vector.pages);
+    assert(nsec_review.review_id == std::string(nsec_vector.review_id));
+    assert(nsec_review.approval_digest == std::string(nsec_vector.approval_digest));
+    assert_detailed_trusted_review_pages(nsec_review.pages, nsec_vector.pages);
+
+    assert(lines_contain_text(seed_review.pages, "Danger: secret export"));
+    assert(lines_contain_text(seed_review.pages, "Approve to reveal"));
+    assert(!lines_contain_text(seed_review.pages, "attack"));
+    assert(!lines_contain_text(seed_review.pages, "expire"));
+    assert(!lines_contain_text(nsec_review.pages, nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(!lines_contain_text(nsec_review.pages, nsealr::test_vectors::kNip19NsecTestKey1SecretKey));
+}
+
+void test_session_source_backup_payload_matches_shared_secret_payloads() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_bip39_seed("SeedQR vector 1", nsealr::test_vectors::seedqr_vector_1_word_indexes());
+    keyring.add_nsec("nsec test vector", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+    const nsealr::test_vectors::SessionSourceBackupVector seed_vector =
+        session_source_backup_vector_by_name("seedqr-vector-1-backup");
+    const nsealr::test_vectors::SessionSourceBackupVector nsec_vector =
+        session_source_backup_vector_by_name("nsec-test-key-1-backup");
+
+    const nsealr::SessionSourceBackupPayload seed_payload =
+        nsealr::session_source_backup_payload(keyring.source_at(0));
+    const nsealr::SessionSourceBackupPayload nsec_payload =
+        nsealr::session_source_backup_payload(keyring.source_at(1));
+
+    assert(seed_payload.backup_format == std::string(seed_vector.backup_format));
+    assert(seed_payload.mnemonic == std::string(seed_vector.backup_mnemonic));
+    assert(seed_payload.standard_seedqr_digits == std::string(seed_vector.backup_standard_seedqr_digits));
+    assert(seed_payload.compact_seedqr_hex == std::string(seed_vector.backup_compact_seedqr_hex));
+    assert(seed_payload.nsec.empty());
+    assert(nsec_payload.backup_format == std::string(nsec_vector.backup_format));
+    assert(nsec_payload.nsec == std::string(nsec_vector.backup_nsec));
+    assert(nsec_payload.mnemonic.empty());
+}
+
+void test_session_source_backup_flow_reveals_only_after_local_approval() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_nsec("nsec test vector", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+
+    const nsealr::SessionSourceBackupFlowResult approved =
+        nsealr::run_session_source_backup_flow(keyring.source_at(0), {nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve});
+
+    assert(approved.approved);
+    assert(approved.revealed);
+    assert(approved.backup_payload.has_value());
+    assert(approved.backup_payload->nsec == std::string(nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(approved.transcript.size() == 2U);
+    assert(approved.transcript[0].page_index == 0U);
+    assert(approved.transcript[0].button == nsealr::ReviewButton::Next);
+    assert(!approved.transcript[0].decision.has_value());
+    assert(!approved.transcript[0].revealed);
+    assert(approved.transcript[1].page_index == 1U);
+    assert(approved.transcript[1].button == nsealr::ReviewButton::Approve);
+    assert(approved.transcript[1].decision.has_value() && *approved.transcript[1].decision);
+    assert(approved.transcript[1].revealed);
+
+    const nsealr::SessionSourceBackupFlowResult rejected =
+        nsealr::run_session_source_backup_flow(keyring.source_at(0), {nsealr::ReviewButton::Reject});
+    assert(!rejected.approved);
+    assert(!rejected.revealed);
+    assert(!rejected.backup_payload.has_value());
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)nsealr::run_session_source_backup_flow(keyring.source_at(0), {nsealr::ReviewButton::Approve});
     });
 }
 
@@ -2878,6 +2975,9 @@ int main() {
     test_stateless_session_keyring_rejects_invalid_sources();
     test_session_source_generation_uses_ram_only_source_boundary();
     test_session_source_generation_rejects_invalid_entropy();
+    test_session_source_backup_review_matches_shared_danger_zone_vectors();
+    test_session_source_backup_payload_matches_shared_secret_payloads();
+    test_session_source_backup_flow_reveals_only_after_local_approval();
     test_session_source_qr_parses_ram_only_sources();
     test_session_source_qr_rejects_invalid_inputs();
     test_session_source_qr_import_flow_loads_only_after_review_approval();

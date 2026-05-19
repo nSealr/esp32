@@ -137,6 +137,43 @@ std::vector<std::uint8_t> convert_5bit_words_to_bytes(const std::vector<int>& wo
     return out;
 }
 
+std::vector<int> convert_bytes_to_5bit_words(const NsecSecretKey& secret_key) {
+    std::uint32_t accumulator = 0;
+    int bit_count = 0;
+    std::vector<int> out;
+    out.reserve((secret_key.size() * 8U + 4U) / 5U);
+    for (const std::uint8_t byte : secret_key) {
+        accumulator = (accumulator << 8U) | byte;
+        bit_count += 8;
+        while (bit_count >= 5) {
+            bit_count -= 5;
+            out.push_back(static_cast<int>((accumulator >> static_cast<unsigned>(bit_count)) & 31U));
+        }
+        if (bit_count > 0) {
+            accumulator &= (1U << static_cast<unsigned>(bit_count)) - 1U;
+        } else {
+            accumulator = 0;
+        }
+    }
+    if (bit_count > 0) {
+        out.push_back(static_cast<int>((accumulator << static_cast<unsigned>(5 - bit_count)) & 31U));
+    }
+    return out;
+}
+
+std::vector<int> bech32_checksum(const std::string& hrp, const std::vector<int>& words) {
+    std::vector<int> values = bech32_hrp_expand(hrp);
+    values.insert(values.end(), words.begin(), words.end());
+    values.insert(values.end(), 6U, 0);
+    const std::uint32_t polymod = bech32_polymod(values) ^ 1U;
+    std::vector<int> checksum;
+    checksum.reserve(6U);
+    for (std::size_t index = 0; index < 6U; ++index) {
+        checksum.push_back(static_cast<int>((polymod >> static_cast<unsigned>(5U * (5U - index))) & 31U));
+    }
+    return checksum;
+}
+
 char lowercase_hex_nibble(std::uint8_t value) {
     return static_cast<char>(value < 10U ? ('0' + value) : ('a' + (value - 10U)));
 }
@@ -177,6 +214,21 @@ std::string decode_nsec_secret_key_hex(const std::string& nsec) {
     for (const std::uint8_t byte : secret) {
         out.push_back(lowercase_hex_nibble(static_cast<std::uint8_t>(byte >> 4U)));
         out.push_back(lowercase_hex_nibble(static_cast<std::uint8_t>(byte & 0x0fU)));
+    }
+    return out;
+}
+
+std::string encode_nsec_secret_key(const NsecSecretKey& secret_key) {
+    if (!is_valid_nsec_secret_key(secret_key)) {
+        throw NsecDecodeError("nsec secret key must be a valid secp256k1 scalar");
+    }
+    std::vector<int> words = convert_bytes_to_5bit_words(secret_key);
+    const std::vector<int> checksum = bech32_checksum("nsec", words);
+    words.insert(words.end(), checksum.begin(), checksum.end());
+    std::string out = "nsec1";
+    out.reserve(5U + words.size());
+    for (const int word : words) {
+        out.push_back(kBech32Charset[static_cast<std::size_t>(word)]);
     }
     return out;
 }

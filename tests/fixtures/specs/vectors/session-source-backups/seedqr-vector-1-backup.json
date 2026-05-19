@@ -1,0 +1,45 @@
+{
+  "format": "nsealr-session-source-backup-review-v0",
+  "name": "seedqr-vector-1-backup",
+  "source_type": "bip39_seed",
+  "source_vector": "vectors/seedqr/seedsigner-vector-1.json",
+  "label": "SeedQR vector 1",
+  "word_count": 24,
+  "fingerprint": "2813e48dc42eb58b",
+  "backup_format": "bip39_words_seedqr",
+  "backup_payload": {
+    "mnemonic": "attack pizza motion avocado network gather crop fresh patrol unusual wild holiday candy pony ranch winter theme error hybrid van cereal salon goddess expire",
+    "standard_seedqr_digits": "011513251154012711900771041507421289190620080870026613431420201617920614089619290300152408010643",
+    "compact_seedqr_hex": "0e74b64107f94cc0ccfae6a13dcbec3662154fec67e0e00999c07892597d190a"
+  },
+  "review_id": "session-backup-2813e48dc42eb58b",
+  "approval_digest": "cc4221bae51583f385c58cca07f572a4eb3cde9f6abc5cd807da8a08618d6949",
+  "pages": [
+    {
+      "title": "Backup source",
+      "lines": [
+        "Danger: secret export",
+        "Type: BIP-39 seed",
+        "Label: SeedQR vector 1",
+        "Fingerprint: 2813e48dc42eb58b",
+        "Output: words/SeedQR",
+        "Session RAM only"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/2",
+      "logical_page_id": "session-backup-warning"
+    },
+    {
+      "title": "Show secret?",
+      "lines": [
+        "Anyone can sign",
+        "Verify offline copy",
+        "Approve to reveal"
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 2/2",
+      "logical_page_id": "session-backup-decision"
+    }
+  ],
+  "security_scope": "Danger-zone backup review for a RAM-only QR-vault session source; review pages must not expose secret payload, approval reveals backup payload only for user recovery, does not persist material, and does not approve signing."
+}

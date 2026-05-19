@@ -1,0 +1,42 @@
+{
+  "format": "nsealr-session-source-backup-review-v0",
+  "name": "nsec-test-key-1-backup",
+  "source_type": "nsec",
+  "source_vector": "vectors/nip19/nsec-test-key-1.json",
+  "label": "nsec test vector",
+  "fingerprint": "dbd1f8666039f02a",
+  "backup_format": "nip19_nsec",
+  "backup_payload": {
+    "nsec": "nsec1zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs4rm7hz"
+  },
+  "review_id": "session-backup-dbd1f8666039f02a",
+  "approval_digest": "5078c8d447da94e28362e5163d1068062ab6f39438da1a5a80c9c468cfbe4609",
+  "pages": [
+    {
+      "title": "Backup source",
+      "lines": [
+        "Danger: secret export",
+        "Type: NIP-19 nsec",
+        "Label: nsec test vector",
+        "Fingerprint: dbd1f8666039f02a",
+        "Output: nsec QR/text",
+        "Session RAM only"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/2",
+      "logical_page_id": "session-backup-warning"
+    },
+    {
+      "title": "Show secret?",
+      "lines": [
+        "Anyone can sign",
+        "Verify offline copy",
+        "Approve to reveal"
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 2/2",
+      "logical_page_id": "session-backup-decision"
+    }
+  ],
+  "security_scope": "Danger-zone backup review for a RAM-only QR-vault session source; review pages must not expose secret payload, approval reveals backup payload only for user recovery, does not persist material, and does not approve signing."
+}
