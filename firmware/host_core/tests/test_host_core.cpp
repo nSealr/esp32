@@ -1102,24 +1102,16 @@ void test_session_account_selection_binds_qr_review_identity_without_derivation(
         "NIP-06 account 0",
         nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
 
-    const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(
-        keyring,
-        nsealr::SessionAccountDescriptor{
-            "acct-esp32-qr-nip06-account-0",
-            "esp32_qr_vault",
-            nsealr::test_vectors::kNip06Account0PublicKey,
-            0U,
-            session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
-            nsealr::SessionAccountRecoveryKind::Nip06,
-            "m/44'/1237'/0'/0/0",
-            0U,
-        });
+    const nsealr::SessionAccountDescriptor descriptor =
+        nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor();
+    const nsealr::SelectedSessionAccount selected =
+        nsealr::select_session_account(keyring, descriptor);
 
-    assert(selected.account_id == "acct-esp32-qr-nip06-account-0");
-    assert(selected.route_type == "esp32_qr_vault");
+    assert(selected.account_id == descriptor.account_id);
+    assert(selected.route_type == descriptor.route_type);
     assert(selected.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
     assert(selected.source_index == 0U);
-    assert(selected.source_fingerprint == session_import_review_vector_by_name("nip06-account-0-leader").fingerprint);
+    assert(selected.source_fingerprint == descriptor.source_fingerprint);
     assert(selected.source_kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
     assert(selected.source_label == "NIP-06 account 0");
     assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
@@ -1156,16 +1148,7 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
     expect_throw("requires a BIP-39 source", [&] {
         (void)nsealr::select_session_account(
             keyring,
-            nsealr::SessionAccountDescriptor{
-                "acct-esp32-qr-nip06-account-0",
-                "esp32_qr_vault",
-                nsealr::test_vectors::kNip06Account0PublicKey,
-                0U,
-                session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
-                nsealr::SessionAccountRecoveryKind::Nip06,
-                "m/44'/1237'/0'/0/0",
-                0U,
-            });
+            nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor());
     });
     expect_throw("source index is out of range", [&] {
         nsealr::SessionAccountDescriptor invalid = standalone;
@@ -1208,18 +1191,10 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
         "NIP-06 account 0",
         nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
     expect_throw("path does not match account index", [&] {
-        (void)nsealr::select_session_account(
-            mnemonic_keyring,
-            nsealr::SessionAccountDescriptor{
-                "acct-esp32-qr-nip06-account-0",
-                "esp32_qr_vault",
-                nsealr::test_vectors::kNip06Account0PublicKey,
-                0U,
-                session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
-                nsealr::SessionAccountRecoveryKind::Nip06,
-                "m/44'/1237'/1'/0/0",
-                0U,
-            });
+        nsealr::SessionAccountDescriptor invalid =
+            nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor();
+        invalid.derivation_path = "m/44'/1237'/1'/0/0";
+        (void)nsealr::select_session_account(mnemonic_keyring, invalid);
     });
 }
 
@@ -1714,16 +1689,7 @@ void test_qr_review_flow_binds_selected_session_account_identity() {
         nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
     const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(
         keyring,
-        nsealr::SessionAccountDescriptor{
-            "acct-esp32-qr-nip06-account-0",
-            "esp32_qr_vault",
-            nsealr::test_vectors::kNip06Account0PublicKey,
-            0U,
-            session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
-            nsealr::SessionAccountRecoveryKind::Nip06,
-            "m/44'/1237'/0'/0/0",
-            0U,
-        });
+        nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor());
 
     const nsealr::QrSigningRequest request = nsealr::parse_qr_signing_request(
         nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic));

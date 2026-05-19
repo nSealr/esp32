@@ -309,6 +309,33 @@ def session_import_review_vector_factories(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def cpp_session_account_recovery_kind(recovery_type: str) -> str:
+    if recovery_type == "nip06":
+        return "nsealr::SessionAccountRecoveryKind::Nip06"
+    if recovery_type == "standalone_nsec":
+        return "nsealr::SessionAccountRecoveryKind::StandaloneNsec"
+    raise ValueError(f"unsupported session account recovery type: {recovery_type}")
+
+
+def session_account_descriptor_factory(name: str, account: dict) -> list[str]:
+    recovery = account["recovery"]
+    route = account["signer_route"]
+    return [
+        f"inline nsealr::SessionAccountDescriptor {name}(std::size_t source_index = 0U) {{",
+        "    return nsealr::SessionAccountDescriptor{",
+        f"        {cpp_string(account['account_id'])},",
+        f"        {cpp_string(route['type'])},",
+        f"        {cpp_string(account['public_key'])},",
+        "        source_index,",
+        f"        {cpp_string(recovery['source_fingerprint'])},",
+        f"        {cpp_session_account_recovery_kind(recovery['type'])},",
+        f"        {cpp_string(recovery['path'])},",
+        f"        {recovery['account']}U,",
+        "    };",
+        "}",
+    ]
+
+
 def limit_constants_factory(limits: dict) -> list[str]:
     return [
         f"constexpr std::size_t kMaxRequestIdLength = {limits['max_request_id_length']};",
@@ -384,6 +411,9 @@ def main() -> int:
     public_key_vector = json.loads(
         (specs / "vectors/devices/esp32-s3-get-public-key-dev.json").read_text(encoding="utf-8")
     )
+    esp32_qr_account = json.loads(
+        (specs / "vectors/accounts/esp32-qr-nip06-account-0.json").read_text(encoding="utf-8")
+    )
     seedqr_vector = json.loads((specs / "vectors/seedqr/seedsigner-vector-1.json").read_text(encoding="utf-8"))
     nsec_vector = json.loads((specs / "vectors/nip19/nsec-test-key-1.json").read_text(encoding="utf-8"))
     session_import_review_vectors = [
@@ -453,6 +483,7 @@ def main() -> int:
                 "#include <vector>",
                 "",
                 '#include "nsealr/qr_review_flow.hpp"',
+                '#include "nsealr/session_account.hpp"',
                 '#include "nsealr/trusted_review.hpp"',
                 "",
                 "namespace nsealr::test_vectors {",
@@ -527,6 +558,11 @@ def main() -> int:
                 *review_detail_page_vector_factories(review_detail_page_vectors, reviews_by_name),
                 "",
                 *session_import_review_vector_factories(session_import_review_vectors),
+                "",
+                *session_account_descriptor_factory(
+                    "esp32_qr_nip06_account_0_descriptor",
+                    esp32_qr_account,
+                ),
                 "",
                 *trusted_review_factory("basic_trusted_review_request", basic_review_screen["screen_review"]),
                 "",

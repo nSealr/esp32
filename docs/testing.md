@@ -133,7 +133,9 @@ tests with strict C++ warnings.
   malformed public keys, malformed or mismatched reviewed source fingerprints,
   out-of-range source indexes, and mismatched recovery/source shapes. These
   tests deliberately stop before NIP-06 derivation, persistent policy, or
-  signing.
+  signing. The canonical ESP32 QR NIP-06 descriptor is generated into the
+  host-core fixture header from the shared account vector so tests do not
+  hand-maintain duplicate route, path, public-key, or fingerprint constants.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
