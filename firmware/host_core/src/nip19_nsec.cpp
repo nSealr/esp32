@@ -11,6 +11,12 @@ namespace nsealr {
 namespace {
 
 constexpr std::string_view kBech32Charset = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+constexpr NsecSecretKey kSecp256k1Order{
+    0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU,
+    0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU, 0xfeU,
+    0xbaU, 0xaeU, 0xdcU, 0xe6U, 0xafU, 0x48U, 0xa0U, 0x3bU,
+    0xbfU, 0xd2U, 0x5eU, 0x8cU, 0xd0U, 0x36U, 0x41U, 0x41U,
+};
 
 std::string trim_ascii(const std::string& value) {
     const auto first = std::find_if_not(value.begin(), value.end(), [](unsigned char ch) {
@@ -137,6 +143,16 @@ char lowercase_hex_nibble(std::uint8_t value) {
 
 }  // namespace
 
+bool is_valid_nsec_secret_key(const NsecSecretKey& secret_key) {
+    const bool all_zero = std::all_of(secret_key.begin(), secret_key.end(), [](std::uint8_t byte) {
+        return byte == 0U;
+    });
+    if (all_zero) {
+        return false;
+    }
+    return std::lexicographical_compare(secret_key.begin(), secret_key.end(), kSecp256k1Order.begin(), kSecp256k1Order.end());
+}
+
 NsecSecretKey decode_nsec_secret_key(const std::string& nsec) {
     const Bech32Payload decoded = decode_lower_bech32(nsec);
     if (decoded.hrp != "nsec") {
@@ -148,6 +164,9 @@ NsecSecretKey decode_nsec_secret_key(const std::string& nsec) {
     }
     NsecSecretKey out{};
     std::copy(secret.begin(), secret.end(), out.begin());
+    if (!is_valid_nsec_secret_key(out)) {
+        throw NsecDecodeError("nsec payload must be a valid secp256k1 scalar");
+    }
     return out;
 }
 

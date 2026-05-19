@@ -34,7 +34,7 @@ The ESP32 trusted-review display must let the user inspect the complete event be
 - Tags are displayed as grouped content instead of interpreted tag labels or
   raw JSON punctuation. Each tag is shown as `Tag N/M`, followed by its visible
   non-empty items as plain lines, for example `p`, a pubkey value, `mention`,
-  `t`, and `nostrseal`. This keeps review behavior universal across all event
+  `t`, and `nsealr`. This keeps review behavior universal across all event
   kinds and custom tag semantics while prioritizing the event content on a
   small display.
 - If a tag item is longer than one display line, continuation lines are
@@ -54,7 +54,7 @@ The ESP32 trusted-review display must let the user inspect the complete event be
 
 ## Safety Rule
 
-The firmware must reject input it cannot parse or represent safely. For valid input that fits the NostrSeal v0 limits, the display path should show the event fields completely instead of relying on heuristic warnings such as "long content" or "many tags".
+The firmware must reject input it cannot parse or represent safely. For valid input that fits the nSealr v0 limits, the display path should show the event fields completely instead of relying on heuristic warnings such as "long content" or "many tags".
 
 ## Scope
 

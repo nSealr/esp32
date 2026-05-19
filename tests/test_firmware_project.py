@@ -192,6 +192,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIn("session_import_flow.cpp", cmake)
         self.assertIn("session_import_review.cpp", cmake)
         self.assertIn("session_keyring.cpp", cmake)
+        self.assertIn("session_source_generation.cpp", cmake)
         self.assertIn("review_display.cpp", cmake)
         self.assertIn("signing_policy.cpp", cmake)
         self.assertIn("trusted_review.cpp", cmake)

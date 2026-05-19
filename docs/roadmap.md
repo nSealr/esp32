@@ -632,6 +632,14 @@ the keyring unchanged. This is RAM-only import approval, not signing approval,
 NIP-06 derivation, persistence, policy state, response QR output, or real
 signing.
 
+Status note, 2026-05-19: host-core now has a local session-source generation
+boundary for the ESP32 QR vault target. Explicit 16- or 32-byte entropy can
+become a checked BIP-39 source, and explicit valid secp256k1 scalar entropy can
+become a standalone `nsec`-equivalent source. Both paths feed the same
+secret-hidden import review and RAM-only keyring boundary; hardware RNG wiring,
+backup/export UI, hardware review acceptance, response QR output, reset-loss
+evidence, and real signing remain pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640

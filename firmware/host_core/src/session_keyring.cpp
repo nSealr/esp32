@@ -61,6 +61,9 @@ StatelessSessionKeyring::~StatelessSessionKeyring() noexcept {
 
 void StatelessSessionKeyring::add_nsec(std::string label, const NsecSecretKey& secret_key) {
     require_valid_label(label);
+    if (!is_valid_nsec_secret_key(secret_key)) {
+        throw SessionKeyringError("NIP-19 nsec session source must be a valid secp256k1 scalar");
+    }
     require_capacity(size_);
     SessionKeySource& source = sources_[size_++];
     source.kind = SessionKeySourceKind::NsecSecretKey;

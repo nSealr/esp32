@@ -129,6 +129,11 @@ The first firmware foundation is host-buildable C++ under
   RAM-only source material; `Reject`, early approval, and non-terminal input
   streams leave the keyring unchanged. This is import approval only, not
   signing approval, derivation, persistence, or policy automation.
+- `session_source_generation`: creates generated BIP-39 and standalone
+  `nsec`-equivalent QR-vault session sources from explicit entropy inputs and
+  routes them into the same RAM-only source/review boundary as imports. This is
+  a host-core contract for future hardware RNG wiring and backup/export UX; it
+  does not persist generated material, derive NIP-06 keys, or enable signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

@@ -323,6 +323,10 @@ tests with strict C++ warnings.
   local traversal to the final import decision page before loading the
   stateless session keyring, while rejection, early approval, and non-terminal
   button streams leave the keyring empty.
+- Host-core session-source generation tests must prove generated BIP-39 and
+  standalone `nsec`-equivalent sources enter the same secret-hidden RAM-only
+  source boundary, invalid entropy is rejected, and generated secrets do not
+  appear in import-review pages.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

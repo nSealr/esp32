@@ -24,6 +24,7 @@
 #include "nsealr/session_import_flow.hpp"
 #include "nsealr/session_import_review.hpp"
 #include "nsealr/session_keyring.hpp"
+#include "nsealr/session_source_generation.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
 #include "nsealr/utf8.hpp"
@@ -692,6 +693,9 @@ void test_stateless_session_keyring_rejects_invalid_sources() {
     expect_throw("label exceeds max length", [&] {
         keyring.add_nsec(std::string(nsealr::kMaxSessionKeySourceLabelLength + 1U, 'x'), secret);
     });
+    expect_throw("valid secp256k1 scalar", [&] {
+        keyring.add_nsec("zero nsec", nsealr::NsecSecretKey{});
+    });
     expect_throw("12, 15, 18, 21, or 24 word indexes", [&] {
         keyring.add_bip39_seed("short seed", {0U, 1U, 2U});
     });
@@ -718,6 +722,51 @@ bool lines_contain_text(const std::vector<nsealr::TrustedReviewPage>& pages, con
         }
     }
     return false;
+}
+
+void test_session_source_generation_uses_ram_only_source_boundary() {
+    const nsealr::SessionKeySource seed_source =
+        nsealr::generate_bip39_session_source("Generated seed", std::vector<std::uint8_t>(16U, 0U));
+    nsealr::NsecSecretKey generated_secret{};
+    generated_secret.back() = 1U;
+    const nsealr::SessionKeySource nsec_source =
+        nsealr::generate_nsec_session_source("Generated nsec", generated_secret);
+
+    assert(seed_source.kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert(seed_source.label == "Generated seed");
+    assert(seed_source.bip39_word_indexes.count == 12U);
+    const nsealr::Bip39WordIndexes seed_indexes(
+        seed_source.bip39_word_indexes.values.begin(),
+        seed_source.bip39_word_indexes.values.begin() + seed_source.bip39_word_indexes.count);
+    assert(nsealr::bip39_english_mnemonic_from_indexes(seed_indexes) ==
+           "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about");
+    assert(all_zero(seed_source.nsec_secret_key));
+
+    assert(nsec_source.kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(nsec_source.label == "Generated nsec");
+    assert(nsec_source.nsec_secret_key == generated_secret);
+    assert(nsec_source.bip39_word_indexes.count == 0U);
+
+    const nsealr::SessionImportReview seed_review = nsealr::build_session_import_review(seed_source);
+    const nsealr::SessionImportReview nsec_review = nsealr::build_session_import_review(nsec_source);
+    assert(lines_contain_text(seed_review.pages, "Secret: hidden"));
+    assert(lines_contain_text(nsec_review.pages, "Secret: hidden"));
+    assert(!lines_contain_text(seed_review.pages, "abandon"));
+    assert(!lines_contain_text(nsec_review.pages, "0000000000000000000000000000000000000000000000000000000000000001"));
+}
+
+void test_session_source_generation_rejects_invalid_entropy() {
+    expect_throw("16 or 32 bytes", [] {
+        (void)nsealr::generate_bip39_session_source("Generated seed", std::vector<std::uint8_t>{0x00U, 0x01U});
+    });
+    expect_throw("valid secp256k1 scalar", [] {
+        (void)nsealr::generate_nsec_session_source("Generated nsec", nsealr::NsecSecretKey{});
+    });
+    expect_throw("label must not be empty", [] {
+        nsealr::NsecSecretKey generated_secret{};
+        generated_secret.back() = 1U;
+        (void)nsealr::generate_nsec_session_source("", generated_secret);
+    });
 }
 
 void test_session_import_review_hides_secret_material() {
@@ -2382,6 +2431,8 @@ int main() {
     test_stateless_session_keyring_accepts_parsed_key_sources();
     test_stateless_session_keyring_clear_wipes_active_sources();
     test_stateless_session_keyring_rejects_invalid_sources();
+    test_session_source_generation_uses_ram_only_source_boundary();
+    test_session_source_generation_rejects_invalid_entropy();
     test_session_import_review_hides_secret_material();
     test_session_import_flow_requires_local_approval_before_loading_keyring();
     test_session_import_flow_rejection_does_not_load_keyring();

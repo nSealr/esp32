@@ -99,6 +99,11 @@ hardware readiness can differ, final vault behavior must converge.
   Rejection and incomplete button streams leave the keyring empty, and approval
   only loads RAM-only source material; it still does not sign, derive NIP-06
   keys, persist material, or create policy state.
+- Host-core local session-source generation for the future ESP32 QR vault.
+  Explicit entropy inputs can become generated BIP-39 or standalone
+  `nsec`-equivalent sources in the same RAM-only import/review/keyring
+  boundary. Hardware RNG wiring, backup/export UI, and physical acceptance
+  remain pending.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.
