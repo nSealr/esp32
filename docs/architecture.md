@@ -154,6 +154,12 @@ The first firmware foundation is host-buildable C++ under
   entropy bytes into the same RAM-only `SessionKeySource` boundary used by
   import review. It deliberately does not derive NIP-06 keys, persist material,
   select accounts, or enable signing.
+- `session_source_qr_import_flow`: composes decoded QR session-source parsing
+  with the local import-review button flow. A future camera adapter can feed
+  decoded `nsec`, mnemonic, Standard SeedQR, or CompactSeedQR material into one
+  host-core boundary that loads the stateless keyring only after final-page
+  approval; rejection, malformed input, and early/non-terminal button streams
+  leave the keyring unchanged.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

@@ -119,6 +119,10 @@ tests with strict C++ warnings.
   `SessionKeySource` boundary and still hide secret material in import-review
   pages. Invalid decoded QR inputs are rejected before keyring load, derivation,
   persistence, or signing.
+- Host-core decoded QR import-flow tests must prove accepted `nsec`, Standard
+  SeedQR, and CompactSeedQR inputs load the RAM-only keyring only after local
+  import-review final-page approval, while rejection and invalid decoded QR
+  inputs leave the keyring empty.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold

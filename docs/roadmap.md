@@ -660,6 +660,14 @@ CompactSeedQR entropy bytes all normalize into the same RAM-only
 camera capture, NIP-06 derivation, account selection, persistence, response QR
 hardware, or real signing.
 
+Status note, 2026-05-19: host-core now composes decoded QR session-source
+parsing with the local import-review button flow. Accepted `nsec`, plain
+mnemonic, Standard SeedQR, and CompactSeedQR inputs can load the RAM-only
+session keyring only after the final import decision page is approved; rejection
+and malformed QR inputs leave the keyring empty. This is still a host-core
+adapter boundary, not physical camera capture, NIP-06 derivation, persistence,
+response QR display, scan-back, or signing.
+
 Status note, 2026-05-19: host-core now also encodes already-produced response
 JSON into static `nsealr1:` and animated `nsealr1a:` QR envelopes against the
 shared signed-response vector. This makes QR response transport partial only:

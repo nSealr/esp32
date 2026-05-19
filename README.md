@@ -90,6 +90,12 @@ hardware readiness can differ, final vault behavior must converge.
   SeedSigner Standard SeedQR digit streams, and CompactSeedQR entropy bytes,
   then routes each source into the same RAM-only key-source type used by import
   review. It does not derive NIP-06 keys, persist material, or sign.
+- Host-core decoded QR session-source import flow. It composes the decoded QR
+  parser with the local import-review button flow, so `nsec`, mnemonic,
+  Standard SeedQR, and CompactSeedQR inputs load into the RAM-only keyring only
+  after the final import decision page is approved. Rejection and invalid QR
+  inputs leave the keyring empty; this still does not add camera capture,
+  NIP-06 derivation, persistence, response QR display, or signing.
 - Host-core stateless session keyring model for already parsed `nsec` and
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests. The source value type and keyring wipe active `nsec` and BIP-39 word

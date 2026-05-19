@@ -26,6 +26,7 @@
 #include "nsealr/session_keyring.hpp"
 #include "nsealr/session_source_generation.hpp"
 #include "nsealr/session_source_qr.hpp"
+#include "nsealr/session_source_qr_import_flow.hpp"
 #include "nsealr/signing_policy.hpp"
 #include "nsealr/trusted_review.hpp"
 #include "nsealr/utf8.hpp"
@@ -911,6 +912,66 @@ void test_session_source_qr_rejects_invalid_inputs() {
     expect_throw("16 or 32", [] {
         (void)nsealr::parse_compact_seedqr_session_source("bad CompactSeedQR", {0x00U, 0x01U});
     });
+}
+
+void test_session_source_qr_import_flow_loads_only_after_review_approval() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::SessionImportFlowResult result = nsealr::run_session_source_qr_text_import_flow(
+        keyring,
+        "nsec QR",
+        nsealr::test_vectors::kNip19NsecTestKey1,
+        {nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve});
+
+    assert(result.approved);
+    assert(result.loaded);
+    assert(result.review.review_id ==
+           std::string(session_import_review_vector_by_name("nsec-test-key-1").review_id));
+    assert(result.transcript.size() == 2U);
+    assert(!result.transcript[0].loaded);
+    assert(result.transcript[1].loaded);
+    assert(keyring.size() == 1U);
+    assert(keyring.source_at(0).kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(keyring.source_at(0).nsec_secret_key ==
+           nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+}
+
+void test_session_source_qr_import_flow_rejects_without_keyring_load() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::SessionImportFlowResult rejected = nsealr::run_session_source_qr_text_import_flow(
+        keyring,
+        "SeedQR vector 1",
+        nsealr::test_vectors::kSeedQrVector1StandardDigits,
+        {nsealr::ReviewButton::Reject});
+
+    assert(!rejected.approved);
+    assert(!rejected.loaded);
+    assert(keyring.empty());
+
+    expect_throw("four digits per word", [&] {
+        (void)nsealr::run_session_source_qr_text_import_flow(
+            keyring,
+            "bad Standard SeedQR",
+            "000",
+            {nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve});
+    });
+    assert(keyring.empty());
+}
+
+void test_compact_seedqr_import_flow_loads_after_review_approval() {
+    nsealr::StatelessSessionKeyring keyring;
+    const nsealr::SessionImportFlowResult result = nsealr::run_compact_seedqr_session_import_flow(
+        keyring,
+        "CompactSeedQR",
+        bytes_from_hex_for_test(nsealr::test_vectors::kSeedQrVector1CompactHex),
+        {nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve});
+
+    assert(result.approved);
+    assert(result.loaded);
+    assert(keyring.size() == 1U);
+    assert(keyring.source_at(0).kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
+    assert_session_seed_words_equal(
+        keyring.source_at(0).bip39_word_indexes,
+        nsealr::test_vectors::seedqr_vector_1_word_indexes());
 }
 
 void test_session_import_review_hides_secret_material() {
@@ -2676,6 +2737,9 @@ int main() {
     test_session_source_generation_rejects_invalid_entropy();
     test_session_source_qr_parses_ram_only_sources();
     test_session_source_qr_rejects_invalid_inputs();
+    test_session_source_qr_import_flow_loads_only_after_review_approval();
+    test_session_source_qr_import_flow_rejects_without_keyring_load();
+    test_compact_seedqr_import_flow_loads_after_review_approval();
     test_session_import_review_hides_secret_material();
     test_session_import_flow_requires_local_approval_before_loading_keyring();
     test_session_import_flow_rejection_does_not_load_keyring();

@@ -126,6 +126,7 @@ def validate_firmware_project(project: Path) -> None:
         "session_keyring.cpp",
         "session_source_generation.cpp",
         "session_source_qr.cpp",
+        "session_source_qr_import_flow.cpp",
         "sha256.cpp",
         "signing_policy.cpp",
         "trusted_review.cpp",
