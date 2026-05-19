@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-relay-not-wss",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "relay must be a wss URL",
+  "uri": "bunker://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=https%3A%2F%2Frelay.example.com"
+}

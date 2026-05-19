@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-unsupported-scheme",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "scheme must be bunker or nostrconnect",
+  "uri": "https://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com"
+}
