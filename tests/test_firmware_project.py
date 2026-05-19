@@ -283,6 +283,40 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertIs(profile["physical_approval_controls"]["touch_approval_allowed"], False)
         self.assertTrue(profile["physical_approval_controls"]["evidence_reports"])
 
+    def test_security_profile_matches_shared_hardening_vector(self) -> None:
+        vector = json.loads(
+            (specs_dir() / "vectors/devices/esp32-s3-security-profile-development.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        profile = json.loads(
+            (ROOT / "firmware/esp32_s3_usb_signer/security_profile.json").read_text(encoding="utf-8")
+        )
+        boundary = vector["current_boundary"]
+
+        self.assertEqual(profile["schema"], boundary["schema"])
+        self.assertEqual(profile["target"], vector["target"])
+        self.assertEqual(profile["profile"], vector["profile"])
+        self.assertEqual(profile["runtime_signing_feature_enabled"], boundary["runtime_signing_feature_enabled"])
+        self.assertEqual(profile["production_signing_allowed"], boundary["production_signing_allowed"])
+        self.assertEqual(profile["secure_boot"]["enabled"], boundary["secure_boot_enabled"])
+        self.assertEqual(profile["flash_encryption"]["enabled"], boundary["flash_encryption_enabled"])
+        self.assertEqual(profile["debug_access"]["locked"], boundary["debug_access_locked"])
+        self.assertEqual(
+            profile["key_provisioning"]["persistent_secret_storage"],
+            boundary["persistent_secret_storage"],
+        )
+
+        for section in vector["required_profile_sections"]:
+            self.assertIn(section, profile)
+        for blocker in vector["required_production_blockers"]:
+            self.assertIn(blocker, profile["production_blockers"])
+
+        self.assertIn("validated_development_security_profile", vector["implemented_controls"])
+        self.assertIn("read_only_efuse_audit_report", vector["implemented_controls"])
+        self.assertIn("production_signing", vector["not_implemented_controls"])
+        self.assertIn("secure_boot_enabled", vector["not_implemented_controls"])
+
     def test_security_profile_validator_rejects_production_signing_without_hardening(self) -> None:
         with TemporaryDirectory() as tmp:
             profile_path = Path(tmp) / "security_profile.json"

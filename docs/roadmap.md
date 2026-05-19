@@ -695,3 +695,11 @@ fuses into JSON blockers, and intentionally performs no eFuse burn or setup
 change. This measures the production hardening gap only; it does not clear any
 signing blocker. `security_profile.json` tracks those reports separately as
 `security_fuse_audit_evidence`.
+
+Status note, 2026-05-19: ESP32 USB/NIP-46 secure-boot hardening is now partial
+against the shared `firmware-boot-hardening-v0` contract. Host-side tests
+compare `security_profile.json` with
+`vectors/devices/esp32-s3-security-profile-development.json`, proving the
+development scaffold tracks hardening blockers and read-only fuse audit
+evidence without enabling secure boot, flash encryption, debug locking,
+persistent-secret storage, or production signing.

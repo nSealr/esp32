@@ -1,0 +1,58 @@
+{
+  "name": "esp32-s3-security-profile-development",
+  "format": "firmware-boot-hardening-profile-v0",
+  "contract_id": "firmware-boot-hardening-v0",
+  "solution": "esp32_usb_nip46",
+  "repository": "esp32",
+  "target": "esp32_s3_usb_signer",
+  "profile": "development_scaffold",
+  "current": "partial",
+  "current_boundary": {
+    "schema": "nsealr-esp32-security-profile-v0",
+    "runtime_signing_feature_enabled": false,
+    "production_signing_allowed": false,
+    "secure_boot_enabled": false,
+    "flash_encryption_enabled": false,
+    "debug_access_locked": false,
+    "persistent_secret_storage": "not_implemented"
+  },
+  "required_profile_sections": [
+    "secure_boot",
+    "flash_encryption",
+    "debug_access",
+    "key_provisioning",
+    "trusted_review_display",
+    "display_review_protocol_evidence",
+    "unicode_review_rendering",
+    "companion_transport_evidence",
+    "firmware_protocol_evidence",
+    "security_fuse_audit_evidence",
+    "physical_approval_controls",
+    "companion_signed_output_verification",
+    "production_blockers"
+  ],
+  "required_production_blockers": [
+    "runtime_signing_feature",
+    "trusted_review_display",
+    "physical_approval_controls",
+    "unicode_review_rendering",
+    "key_provisioning",
+    "secure_boot",
+    "flash_encryption",
+    "debug_lock",
+    "companion_signed_output_verification"
+  ],
+  "implemented_controls": [
+    "validated_development_security_profile",
+    "read_only_efuse_audit_report",
+    "signing_status_reports_hardening_blockers"
+  ],
+  "not_implemented_controls": [
+    "production_signing",
+    "production_key_provisioning",
+    "secure_boot_enabled",
+    "flash_encryption_enabled",
+    "debug_access_locked"
+  ],
+  "notes": "The ESP32 USB/NIP-46 signer has a validated development-only security profile and a read-only eFuse audit path. This does not enable secure boot, flash encryption, debug locking, persistent-secret provisioning, or production signing."
+}

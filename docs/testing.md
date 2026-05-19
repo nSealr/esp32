@@ -101,6 +101,11 @@ tests with strict C++ warnings.
 - Security-profile validation requiring security eFuse audit evidence to remain
   separate from firmware protocol evidence, display evidence, and companion
   transport evidence.
+- Shared security-profile vector tests proving the local development scaffold
+  still matches `firmware-boot-hardening-v0`: signing disabled, secure boot and
+  flash encryption off, debug access unlocked for bring-up, persistent-secret
+  storage not implemented, required sections present, and production blockers
+  explicit.
 - Board-profile validation for the no-camera LILYGO T-Display S3 USB/display
   signer candidate, keeping it separate from the T-Display S3 Pro OV5640 QR
   vault camera target.

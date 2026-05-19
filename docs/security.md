@@ -52,6 +52,12 @@ The current profile is `development_scaffold`:
   production design target, not current firmware behavior; v0 uses one
   device-level unlock ceremony when that vault exists
 
+`nSealr/specs` pins this development-only boundary in
+`vectors/devices/esp32-s3-security-profile-development.json`. ESP32 tests
+compare `security_profile.json` against that vector so secure boot, flash
+encryption, debug lock, persistent-secret storage, and production signing
+cannot silently drift into enabled or claimed states.
+
 This is intentional for development. It is not a production custody profile and
 must not be used to claim a finished hardware wallet.
 
