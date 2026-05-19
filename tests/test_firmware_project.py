@@ -71,6 +71,9 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         qr_selection = json.loads(
             (specs / "vectors/route-selections/esp32-qr-sign-event-account-0.json").read_text(encoding="utf-8")
         )
+        qr_recovery_source = json.loads(
+            (specs / qr_account["recovery"]["source_vector"]).read_text(encoding="utf-8")
+        )
         usb_account = json.loads(
             (specs / "vectors/accounts/esp32-usb-device-slot-0.json").read_text(encoding="utf-8")
         )
@@ -96,9 +99,13 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertEqual(qr_account["signer_route"]["custody"], "stateless_session")
         self.assertEqual(qr_account["signer_route"]["trusted_review"], "device_display")
         self.assertEqual(qr_account["signer_route"]["policy_support"], "manual_only")
+        self.assertEqual(qr_account["recovery"]["type"], "nip06")
+        self.assertEqual(qr_account["recovery"]["source_vector"], "vectors/keys/nip06-account-0-leader.json")
+        self.assertEqual(qr_account["public_key"], qr_recovery_source["public_key"])
         self.assertFalse(qr_account["capabilities"]["persistent_grants"])
         self.assertEqual(qr_policy["policy_id"], qr_account["policy_profile_id"])
         self.assertEqual(qr_selection["selection"]["account_id"], qr_account["account_id"])
+        self.assertEqual(qr_selection["selection"]["public_key"], qr_account["public_key"])
         self.assertEqual(qr_selection["selection"]["route_type"], qr_account["signer_route"]["type"])
         self.assertEqual(qr_selection["selection"]["transport"], qr_account["signer_route"]["transport"])
         self.assertEqual(qr_selection["selection"]["custody"], qr_account["signer_route"]["custody"])

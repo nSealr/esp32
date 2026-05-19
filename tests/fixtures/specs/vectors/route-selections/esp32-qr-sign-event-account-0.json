@@ -9,7 +9,7 @@
   "selection": {
     "format": "nsealr-route-selection-v0",
     "account_id": "acct-esp32-qr-nip06-account-0",
-    "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "public_key": "17162c921dc4d2518f9a101db33695df1afb56ab82f5ff3e5da6eec3ca5cd917",
     "route_type": "esp32_qr_vault",
     "repository": "esp32",
     "transport": "qr",

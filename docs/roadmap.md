@@ -578,6 +578,11 @@ descriptors: `esp32-qr-nip06-account-0` for the stateless QR route with
 USB/NIP-46 persistent route with `policy-manual-only-persistent-device` as the
 default. The scoped policy no longer lists smartcard routes.
 
+Status note, 2026-05-19: the ESP32 QR account descriptor now points at the
+canonical NIP-06 account `0` source vector and carries the matching derived
+public key. This keeps the ESP32 and Raspberry QR vault account contracts in
+parity without adding host-core NIP-06 derivation or firmware signing.
+
 Status note, 2026-05-19: the same tests now consume the shared route-selection
 vectors `esp32-qr-sign-event-account-0` and `esp32-usb-sign-event-slot-0`. The
 QR selection remains QR transport, stateless, manual-only, physically approved,
