@@ -1,7 +1,6 @@
 #include "nsealr/qr_envelope.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cstdint>
 #include <initializer_list>
 #include <limits>
@@ -10,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "nsealr/base64url.hpp"
 #include "nsealr/json_unicode.hpp"
 #include "nsealr/limits.hpp"
 #include "nsealr/sha256.hpp"
@@ -20,7 +20,6 @@ namespace {
 
 constexpr const char* kPrefix = "nsealr1:";
 constexpr const char* kAnimatedPrefix = "nsealr1a:";
-constexpr char kInvalidBase64 = static_cast<char>(-1);
 
 enum class JsonValueKind {
     String,
@@ -46,16 +45,6 @@ bool is_lower_hex(const std::string& value, std::size_t size) {
     return value.size() == size && std::all_of(value.begin(), value.end(), [](char ch) {
                return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
            });
-}
-
-bool is_base64url_payload(const std::string& value) {
-    if (value.empty()) {
-        return false;
-    }
-    return std::all_of(value.begin(), value.end(), [](char ch) {
-        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
-               ch == '-';
-    });
 }
 
 std::size_t parse_positive_decimal(const std::string& value, const char* message) {
@@ -141,46 +130,6 @@ AnimatedQrFrame parse_animated_qr_frame(const std::string& frame) {
         throw QrEnvelopeError("animated QR frame checksum mismatch");
     }
     return AnimatedQrFrame{digest, index, total, chunk};
-}
-
-std::array<char, 256> base64url_decode_table() {
-    std::array<char, 256> table{};
-    table.fill(kInvalidBase64);
-    for (int index = 0; index < 26; ++index) {
-        table[static_cast<std::size_t>('A' + index)] = static_cast<char>(index);
-        table[static_cast<std::size_t>('a' + index)] = static_cast<char>(26 + index);
-    }
-    for (int index = 0; index < 10; ++index) {
-        table[static_cast<std::size_t>('0' + index)] = static_cast<char>(52 + index);
-    }
-    table[static_cast<std::size_t>('-')] = 62;
-    table[static_cast<std::size_t>('_')] = 63;
-    return table;
-}
-
-std::string decode_base64url(std::string_view payload) {
-    static const std::array<char, 256> table = base64url_decode_table();
-    std::uint32_t accumulator = 0;
-    int bits = 0;
-    std::vector<char> decoded;
-    decoded.reserve((payload.size() * 3U) / 4U);
-
-    for (const unsigned char ch : payload) {
-        const char value = table[ch];
-        if (value == kInvalidBase64) {
-            throw QrEnvelopeError("QR envelope payload must be unpadded base64url");
-        }
-        accumulator = (accumulator << 6U) | static_cast<unsigned char>(value);
-        bits += 6;
-        if (bits >= 8) {
-            bits -= 8;
-            decoded.push_back(static_cast<char>((accumulator >> static_cast<unsigned>(bits)) & 0xffU));
-        }
-    }
-    if (bits > 0 && ((accumulator << static_cast<unsigned>(8 - bits)) & 0xffU) != 0U) {
-        throw QrEnvelopeError("QR envelope payload has invalid trailing bits");
-    }
-    return std::string(decoded.begin(), decoded.end());
 }
 
 std::string trim_ascii(const std::string& value) {
@@ -568,6 +517,17 @@ QrEventTemplate parse_event_template_fields(const std::string& event_template_js
     };
 }
 
+std::string decode_qr_payload_base64url(const std::string& payload) {
+    try {
+        return decode_base64url(payload);
+    } catch (const Base64UrlError& error) {
+        if (error.code() == Base64UrlErrorCode::InvalidTrailingBits) {
+            throw QrEnvelopeError("QR envelope payload has invalid trailing bits");
+        }
+        throw QrEnvelopeError("QR envelope payload must be unpadded base64url");
+    }
+}
+
 }  // namespace
 
 QrEnvelope decode_qr_envelope(const std::string& envelope) {
@@ -581,7 +541,7 @@ QrEnvelope decode_qr_envelope(const std::string& envelope) {
     if ((payload.size() % 4U) == 1U) {
         throw QrEnvelopeError("QR envelope payload has invalid base64url length");
     }
-    const std::string decoded = decode_base64url(payload);
+    const std::string decoded = decode_qr_payload_base64url(payload);
     if (decoded.size() > kMaxStaticQrDecodedJsonBytes) {
         throw QrEnvelopeError("QR decoded JSON exceeds max_static_qr_decoded_json_bytes");
     }
@@ -626,7 +586,7 @@ QrEnvelope decode_animated_qr_envelope_frames(const std::vector<std::string>& fr
     if ((payload.size() % 4U) == 1U) {
         throw QrEnvelopeError("animated QR payload has invalid base64url length");
     }
-    const std::string decoded = decode_base64url(payload);
+    const std::string decoded = decode_qr_payload_base64url(payload);
     if (decoded.size() > kMaxAnimatedQrDecodedJsonBytes) {
         throw QrEnvelopeError("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes");
     }
@@ -638,6 +598,61 @@ QrEnvelope decode_animated_qr_envelope_frames(const std::vector<std::string>& fr
     }
     require_json_container(decoded);
     return QrEnvelope{payload, decoded};
+}
+
+std::string encode_qr_envelope_json(const std::string& payload_json) {
+    if (payload_json.size() > kMaxStaticQrDecodedJsonBytes) {
+        throw QrEnvelopeError("QR decoded JSON exceeds max_static_qr_decoded_json_bytes");
+    }
+    if (!is_valid_utf8(payload_json)) {
+        throw QrEnvelopeError("QR envelope payload must be valid UTF-8");
+    }
+    require_json_container(payload_json);
+    return std::string(kPrefix) + encode_base64url(payload_json);
+}
+
+std::vector<std::string> encode_animated_qr_envelope_json(
+    const std::string& payload_json,
+    std::size_t chunk_size_chars) {
+    if (chunk_size_chars == 0U) {
+        throw QrEnvelopeError("animated QR chunk size must be a positive integer");
+    }
+    if (chunk_size_chars > kMaxAnimatedQrFramePayloadChars) {
+        throw QrEnvelopeError("animated QR chunk exceeds max_animated_qr_frame_payload_chars");
+    }
+    if (payload_json.size() > kMaxAnimatedQrDecodedJsonBytes) {
+        throw QrEnvelopeError("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes");
+    }
+    if (!is_valid_utf8(payload_json)) {
+        throw QrEnvelopeError("animated QR payload must be valid UTF-8");
+    }
+    require_json_container(payload_json);
+
+    const std::string payload = encode_base64url(payload_json);
+    if (payload.empty()) {
+        throw QrEnvelopeError("animated QR payload is empty");
+    }
+    std::vector<std::string> chunks;
+    chunks.reserve((payload.size() + chunk_size_chars - 1U) / chunk_size_chars);
+    for (std::size_t offset = 0; offset < payload.size(); offset += chunk_size_chars) {
+        chunks.push_back(payload.substr(offset, chunk_size_chars));
+    }
+    if (chunks.size() > kMaxAnimatedQrFrameCount) {
+        throw QrEnvelopeError("animated QR frame count exceeds max_animated_qr_frame_count");
+    }
+
+    const std::string digest = sha256_hex(payload_json);
+    std::vector<std::string> frames;
+    frames.reserve(chunks.size());
+    for (std::size_t offset = 0; offset < chunks.size(); ++offset) {
+        const std::size_t index = offset + 1U;
+        const std::string& chunk = chunks[offset];
+        frames.push_back(
+            std::string(kAnimatedPrefix) + digest + ":" + std::to_string(index) + "/" +
+            std::to_string(chunks.size()) + ":" + chunk + ":" +
+            animated_frame_checksum(digest, index, chunks.size(), chunk));
+    }
+    return frames;
 }
 
 QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope) {

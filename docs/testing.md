@@ -327,6 +327,9 @@ tests with strict C++ warnings.
   standalone `nsec`-equivalent sources enter the same secret-hidden RAM-only
   source boundary, invalid entropy is rejected, and generated secrets do not
   appear in import-review pages.
+- Host-core QR response-envelope tests must prove already-produced response
+  JSON can be encoded as static `nsealr1:` and animated `nsealr1a:` output
+  against the shared signed-response vector without enabling firmware signing.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,

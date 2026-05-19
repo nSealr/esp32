@@ -104,6 +104,10 @@ hardware readiness can differ, final vault behavior must converge.
   `nsec`-equivalent sources in the same RAM-only import/review/keyring
   boundary. Hardware RNG wiring, backup/export UI, and physical acceptance
   remain pending.
+- Host-core QR response-envelope encoding for already-produced response JSON.
+  Static `nsealr1:` and animated `nsealr1a:` output match the shared signed
+  response vector, but firmware signing, response display hardware, camera
+  scan-back, and physical acceptance remain pending.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,
   with host-core rejection of applicable invalid QR-envelope and signing-request
   hardening vectors before review or signing can be reached.

@@ -350,6 +350,22 @@ void test_animated_qr_envelope_decodes_shared_vector() {
     assert(envelope.payload_json == nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
 }
 
+void test_qr_envelope_encodes_signed_response_vectors_without_signing() {
+    const std::string static_envelope =
+        nsealr::encode_qr_envelope_json(nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
+    const std::vector<std::string> animated_frames = nsealr::encode_animated_qr_envelope_json(
+        nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson,
+        nsealr::kMaxAnimatedQrFramePayloadChars);
+
+    assert(static_envelope ==
+           std::string("nsealr1:") + nsealr::test_vectors::kAnimatedQrResponseKind1BasicPayloadBase64Url);
+    assert(animated_frames == nsealr::test_vectors::animated_qr_response_kind_1_basic_frames());
+    assert(nsealr::decode_qr_envelope(static_envelope).payload_json ==
+           nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
+    assert(nsealr::decode_animated_qr_envelope_frames(animated_frames).payload_json ==
+           nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
+}
+
 void test_qr_envelope_parses_sign_event_request_metadata() {
     const nsealr::QrEnvelope envelope =
         nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic);
@@ -478,6 +494,30 @@ void test_animated_qr_envelope_rejections() {
             "nsealr1a:0000000000000000000000000000000000000000000000000000000000000000:"
             "184467440737095516160/1:AA:0000000000000000";
         (void)nsealr::decode_animated_qr_envelope_frames({frame});
+    });
+}
+
+void test_qr_envelope_encoder_rejections() {
+    expect_throw("QR decoded JSON exceeds max_static_qr_decoded_json_bytes", [] {
+        (void)nsealr::encode_qr_envelope_json(std::string("{\"x\":\"") +
+                                              std::string(nsealr::kMaxStaticQrDecodedJsonBytes, 'x') + "\"}");
+    });
+    expect_throw("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes", [] {
+        (void)nsealr::encode_animated_qr_envelope_json(
+            std::string("{\"x\":\"") + std::string(nsealr::kMaxAnimatedQrDecodedJsonBytes, 'x') + "\"}",
+            nsealr::kMaxAnimatedQrFramePayloadChars);
+    });
+    expect_throw("animated QR chunk size must be a positive integer", [] {
+        (void)nsealr::encode_animated_qr_envelope_json("{}", 0U);
+    });
+    expect_throw("animated QR chunk exceeds max_animated_qr_frame_payload_chars", [] {
+        (void)nsealr::encode_animated_qr_envelope_json("{}", nsealr::kMaxAnimatedQrFramePayloadChars + 1U);
+    });
+    expect_throw("QR envelope payload must be valid UTF-8", [] {
+        std::string invalid = "{\"x\":\"";
+        invalid.push_back(static_cast<char>(0xff));
+        invalid += "\"}";
+        (void)nsealr::encode_qr_envelope_json(invalid);
     });
 }
 
@@ -2416,6 +2456,7 @@ int main() {
     test_serial_frame_rejects_shared_invalid_vectors();
     test_qr_envelope_decodes_shared_vector();
     test_animated_qr_envelope_decodes_shared_vector();
+    test_qr_envelope_encodes_signed_response_vectors_without_signing();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_parses_event_template_fields();
@@ -2424,6 +2465,7 @@ int main() {
     test_qr_envelope_rejections();
     test_qr_envelope_rejects_shared_invalid_qr_vectors();
     test_animated_qr_envelope_rejections();
+    test_qr_envelope_encoder_rejections();
     test_qr_limits_match_shared_profile();
     test_nip19_nsec_decoder_matches_shared_vector();
     test_seedqr_decoders_match_shared_vector();

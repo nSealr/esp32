@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -37,6 +38,10 @@ public:
 
 QrEnvelope decode_qr_envelope(const std::string& envelope);
 QrEnvelope decode_animated_qr_envelope_frames(const std::vector<std::string>& frames);
+std::string encode_qr_envelope_json(const std::string& payload_json);
+std::vector<std::string> encode_animated_qr_envelope_json(
+    const std::string& payload_json,
+    std::size_t chunk_size_chars);
 QrSigningRequest parse_qr_signing_request(const QrEnvelope& envelope);
 
 }  // namespace nsealr

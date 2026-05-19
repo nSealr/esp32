@@ -10,6 +10,7 @@ idf_component_register(
         "t_display_s3_serial_input.cpp"
         "t_display_s3_status_frames.cpp"
         "../../host_core/src/approval_gate.cpp"
+        "../../host_core/src/base64url.cpp"
         "../../host_core/src/bip39_english.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/nip19_nsec.cpp"

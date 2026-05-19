@@ -640,6 +640,12 @@ secret-hidden import review and RAM-only keyring boundary; hardware RNG wiring,
 backup/export UI, hardware review acceptance, response QR output, reset-loss
 evidence, and real signing remain pending.
 
+Status note, 2026-05-19: host-core now also encodes already-produced response
+JSON into static `nsealr1:` and animated `nsealr1a:` QR envelopes against the
+shared signed-response vector. This makes QR response transport partial only:
+firmware signing, response QR display hardware, camera scan-back, hardware
+acceptance, and companion signed-output acceptance remain pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
@@ -662,6 +668,10 @@ evidence, and real signing remain pending.
   timing on physical QR frames, hardware display output, and signing-vector
   consumption remain pending. Raw QR review flow is available in host-core for
   future camera/display/GPIO adapters.
+- QR response output. Status: host-core can encode response JSON into static
+  and animated QR envelopes that match the shared signed-response transport
+  vector. Real signing, response display hardware, scan-back, and end-to-end
+  acceptance remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.
 - Signed-event QR output verified by the companion.

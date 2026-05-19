@@ -1,12 +1,10 @@
 #include "nsealr/device_protocol.hpp"
 
 #include <algorithm>
-#include <array>
-#include <cstdint>
-#include <string_view>
 #include <utility>
 #include <vector>
 
+#include "nsealr/base64url.hpp"
 #include "nsealr/json_unicode.hpp"
 #include "nsealr/limits.hpp"
 #include "nsealr/qr_envelope.hpp"
@@ -17,80 +15,6 @@
 
 namespace nsealr {
 namespace {
-
-constexpr char kInvalidBase64 = static_cast<char>(-1);
-
-std::array<char, 256> base64url_decode_table() {
-    std::array<char, 256> table{};
-    table.fill(kInvalidBase64);
-    for (int index = 0; index < 26; ++index) {
-        table[static_cast<std::size_t>('A' + index)] = static_cast<char>(index);
-        table[static_cast<std::size_t>('a' + index)] = static_cast<char>(26 + index);
-    }
-    for (int index = 0; index < 10; ++index) {
-        table[static_cast<std::size_t>('0' + index)] = static_cast<char>(52 + index);
-    }
-    table[static_cast<std::size_t>('-')] = 62;
-    table[static_cast<std::size_t>('_')] = 63;
-    return table;
-}
-
-std::string decode_base64url(std::string_view payload) {
-    static const std::array<char, 256> table = base64url_decode_table();
-    std::uint32_t accumulator = 0;
-    int bits = 0;
-    std::vector<char> decoded;
-    decoded.reserve((payload.size() * 3U) / 4U);
-
-    for (const unsigned char ch : payload) {
-        const char value = table[ch];
-        if (value == kInvalidBase64) {
-            throw SerialFrameError("serial frame payload must be unpadded base64url");
-        }
-        accumulator = (accumulator << 6U) | static_cast<unsigned char>(value);
-        bits += 6;
-        if (bits >= 8) {
-            bits -= 8;
-            decoded.push_back(static_cast<char>((accumulator >> static_cast<unsigned>(bits)) & 0xffU));
-        }
-    }
-    if (bits > 0 && ((accumulator << static_cast<unsigned>(8 - bits)) & 0xffU) != 0U) {
-        throw SerialFrameError("serial frame payload has invalid trailing bits");
-    }
-    return std::string(decoded.begin(), decoded.end());
-}
-
-std::array<char, 64> base64url_encode_alphabet() {
-    return {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-        'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-        'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-        'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-        'w', 'x', 'y', 'z', '0', '1', '2', '3',
-        '4', '5', '6', '7', '8', '9', '-', '_',
-    };
-}
-
-std::string encode_base64url(std::string_view value) {
-    static const std::array<char, 64> alphabet = base64url_encode_alphabet();
-    std::string encoded;
-    int accumulator = 0;
-    int bits = 0;
-    for (const unsigned char ch : value) {
-        accumulator = (accumulator << 8) | ch;
-        bits += 8;
-        while (bits >= 6) {
-            bits -= 6;
-            encoded.push_back(alphabet[static_cast<std::size_t>((accumulator >> bits) & 0x3f)]);
-        }
-    }
-    if (bits > 0) {
-        encoded.push_back(alphabet[static_cast<std::size_t>((accumulator << (6 - bits)) & 0x3f)]);
-    }
-    return encoded;
-}
 
 void skip_ws(const std::string& json, std::size_t& offset) {
     while (offset < json.size()) {
@@ -296,6 +220,17 @@ SerialFrame response_frame(const std::string& response_json) {
     return SerialFrame{FrameType::Response, encode_base64url(response_json)};
 }
 
+std::string decode_serial_payload_base64url(const std::string& payload) {
+    try {
+        return decode_base64url(payload);
+    } catch (const Base64UrlError& error) {
+        if (error.code() == Base64UrlErrorCode::InvalidTrailingBits) {
+            throw SerialFrameError("serial frame payload has invalid trailing bits");
+        }
+        throw SerialFrameError("serial frame payload must be unpadded base64url");
+    }
+}
+
 SerialFrame unsupported_request_frame() {
     return SerialFrame{FrameType::Error, "eyJlcnJvciI6InVuc3VwcG9ydGVkX3JlcXVlc3QifQ"};
 }
@@ -363,7 +298,7 @@ SerialFrameHandlingResult handle_serial_frame_with_review_preview(
         return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }
 
-    const std::string request_json = decode_base64url(request.payload_base64url);
+    const std::string request_json = decode_serial_payload_base64url(request.payload_base64url);
     if (request_json.size() > kMaxDecodedRequestJsonBytes) {
         return SerialFrameHandlingResult{encode_serial_frame(unsupported_request_frame()), std::nullopt};
     }

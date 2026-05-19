@@ -1,8 +1,8 @@
 #include "nsealr/serial_frame.hpp"
 
-#include <algorithm>
 #include <array>
 
+#include "nsealr/base64url.hpp"
 #include "nsealr/limits.hpp"
 #include "nsealr/sha256.hpp"
 
@@ -10,16 +10,6 @@ namespace nsealr {
 namespace {
 
 constexpr const char* kPrefix = "nsealr1f:";
-
-bool is_base64url_payload(const std::string& value) {
-    if (value.empty()) {
-        return false;
-    }
-    return std::all_of(value.begin(), value.end(), [](char ch) {
-        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' ||
-               ch == '-';
-    });
-}
 
 std::string checksum(FrameType type, const std::string& payload) {
     const std::string input = frame_type_to_string(type) + ":" + payload;

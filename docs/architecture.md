@@ -90,6 +90,9 @@ The first firmware foundation is host-buildable C++ under
 - `qr_envelope`: decodes `nsealr1:` QR envelopes, validates unpadded base64url
   payloads, validates UTF-8, applies shared v0 QR/request size limits, and
   requires a decoded JSON container for the future ESP32-S3 QR vault target.
+  It also encodes already-produced response JSON into static `nsealr1:` and
+  animated `nsealr1a:` response envelopes for future QR display output; this is
+  an output transport boundary, not a signing backend.
   It also classifies decoded `sign_event` requests by top-level metadata,
   rejects unknown request/template fields where host-core owns the boundary,
   extracts the raw `params.event_template` object boundary, and rejects
