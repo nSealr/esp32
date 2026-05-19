@@ -449,6 +449,12 @@ key becomes the signer identity used by Event review and `approval_digest`
 binding. This is still metadata binding only: no NIP-06 derivation, persistent
 storage, policy automation, or signing backend is connected.
 
+Status note, 2026-05-19: the QR review flow and QR review I/O harness can now
+be constructed with an explicit signer identity from that selected session
+account, so future camera/display/GPIO adapters do not silently fall back to
+the development public key once a RAM-only account has been selected. Signing
+and NIP-06 derivation remain disconnected.
+
 ## M7: Firmware Foundation
 
 - Board profiles.
@@ -724,9 +730,9 @@ acceptance, and companion signed-output acceptance remain pending.
   future camera/display/GPIO adapters.
 - QR session account selection. Status: host-core can bind a RAM-only BIP-39
   or standalone `nsec` source to secretless account metadata and use the
-  selected public key as the trusted-review signer identity. NIP-06 derivation,
-  source/public-key proof, camera/import UX integration, and signing remain
-  pending.
+  selected public key as the trusted-review signer identity through the QR
+  review flow and QR review I/O harness. NIP-06 derivation, source/public-key
+  proof, camera/import UX integration, and signing remain pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
   vector. Real signing, response display hardware, scan-back, and end-to-end

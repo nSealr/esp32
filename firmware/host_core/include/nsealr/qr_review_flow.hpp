@@ -8,6 +8,7 @@
 #include "nsealr/qr_review.hpp"
 #include "nsealr/review_controls.hpp"
 #include "nsealr/review_display.hpp"
+#include "nsealr/signer_identity.hpp"
 #include "nsealr/trusted_review.hpp"
 
 namespace nsealr {
@@ -15,6 +16,10 @@ namespace nsealr {
 class QrReviewFlow {
 public:
     explicit QrReviewFlow(const std::string& qr_envelope, ReviewDisplayLimits limits = {});
+    QrReviewFlow(
+        const std::string& qr_envelope,
+        const SignerIdentity& signer_identity,
+        ReviewDisplayLimits limits = {});
 
     [[nodiscard]] const std::string& request_id() const;
     [[nodiscard]] const std::string& approval_digest() const;
@@ -57,10 +62,20 @@ QrReviewIoFlowResult run_qr_review_io_flow(
     QrReviewIo& io,
     ReviewDisplayLimits limits = {},
     std::size_t max_steps = 32);
+QrReviewIoFlowResult run_qr_review_io_flow(
+    QrReviewIo& io,
+    const SignerIdentity& signer_identity,
+    ReviewDisplayLimits limits = {},
+    std::size_t max_steps = 32);
 
 std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     const std::string& qr_envelope,
     const std::vector<ReviewButton>& buttons,
+    ReviewDisplayLimits limits = {});
+std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
+    const std::string& qr_envelope,
+    const std::vector<ReviewButton>& buttons,
+    const SignerIdentity& signer_identity,
     ReviewDisplayLimits limits = {});
 
 }  // namespace nsealr

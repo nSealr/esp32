@@ -1692,6 +1692,54 @@ void test_qr_review_flow_drives_scanned_qr_without_signing_backend() {
     assert(flow.decision() == nsealr::ApprovalDecision::Approved);
 }
 
+void test_qr_review_flow_binds_selected_session_account_identity() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_bip39_seed(
+        "NIP-06 account 0",
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+    const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(
+        keyring,
+        nsealr::SessionAccountDescriptor{
+            "acct-esp32-qr-nip06-account-0",
+            "esp32_qr_vault",
+            nsealr::test_vectors::kNip06Account0PublicKey,
+            0U,
+            nsealr::SessionAccountRecoveryKind::Nip06,
+            "m/44'/1237'/0'/0/0",
+            0U,
+        });
+
+    const nsealr::QrSigningRequest request = nsealr::parse_qr_signing_request(
+        nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic));
+    const nsealr::TrustedReviewRequest expected =
+        nsealr::build_qr_display_review_request(request, selected.signer_identity);
+
+    nsealr::QrReviewFlow flow{nsealr::test_vectors::kQrEnvelopeKind1Basic, selected.signer_identity};
+    assert(flow.approval_digest() == expected.approval_digest);
+    assert(flow.approval_digest() != nsealr::test_vectors::basic_trusted_review_request().approval_digest);
+
+    const nsealr::ReviewDisplayFrame first_frame = flow.current_frame();
+    const std::string selected_pubkey_prefix =
+        std::string(nsealr::test_vectors::kNip06Account0PublicKey).substr(0, 32);
+    const std::string development_pubkey_prefix =
+        std::string(nsealr::kDevelopmentFixturePublicKey).substr(0, 32);
+    assert(first_frame.title == "Event");
+    assert(lines_contain(first_frame.body_lines, selected_pubkey_prefix));
+    assert(!lines_contain(first_frame.body_lines, development_pubkey_prefix));
+
+    RecordingQrReviewIo io{{nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Approve}};
+    const nsealr::QrReviewIoFlowResult result =
+        nsealr::run_qr_review_io_flow(io, selected.signer_identity);
+    assert(result.approval_digest == expected.approval_digest);
+    assert(result.approved_for_signing);
+    assert(!io.frames.empty());
+    assert(lines_contain(io.frames.front().body_lines, selected_pubkey_prefix));
+    assert(!lines_contain(io.frames.front().body_lines, development_pubkey_prefix));
+}
+
 void test_qr_review_flow_rejects_unsafe_scanned_qr() {
     expect_throw("QR signing request event_template must not include sig", [] {
         nsealr::QrReviewFlow flow{
@@ -2876,6 +2924,7 @@ int main() {
     test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
+    test_qr_review_flow_binds_selected_session_account_identity();
     test_qr_review_flow_rejects_unsafe_scanned_qr();
     test_qr_review_flow_transcript_records_display_and_approval_steps();
     test_qr_review_flow_transcript_records_early_rejection();

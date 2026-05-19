@@ -169,6 +169,10 @@ tests with strict C++ warnings.
   number of steps instead of hanging the adapter loop. The same tests now assert
   the returned I/O transcript matches the shared review-transcript vector, so
   future drivers can prove what they actually displayed and accepted.
+- QR review-flow identity tests proving a selected ESP32 QR vault session
+  account can supply the signer public key used in Event review and
+  `approval_digest` binding through both `QrReviewFlow` and `QrReviewIo`,
+  rather than falling back to the development fixture identity.
 - QR review transcript tests covering full approval traversal and early
   rejection as deterministic frame/button/decision records from shared
   `nSealr/specs` review-transcript vectors.

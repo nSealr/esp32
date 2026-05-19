@@ -8,16 +8,26 @@
 namespace nsealr {
 namespace {
 
-TrustedReviewRequest review_request_from_qr(const std::string& qr_envelope, ReviewDisplayLimits limits) {
+TrustedReviewRequest review_request_from_qr(
+    const std::string& qr_envelope,
+    const SignerIdentity& signer_identity,
+    ReviewDisplayLimits limits) {
     const QrEnvelope envelope = decode_qr_envelope(qr_envelope);
     const QrSigningRequest request = parse_qr_signing_request(envelope);
-    return build_qr_display_review_request(request, limits);
+    return build_qr_display_review_request(request, signer_identity, limits);
 }
 
 }  // namespace
 
 QrReviewFlow::QrReviewFlow(const std::string& qr_envelope, ReviewDisplayLimits limits)
-    : review_request_(review_request_from_qr(qr_envelope, limits)), session_(TrustedReviewRequest{review_request_}, limits) {}
+    : QrReviewFlow(qr_envelope, development_fixture_signer_identity(), limits) {}
+
+QrReviewFlow::QrReviewFlow(
+    const std::string& qr_envelope,
+    const SignerIdentity& signer_identity,
+    ReviewDisplayLimits limits)
+    : review_request_(review_request_from_qr(qr_envelope, signer_identity, limits)),
+      session_(TrustedReviewRequest{review_request_}, limits) {}
 
 const std::string& QrReviewFlow::request_id() const {
     return review_request_.request_id;
@@ -44,11 +54,19 @@ std::optional<bool> QrReviewFlow::handle_button(ReviewButton button) {
 }
 
 QrReviewIoFlowResult run_qr_review_io_flow(QrReviewIo& io, ReviewDisplayLimits limits, std::size_t max_steps) {
+    return run_qr_review_io_flow(io, development_fixture_signer_identity(), limits, max_steps);
+}
+
+QrReviewIoFlowResult run_qr_review_io_flow(
+    QrReviewIo& io,
+    const SignerIdentity& signer_identity,
+    ReviewDisplayLimits limits,
+    std::size_t max_steps) {
     if (max_steps == 0) {
         throw std::invalid_argument("QR review IO max steps must be non-zero");
     }
 
-    QrReviewFlow flow{io.scan_request_qr(), limits};
+    QrReviewFlow flow{io.scan_request_qr(), signer_identity, limits};
     std::optional<bool> decision;
     std::vector<QrReviewTranscriptStep> transcript;
     transcript.reserve(max_steps);
@@ -80,7 +98,15 @@ std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
     const std::string& qr_envelope,
     const std::vector<ReviewButton>& buttons,
     ReviewDisplayLimits limits) {
-    QrReviewFlow flow{qr_envelope, limits};
+    return run_qr_review_transcript(qr_envelope, buttons, development_fixture_signer_identity(), limits);
+}
+
+std::vector<QrReviewTranscriptStep> run_qr_review_transcript(
+    const std::string& qr_envelope,
+    const std::vector<ReviewButton>& buttons,
+    const SignerIdentity& signer_identity,
+    ReviewDisplayLimits limits) {
+    QrReviewFlow flow{qr_envelope, signer_identity, limits};
     std::vector<QrReviewTranscriptStep> transcript;
     transcript.reserve(buttons.size());
     for (const ReviewButton button : buttons) {

@@ -186,8 +186,9 @@ The first firmware foundation is host-buildable C++ under
 - `qr_review_flow`: host-core flow boundary from raw scanned `nsealr1:` QR
   envelopes to trusted review frames and approval state. It includes the
   `QrReviewIo` adapter harness for future scanner, display, and GPIO button
-  code, returns the displayed frame/button transcript from that harness, and has
-  no signing backend.
+  code, returns the displayed frame/button transcript from that harness, and can
+  be constructed with a selected QR session account identity instead of the
+  development signer. It has no signing backend.
 - `sha256`: portable SHA-256 helper used for the frame checksum.
 - `signing_policy`: host-buildable runtime-signing readiness gate. It requires
   the explicit runtime feature flag, parser limits, trusted display acceptance,
