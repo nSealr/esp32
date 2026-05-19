@@ -130,9 +130,10 @@ tests with strict C++ warnings.
 - Host-core session-account selection tests prove an ESP32 QR vault account
   descriptor binds a RAM-only BIP-39 or standalone `nsec` source to a public
   signer identity used by trusted review, while rejecting wrong routes,
-  malformed public keys, out-of-range source indexes, and mismatched
-  recovery/source shapes. These tests deliberately stop before NIP-06
-  derivation, persistent policy, or signing.
+  malformed public keys, malformed or mismatched reviewed source fingerprints,
+  out-of-range source indexes, and mismatched recovery/source shapes. These
+  tests deliberately stop before NIP-06 derivation, persistent policy, or
+  signing.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold

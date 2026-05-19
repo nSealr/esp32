@@ -1109,6 +1109,7 @@ void test_session_account_selection_binds_qr_review_identity_without_derivation(
             "esp32_qr_vault",
             nsealr::test_vectors::kNip06Account0PublicKey,
             0U,
+            session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
             nsealr::SessionAccountRecoveryKind::Nip06,
             "m/44'/1237'/0'/0/0",
             0U,
@@ -1118,6 +1119,7 @@ void test_session_account_selection_binds_qr_review_identity_without_derivation(
     assert(selected.route_type == "esp32_qr_vault");
     assert(selected.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
     assert(selected.source_index == 0U);
+    assert(selected.source_fingerprint == session_import_review_vector_by_name("nip06-account-0-leader").fingerprint);
     assert(selected.source_kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
     assert(selected.source_label == "NIP-06 account 0");
     assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
@@ -1142,6 +1144,7 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
         "esp32_qr_vault",
         nsealr::test_vectors::kNip19NsecTestKey1PublicKey,
         0U,
+        session_import_review_vector_by_name("nsec-test-key-1").fingerprint,
         nsealr::SessionAccountRecoveryKind::StandaloneNsec,
         "",
         0U,
@@ -1158,6 +1161,7 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
                 "esp32_qr_vault",
                 nsealr::test_vectors::kNip06Account0PublicKey,
                 0U,
+                session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
                 nsealr::SessionAccountRecoveryKind::Nip06,
                 "m/44'/1237'/0'/0/0",
                 0U,
@@ -1183,6 +1187,16 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
         invalid.public_key = "not-a-public-key";
         (void)nsealr::select_session_account(keyring, invalid);
     });
+    expect_throw("source_fingerprint must be 8-byte lowercase hex", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.source_fingerprint = "not-a-fingerprint";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
+    expect_throw("source_fingerprint does not match selected source", [&] {
+        nsealr::SessionAccountDescriptor invalid = standalone;
+        invalid.source_fingerprint = "0000000000000000";
+        (void)nsealr::select_session_account(keyring, invalid);
+    });
     expect_throw("must not carry a derivation path", [&] {
         nsealr::SessionAccountDescriptor invalid = standalone;
         invalid.derivation_path = "m/44'/1237'/0'/0/0";
@@ -1201,6 +1215,7 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
                 "esp32_qr_vault",
                 nsealr::test_vectors::kNip06Account0PublicKey,
                 0U,
+                session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
                 nsealr::SessionAccountRecoveryKind::Nip06,
                 "m/44'/1237'/1'/0/0",
                 0U,
@@ -1704,6 +1719,7 @@ void test_qr_review_flow_binds_selected_session_account_identity() {
             "esp32_qr_vault",
             nsealr::test_vectors::kNip06Account0PublicKey,
             0U,
+            session_import_review_vector_by_name("nip06-account-0-leader").fingerprint,
             nsealr::SessionAccountRecoveryKind::Nip06,
             "m/44'/1237'/0'/0/0",
             0U,

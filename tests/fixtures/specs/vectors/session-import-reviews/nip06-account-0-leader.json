@@ -1,0 +1,38 @@
+{
+  "format": "nsealr-session-import-review-v0",
+  "name": "nip06-account-0-leader",
+  "source_type": "bip39_seed",
+  "source_vector": "vectors/keys/nip06-account-0-leader.json",
+  "label": "NIP-06 account 0",
+  "word_count": 12,
+  "fingerprint": "cd64b58daca009b9",
+  "review_id": "session-import-cd64b58daca009b9",
+  "approval_digest": "0f93a9d0eae6017d7cf555dfb880e0288c6bc3e767fd9e727a90c5d2d2737a66",
+  "pages": [
+    {
+      "title": "Import source",
+      "lines": [
+        "Type: BIP-39 seed",
+        "Label: NIP-06 account 0",
+        "Fingerprint: cd64b58daca009b9",
+        "Words: 12",
+        "Secret: hidden"
+      ],
+      "action": "next",
+      "page_indicator": "Page 1/2",
+      "logical_page_id": "session-import-summary"
+    },
+    {
+      "title": "Import?",
+      "lines": [
+        "Session RAM only",
+        "No signing enabled",
+        "Approve to load"
+      ],
+      "action": "approve_or_reject",
+      "page_indicator": "Page 2/2",
+      "logical_page_id": "session-import-decision"
+    }
+  ],
+  "security_scope": "Secret-hidden import review for a RAM-only QR-vault NIP-06 source; does not expose mnemonic words, does not persist material, and does not approve signing."
+}

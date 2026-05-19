@@ -99,6 +99,11 @@ hardware readiness can differ, final vault behavior must converge.
   after the final import decision page is approved. Rejection and invalid QR
   inputs leave the keyring empty; this still does not add camera capture,
   NIP-06 derivation, persistence, response QR display, or signing.
+- Host-core QR session-account selection. It binds a RAM-only source to
+  secretless account metadata only when route, recovery type, path, public key
+  shape, and reviewed source fingerprint match, then uses that selected public
+  key for Event review and approval-digest binding. It still does not derive
+  NIP-06 keys, persist material, or sign.
 - Host-core stateless session keyring model for already parsed `nsec` and
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests. The source value type and keyring wipe active `nsec` and BIP-39 word

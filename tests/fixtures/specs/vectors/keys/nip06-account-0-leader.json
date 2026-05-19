@@ -2,6 +2,7 @@
   "name": "nip06-account-0-leader",
   "source": "nostr-protocol/nips 06.md test vector",
   "mnemonic": "leader monkey parrot ring guide accident before fence cannon height naive bean",
+  "standard_word_indexes": [1012, 1145, 1283, 1488, 828, 11, 161, 680, 267, 853, 1173, 156],
   "passphrase": "",
   "account": 0,
   "path": "m/44'/1237'/0'/0/0",

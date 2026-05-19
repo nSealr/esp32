@@ -102,6 +102,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertEqual(qr_account["recovery"]["type"], "nip06")
         self.assertEqual(qr_account["recovery"]["source_vector"], "vectors/keys/nip06-account-0-leader.json")
         self.assertEqual(qr_account["public_key"], qr_recovery_source["public_key"])
+        self.assertEqual(qr_account["recovery"]["source_fingerprint"], "cd64b58daca009b9")
         self.assertFalse(qr_account["capabilities"]["persistent_grants"])
         self.assertEqual(qr_policy["policy_id"], qr_account["policy_profile_id"])
         self.assertEqual(qr_selection["selection"]["account_id"], qr_account["account_id"])
@@ -439,7 +440,11 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
     def test_firmware_validator_requires_serial_review_component(self) -> None:
         with TemporaryDirectory() as tmp:
             project = Path(tmp) / "esp32_s3_usb_signer"
-            shutil.copytree(ROOT / "firmware/esp32_s3_usb_signer", project)
+            shutil.copytree(
+                ROOT / "firmware/esp32_s3_usb_signer",
+                project,
+                ignore=shutil.ignore_patterns("build"),
+            )
             cmake_path = project / "main/CMakeLists.txt"
             cmake_path.write_text(
                 cmake_path.read_text(encoding="utf-8").replace(

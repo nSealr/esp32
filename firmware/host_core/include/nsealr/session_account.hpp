@@ -26,6 +26,7 @@ struct SessionAccountDescriptor {
     std::string route_type;
     std::string public_key;
     std::size_t source_index = 0;
+    std::string source_fingerprint;
     SessionAccountRecoveryKind recovery_kind = SessionAccountRecoveryKind::Nip06;
     std::string derivation_path;
     std::uint32_t account_index = 0;
@@ -36,6 +37,7 @@ struct SelectedSessionAccount {
     std::string route_type;
     std::string public_key;
     std::size_t source_index = 0;
+    std::string source_fingerprint;
     SessionAccountRecoveryKind recovery_kind = SessionAccountRecoveryKind::Nip06;
     SessionKeySourceKind source_kind = SessionKeySourceKind::NsecSecretKey;
     std::string source_label;

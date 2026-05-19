@@ -444,10 +444,11 @@ transport vector and keeps `sign_event` in `signing_disabled`.
 Status note, 2026-05-19: the ESP32 QR vault host-core now has a session-account
 selection boundary for RAM-only sources. It validates that NIP-06 descriptors
 select BIP-39 session sources, standalone `nsec` descriptors select standalone
-session sources, the route remains `esp32_qr_vault`, and the selected public
-key becomes the signer identity used by Event review and `approval_digest`
-binding. This is still metadata binding only: no NIP-06 derivation, persistent
-storage, policy automation, or signing backend is connected.
+session sources, the reviewed source fingerprint matches the selected RAM-only
+source, the route remains `esp32_qr_vault`, and the selected public key becomes
+the signer identity used by Event review and `approval_digest` binding. This is
+still metadata binding only: no NIP-06 derivation, public-key derivation proof,
+persistent storage, policy automation, or signing backend is connected.
 
 Status note, 2026-05-19: the QR review flow and QR review I/O harness can now
 be constructed with an explicit signer identity from that selected session
@@ -689,7 +690,7 @@ for future ESP32 QR vault camera adapters. Canonical NIP-19 `nsec`, plain
 BIP-39 English mnemonic QR text, SeedSigner Standard SeedQR digit streams, and
 CompactSeedQR entropy bytes all normalize into the same RAM-only
 `SessionKeySource` boundary before import review. This still does not add
-camera capture, NIP-06 derivation, source/public-key proof, persistence,
+camera capture, NIP-06 derivation, public-key derivation proof, persistence,
 response QR hardware, or real signing.
 
 Status note, 2026-05-19: host-core now composes decoded QR session-source
@@ -731,8 +732,10 @@ acceptance, and companion signed-output acceptance remain pending.
 - QR session account selection. Status: host-core can bind a RAM-only BIP-39
   or standalone `nsec` source to secretless account metadata and use the
   selected public key as the trusted-review signer identity through the QR
-  review flow and QR review I/O harness. NIP-06 derivation, source/public-key
-  proof, camera/import UX integration, and signing remain pending.
+  review flow and QR review I/O harness after the descriptor's reviewed
+  source fingerprint matches the selected source. NIP-06 derivation,
+  public-key derivation proof, camera/import UX integration, and signing remain
+  pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
   vector. Real signing, response display hardware, scan-back, and end-to-end

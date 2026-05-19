@@ -169,11 +169,12 @@ The first firmware foundation is host-buildable C++ under
   RAM-only stateless session keyring for the ESP32 QR vault route and builds
   the matching `DeviceProtocolContext` for trusted review. It validates stable
   account ids, the `esp32_qr_vault` route, lowercase 32-byte public keys,
-  source indexes, and recovery/source shape: NIP-06 descriptors must point to
-  BIP-39 session sources with the expected `m/44'/1237'/account'/0/0` path,
-  while standalone `nsec` descriptors must point to `nsec` session sources and
-  carry no derivation path. It copies only account metadata and public identity;
-  it does not derive NIP-06 keys, persist secrets, evaluate policy, or sign.
+  source indexes, reviewed source fingerprints, and recovery/source shape:
+  NIP-06 descriptors must point to BIP-39 session sources with the expected
+  `m/44'/1237'/account'/0/0` path, while standalone `nsec` descriptors must
+  point to `nsec` session sources and carry no derivation path. It copies only
+  account metadata and public identity; it does not derive NIP-06 keys, persist
+  secrets, evaluate policy, or sign.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

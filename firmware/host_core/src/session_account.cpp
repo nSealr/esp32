@@ -2,10 +2,13 @@
 
 #include <algorithm>
 
+#include "nsealr/session_import_review.hpp"
+
 namespace nsealr {
 namespace {
 
 constexpr std::size_t kMaxSessionAccountIdLength = 128U;
+constexpr std::size_t kSessionSourceFingerprintLength = 16U;
 constexpr const char* kEsp32QrVaultRouteType = "esp32_qr_vault";
 
 bool is_stable_id_char(char ch) {
@@ -16,6 +19,15 @@ bool is_stable_id_char(char ch) {
 bool is_stable_id(const std::string& value) {
     return !value.empty() && value.size() <= kMaxSessionAccountIdLength &&
            std::all_of(value.begin(), value.end(), is_stable_id_char);
+}
+
+bool is_lower_hex(char ch) {
+    return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f');
+}
+
+bool is_source_fingerprint(const std::string& value) {
+    return value.size() == kSessionSourceFingerprintLength &&
+           std::all_of(value.begin(), value.end(), is_lower_hex);
 }
 
 std::string expected_nip06_path(std::uint32_t account_index) {
@@ -31,6 +43,9 @@ void require_descriptor_shape(const SessionAccountDescriptor& descriptor) {
     }
     if (!is_valid_nostr_public_key(descriptor.public_key)) {
         throw SessionAccountError("session account public_key must be 32-byte lowercase hex");
+    }
+    if (!is_source_fingerprint(descriptor.source_fingerprint)) {
+        throw SessionAccountError("session account source_fingerprint must be 8-byte lowercase hex");
     }
 }
 
@@ -72,6 +87,9 @@ SelectedSessionAccount select_session_account(
         throw SessionAccountError("session account source index is out of range");
     }
     require_source_matches_recovery(descriptor, *source);
+    if (session_key_source_fingerprint(*source) != descriptor.source_fingerprint) {
+        throw SessionAccountError("session account source_fingerprint does not match selected source");
+    }
 
     SignerIdentity identity{descriptor.public_key};
     require_valid_signer_identity(identity);
@@ -80,6 +98,7 @@ SelectedSessionAccount select_session_account(
         descriptor.route_type,
         descriptor.public_key,
         descriptor.source_index,
+        descriptor.source_fingerprint,
         descriptor.recovery_kind,
         source->kind,
         source->label,

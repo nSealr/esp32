@@ -15,7 +15,8 @@
     "type": "nip06",
     "path": "m/44'/1237'/0'/0/0",
     "account": 0,
-    "source_vector": "vectors/keys/nip06-account-0-leader.json"
+    "source_vector": "vectors/keys/nip06-account-0-leader.json",
+    "source_fingerprint": "cd64b58daca009b9"
   },
   "capabilities": {
     "methods": ["sign_event"],
