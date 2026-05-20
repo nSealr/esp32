@@ -1,0 +1,14 @@
+{
+  "name": "nip46-policy-broad-sign-event",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-policy-file",
+  "expected_error": "approved sign_event permission must include parameter and event_kind",
+  "policy_file": {
+    "format": "nsealr-nip46-policy-v0",
+    "approved_permissions": [
+      {
+        "method": "sign_event"
+      }
+    ]
+  }
+}
