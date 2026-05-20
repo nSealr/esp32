@@ -57,7 +57,9 @@
   approval and terminal approve/reject decisions.
 - Host-buildable trusted display frame renderer with bounded title, body-line,
   page-indicator, and action-hint fields.
-- Host-buildable body-line wrapping/truncation for trusted display frames.
+- Host-buildable body-line wrapping/truncation for generic bounded trusted
+  display frames, kept separate from the sign-event detail review path that
+  uses scroll windows and no ellipses for event content and tag values.
 - ESP32 display-review logical pages for `Event`, `Content`, `Tags`, and
   `Decision`, with compact styled body rows and scroll windows for valid
   content or grouped tag content that does not fit on one screen. Live logical

@@ -226,9 +226,12 @@ hardware readiness can differ, final vault behavior must converge.
   modifying eFuses; it measures the M9 hardening gap and does not clear any
   production signing blocker. The security profile tracks these reports in a
   separate `security_fuse_audit_evidence` field.
-- Trusted display frames wrap and truncate long body text to configured display
-  limits, giving small ESP32 screens and display adapters a deterministic
-  rendering oracle.
+- Generic bounded display frames wrap and truncate frame text to configured
+  display limits, giving small ESP32 screens and display adapters a
+  deterministic rendering oracle for one-frame status/review previews. The
+  sign-event detail review path is separate: Event/Content/Tags/Decision pages
+  use scroll windows and must not abbreviate event content or tag values with
+  ellipses.
 - Generated host test fixtures from shared serial, review-screen,
   review-display-frame, review-detail-page, review-transcript, limits, and invalid hardening
   vectors in `nSealr/specs`.
