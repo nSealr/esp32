@@ -490,7 +490,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         )
 
     def test_waveshare_esp32_s3_touch_lcd_3_5b_c_board_profile_documents_qr_constraints(self) -> None:
-        profile_path = ROOT / "boards/waveshare_esp32_s3_touch_lcd_3_5.json"
+        profile_path = ROOT / "boards/waveshare_esp32_s3_touch_lcd_3_5b_c.json"
 
         self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-S3 Touch LCD 3.5B-C board profile")
         validate_firmware.validate_board_profile(profile_path)
