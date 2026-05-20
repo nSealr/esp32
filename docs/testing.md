@@ -132,8 +132,12 @@ tests with strict C++ warnings.
   signer identity used by trusted review, while rejecting wrong routes,
   malformed public keys, malformed or mismatched reviewed source fingerprints,
   out-of-range source indexes, and mismatched recovery/source shapes. These
-  tests deliberately stop before NIP-06 derivation, persistent policy, or
-  signing. The canonical ESP32 QR NIP-06 descriptor is generated into the
+  tests also prove the selected account does not satisfy
+  `source_public_key_proof`: using its explicit
+  `source_public_key_proof_verified: false` value keeps signing-readiness
+  disabled with that gate still missing. They deliberately stop before NIP-06
+  derivation, persistent policy, or signing. The canonical ESP32 QR NIP-06
+  descriptor is generated into the
   host-core fixture header from the shared account vector so tests do not
   hand-maintain duplicate route, path, public-key, or fingerprint constants.
 - Firmware board-config tests proving the compiled T-Display S3 constants match

@@ -88,3 +88,8 @@ Before any real signing path can be enabled, the production profile must prove:
 QR vault targets remain stateless and RAM-only. The security profile above is
 for the ESP32-S3 USB signer scaffold and future persistent-secret work, not a
 reason to add persistent storage to stateless QR vaults.
+
+The ESP32 QR vault session-account selector currently performs descriptor shape
+checks plus reviewed source-fingerprint binding only. Selected accounts carry
+`source_public_key_proof_verified: false`, so that metadata path cannot clear
+the production `source_public_key_proof` blocker.

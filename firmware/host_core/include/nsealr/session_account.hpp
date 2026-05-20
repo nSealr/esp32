@@ -41,6 +41,7 @@ struct SelectedSessionAccount {
     SessionAccountRecoveryKind recovery_kind = SessionAccountRecoveryKind::Nip06;
     SessionKeySourceKind source_kind = SessionKeySourceKind::NsecSecretKey;
     std::string source_label;
+    bool source_public_key_proof_verified = false;
     SignerIdentity signer_identity;
 };
 

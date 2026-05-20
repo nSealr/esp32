@@ -177,7 +177,9 @@ The first firmware foundation is host-buildable C++ under
   NIP-06 descriptors must point to BIP-39 session sources with the expected
   `m/44'/1237'/account'/0/0` path, while standalone `nsec` descriptors must
   point to `nsec` session sources and carry no derivation path. It copies only
-  account metadata and public identity; it does not derive NIP-06 keys, persist
+  account metadata and public identity and marks
+  `source_public_key_proof_verified` false so fingerprint binding cannot be
+  mistaken for derivation proof. It does not derive NIP-06 keys, persist
   secrets, evaluate policy, or sign.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
@@ -391,7 +393,9 @@ machine-readable security posture for the ESP-IDF scaffold. The v0 profile is
 development-only: runtime signing is disabled, production signing is not
 allowed, secure boot and flash encryption are not enabled, USB/JTAG debug
 access remains unlocked for bring-up, key provisioning is not implemented, and
-source public-key proof is not implemented.
+source public-key proof is not implemented. Secretless account descriptor
+selection is therefore review/UX plumbing only; it cannot clear the production
+proof gate.
 Trusted display and physical controls have manual development evidence recorded
 in the profile, but they remain production blockers. The validator requires
 those blockers to stay explicit until a later production profile is designed

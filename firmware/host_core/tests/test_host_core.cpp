@@ -1211,6 +1211,7 @@ void test_session_account_selection_binds_qr_review_identity_without_derivation(
     assert(selected.source_fingerprint == descriptor.source_fingerprint);
     assert(selected.source_kind == nsealr::SessionKeySourceKind::Bip39WordIndexes);
     assert(selected.source_label == "NIP-06 account 0");
+    assert(!selected.source_public_key_proof_verified);
     assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip06Account0PublicKey);
 
     const nsealr::DeviceProtocolContext context =
@@ -1240,6 +1241,7 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
     };
     const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(keyring, standalone);
     assert(selected.source_kind == nsealr::SessionKeySourceKind::NsecSecretKey);
+    assert(!selected.source_public_key_proof_verified);
     assert(selected.signer_identity.public_key == nsealr::test_vectors::kNip19NsecTestKey1PublicKey);
 
     expect_throw("requires a BIP-39 source", [&] {
@@ -1293,6 +1295,39 @@ void test_session_account_selection_validates_source_route_and_recovery_shape() 
         invalid.derivation_path = "m/44'/1237'/1'/0/0";
         (void)nsealr::select_session_account(mnemonic_keyring, invalid);
     });
+}
+
+void test_session_account_selection_does_not_satisfy_public_key_proof_gate() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_bip39_seed(
+        "NIP-06 account 0",
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+
+    const nsealr::SelectedSessionAccount selected = nsealr::select_session_account(
+        keyring,
+        nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor());
+
+    nsealr::SigningReadiness readiness{
+        .runtime_signing_feature_enabled = true,
+        .parser_limits_enforced = true,
+        .trusted_review_display_accepted = true,
+        .physical_approval_controls_accepted = true,
+        .approval_digest_binding_verified = true,
+        .unicode_review_rendering_accepted = true,
+        .key_provisioning_ready = true,
+        .source_public_key_proof_ready = selected.source_public_key_proof_verified,
+        .secure_boot_enabled = true,
+        .flash_encryption_enabled = true,
+        .debug_locked = true,
+        .companion_signed_output_verification_ready = true,
+        .development_accepted_gates = {},
+    };
+
+    const nsealr::SigningReadinessStatus status =
+        nsealr::evaluate_signing_readiness(readiness);
+
+    assert(!status.signing_enabled);
+    assert((status.missing_gates == std::vector<std::string>{"source_public_key_proof"}));
 }
 
 void test_qr_signing_request_rejections() {
@@ -2991,6 +3026,7 @@ int main() {
     test_session_import_flow_blocks_early_or_nonterminal_approval();
     test_session_account_selection_binds_qr_review_identity_without_derivation();
     test_session_account_selection_validates_source_route_and_recovery_shape();
+    test_session_account_selection_does_not_satisfy_public_key_proof_gate();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

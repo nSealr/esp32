@@ -450,8 +450,10 @@ select BIP-39 session sources, standalone `nsec` descriptors select standalone
 session sources, the reviewed source fingerprint matches the selected RAM-only
 source, the route remains `esp32_qr_vault`, and the selected public key becomes
 the signer identity used by Event review and `approval_digest` binding. This is
-still metadata binding only: no NIP-06 derivation, public-key derivation proof,
-persistent storage, policy automation, or signing backend is connected.
+still metadata binding only: selected accounts explicitly keep
+`source_public_key_proof_verified: false`, so no NIP-06 derivation, public-key
+derivation proof, persistent storage, policy automation, or signing backend is
+connected.
 
 Status note, 2026-05-19: the QR review flow and QR review I/O harness can now
 be constructed with an explicit signer identity from that selected session
@@ -743,9 +745,11 @@ acceptance, and companion signed-output acceptance remain pending.
   or standalone `nsec` source to secretless account metadata and use the
   selected public key as the trusted-review signer identity through the QR
   review flow and QR review I/O harness after the descriptor's reviewed
-  source fingerprint matches the selected source. NIP-06 derivation,
-  public-key derivation proof, camera/import UX integration, and signing remain
-  pending.
+  source fingerprint matches the selected source. The selected account still
+  reports `source_public_key_proof_verified: false`, and signing-readiness
+  tests keep `source_public_key_proof` missing when that value is used.
+  NIP-06 derivation, public-key derivation proof, camera/import UX integration,
+  and signing remain pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
   vector. Real signing, response display hardware, scan-back, and end-to-end

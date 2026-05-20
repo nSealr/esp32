@@ -102,8 +102,10 @@ hardware readiness can differ, final vault behavior must converge.
 - Host-core QR session-account selection. It binds a RAM-only source to
   secretless account metadata only when route, recovery type, path, public key
   shape, and reviewed source fingerprint match, then uses that selected public
-  key for Event review and approval-digest binding. It still does not derive
-  NIP-06 keys, persist material, or sign.
+  key for Event review and approval-digest binding. The selected account
+  explicitly reports `source_public_key_proof_verified: false`, so this
+  metadata binding cannot satisfy the real-signing source proof gate. It still
+  does not derive NIP-06 keys, persist material, or sign.
 - Host-core stateless session keyring model for already parsed `nsec` and
   BIP-39 key sources. It is a bounded RAM-only container for future import UX
   tests. The source value type and keyring wipe active `nsec` and BIP-39 word

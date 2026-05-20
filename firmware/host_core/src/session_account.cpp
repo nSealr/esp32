@@ -102,6 +102,7 @@ SelectedSessionAccount select_session_account(
         descriptor.recovery_kind,
         source->kind,
         source->label,
+        false,
         identity,
     };
 }
