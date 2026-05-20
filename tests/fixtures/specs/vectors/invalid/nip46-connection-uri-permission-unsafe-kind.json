@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-permission-unsafe-kind",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "sign_event permission kind must be a safe non-negative integer",
+  "uri": "nostrconnect://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com&secret=client-secret&perms=sign_event%3A9007199254740992"
+}

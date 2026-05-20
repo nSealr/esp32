@@ -1,0 +1,16 @@
+{
+  "name": "nip46-policy-sign-event-unsafe-kind",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-policy-file",
+  "expected_error": "sign_event permission parameter must match event_kind and be safe",
+  "policy_file": {
+    "format": "nsealr-nip46-policy-v0",
+    "approved_permissions": [
+      {
+        "method": "sign_event",
+        "parameter": "9007199254740992",
+        "event_kind": 9007199254740992
+      }
+    ]
+  }
+}
