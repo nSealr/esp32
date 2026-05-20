@@ -145,6 +145,12 @@ tests with strict C++ warnings.
   descriptor is generated into the
   host-core fixture header from the shared account vector so tests do not
   hand-maintain duplicate route, path, public-key, or fingerprint constants.
+  The same host-core tests now also consume the shared
+  `vectors/source-public-key-proofs/*.json` metadata to prove the descriptor
+  public key, derivation path, account index, and source fingerprint stay
+  aligned with the source-proof contract. That is metadata conformance only;
+  it does not derive the public key and must not clear the
+  `source_public_key_proof` signing gate.
 - Firmware board-config tests proving the compiled T-Display S3 constants match
   the JSON board profile and are included by the ESP-IDF scaffold.
 - Firmware display-driver tests proving the T-Display S3 ESP-IDF scaffold
@@ -190,9 +196,10 @@ tests with strict C++ warnings.
   `nSealr/specs` review-transcript vectors.
 - Host test header generation from the shared `nSealr/specs` serial,
   review-screen, review-display-frame, review-detail-page, review-transcript,
-  limits, and invalid hardening vectors. Review-display-frame and
-  review-detail-page generation is directory-driven, so new shared display
-  vectors are consumed without adding one-off loader code.
+  source-public-key-proof, limits, and invalid hardening vectors.
+  Review-display-frame, review-detail-page, and source-public-key-proof
+  generation are directory-driven, so new shared display/proof vectors are
+  consumed without adding one-off loader code.
 - Single-repo CI falls back to fixture snapshots under `tests/fixtures/specs`
   when the sibling `nSealr/specs` checkout is not present. Cross-repo drift
   is still guarded by `nSealr/lab` integration checks.

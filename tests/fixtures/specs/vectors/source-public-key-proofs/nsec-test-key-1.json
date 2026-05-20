@@ -1,0 +1,10 @@
+{
+  "format": "nsealr-source-public-key-proof-v0",
+  "name": "nsec-test-key-1",
+  "proof_type": "nip19_nsec",
+  "source_type": "nsec",
+  "source_vector": "vectors/nip19/nsec-test-key-1.json",
+  "source_fingerprint": "dbd1f8666039f02a",
+  "expected_public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+  "security_scope": "Proof contract for deriving the reviewed public key from a RAM-only NIP-19 nsec session source before signing. It does not persist material, approve signing, or let descriptors/fingerprints substitute for derivation."
+}

@@ -1,0 +1,13 @@
+{
+  "format": "nsealr-source-public-key-proof-v0",
+  "name": "nip06-account-0-leader",
+  "proof_type": "nip06",
+  "source_type": "bip39_seed",
+  "source_vector": "vectors/keys/nip06-account-0-leader.json",
+  "source_fingerprint": "cd64b58daca009b9",
+  "account": 0,
+  "path": "m/44'/1237'/0'/0/0",
+  "passphrase": "",
+  "expected_public_key": "17162c921dc4d2518f9a101db33695df1afb56ab82f5ff3e5da6eec3ca5cd917",
+  "security_scope": "Proof contract for deriving the reviewed NIP-06 account public key from a RAM-only BIP-39 session source before signing. It does not persist material, approve signing, or let descriptors/fingerprints substitute for derivation."
+}

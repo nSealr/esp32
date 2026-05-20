@@ -365,6 +365,56 @@ def session_source_backup_vector_factories(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def cpp_optional_uint32(value: int | None) -> str:
+    if value is None:
+        return "std::nullopt"
+    return f"std::optional<std::uint32_t>{{{value}U}}"
+
+
+def source_public_key_proof_vector_factories(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct SourcePublicKeyProofVector {",
+        "    const char* name;",
+        "    const char* proof_type;",
+        "    const char* source_type;",
+        "    const char* source_vector;",
+        "    const char* source_fingerprint;",
+        "    std::optional<std::uint32_t> account;",
+        "    const char* path;",
+        "    const char* passphrase;",
+        "    const char* expected_public_key;",
+        "    const char* security_scope;",
+        "};",
+        "",
+        "inline std::vector<SourcePublicKeyProofVector> source_public_key_proof_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        lines.extend(
+            [
+                "        SourcePublicKeyProofVector{",
+                f"            {cpp_string(vector['name'])},",
+                f"            {cpp_string(vector['proof_type'])},",
+                f"            {cpp_string(vector['source_type'])},",
+                f"            {cpp_string(vector['source_vector'])},",
+                f"            {cpp_string(vector['source_fingerprint'])},",
+                f"            {cpp_optional_uint32(vector.get('account'))},",
+                f"            {cpp_string(vector.get('path', ''))},",
+                f"            {cpp_string(vector.get('passphrase', ''))},",
+                f"            {cpp_string(vector['expected_public_key'])},",
+                f"            {cpp_string(vector['security_scope'])},",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def cpp_optional_string(value: str | None) -> str:
     if value is None:
         return "std::nullopt"
@@ -558,6 +608,10 @@ def main() -> int:
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/session-source-backups").glob("*.json"))
     ]
+    source_public_key_proof_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/source-public-key-proofs").glob("*.json"))
+    ]
     policy_change_review_vectors = [
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/policy-changes").glob("*.json"))
@@ -703,6 +757,8 @@ def main() -> int:
                 *session_import_review_vector_factories(session_import_review_vectors),
                 "",
                 *session_source_backup_vector_factories(session_source_backup_vectors),
+                "",
+                *source_public_key_proof_vector_factories(source_public_key_proof_vectors),
                 "",
                 *policy_change_review_vector_factories(policy_change_review_vectors),
                 "",

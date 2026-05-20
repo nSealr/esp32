@@ -211,6 +211,12 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")
 
         self.assertTrue((ROOT / "tests/fixtures/specs/vectors/keys/nip06-account-0-leader.json").exists())
+        self.assertTrue(
+            (ROOT / "tests/fixtures/specs/vectors/source-public-key-proofs/nip06-account-0-leader.json").exists()
+        )
+        self.assertTrue(
+            (ROOT / "tests/fixtures/specs/vectors/source-public-key-proofs/nsec-test-key-1.json").exists()
+        )
         self.assertIn("device_protocol.cpp", cmake)
         self.assertIn("approval_gate.cpp", cmake)
         self.assertIn("bip39_english.cpp", cmake)

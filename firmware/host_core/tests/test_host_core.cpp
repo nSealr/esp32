@@ -176,6 +176,18 @@ nsealr::test_vectors::SessionSourceBackupVector session_source_backup_vector_by_
     return {};
 }
 
+nsealr::test_vectors::SourcePublicKeyProofVector source_public_key_proof_vector_by_name(
+    const std::string& name) {
+    for (const nsealr::test_vectors::SourcePublicKeyProofVector& vector :
+         nsealr::test_vectors::source_public_key_proof_vectors()) {
+        if (std::string(vector.name) == name) {
+            return vector;
+        }
+    }
+    assert(false && "missing source public-key proof vector");
+    return {};
+}
+
 nsealr::test_vectors::PolicyChangeReviewVector policy_change_review_vector_by_name(
     const std::string& name) {
     for (const nsealr::test_vectors::PolicyChangeReviewVector& vector :
@@ -1420,6 +1432,65 @@ void test_session_account_selection_does_not_satisfy_public_key_proof_gate() {
 
     assert(!status.signing_enabled);
     assert((status.missing_gates == std::vector<std::string>{"source_public_key_proof"}));
+}
+
+void test_session_account_selection_consumes_shared_source_public_key_proof_metadata_without_derivation() {
+    const nsealr::test_vectors::SourcePublicKeyProofVector nip06_proof =
+        source_public_key_proof_vector_by_name("nip06-account-0-leader");
+    const nsealr::test_vectors::SourcePublicKeyProofVector nsec_proof =
+        source_public_key_proof_vector_by_name("nsec-test-key-1");
+
+    assert(std::string(nip06_proof.proof_type) == "nip06");
+    assert(std::string(nip06_proof.source_type) == "bip39_seed");
+    assert(nip06_proof.account.has_value());
+    assert(nip06_proof.account.value() == 0U);
+    assert(std::string(nip06_proof.path) == "m/44'/1237'/0'/0/0");
+    assert(std::string(nip06_proof.passphrase).empty());
+    assert(std::string(nip06_proof.security_scope).find("before signing") != std::string::npos);
+
+    nsealr::StatelessSessionKeyring nip06_keyring;
+    nip06_keyring.add_bip39_seed(
+        "NIP-06 account 0",
+        nsealr::parse_bip39_english_mnemonic_indexes(nsealr::test_vectors::kNip06Account0Mnemonic));
+    const nsealr::SessionAccountDescriptor nip06_descriptor =
+        nsealr::test_vectors::esp32_qr_nip06_account_0_descriptor();
+
+    assert(nip06_descriptor.public_key == std::string(nip06_proof.expected_public_key));
+    assert(nip06_descriptor.source_fingerprint == std::string(nip06_proof.source_fingerprint));
+    assert(nip06_descriptor.derivation_path == std::string(nip06_proof.path));
+    assert(nip06_descriptor.account_index == nip06_proof.account.value());
+
+    const nsealr::SelectedSessionAccount nip06_selected =
+        nsealr::select_session_account(nip06_keyring, nip06_descriptor);
+    assert(nip06_selected.public_key == std::string(nip06_proof.expected_public_key));
+    assert(nip06_selected.source_fingerprint == std::string(nip06_proof.source_fingerprint));
+    assert(!nip06_selected.source_public_key_proof_verified);
+
+    assert(std::string(nsec_proof.proof_type) == "nip19_nsec");
+    assert(std::string(nsec_proof.source_type) == "nsec");
+    assert(!nsec_proof.account.has_value());
+    assert(std::string(nsec_proof.path).empty());
+    assert(std::string(nsec_proof.passphrase).empty());
+
+    nsealr::StatelessSessionKeyring nsec_keyring;
+    nsec_keyring.add_nsec(
+        "nsec test vector",
+        nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+    const nsealr::SessionAccountDescriptor nsec_descriptor{
+        "acct-esp32-qr-nsec-0",
+        "esp32_qr_vault",
+        nsec_proof.expected_public_key,
+        0U,
+        nsec_proof.source_fingerprint,
+        nsealr::SessionAccountRecoveryKind::StandaloneNsec,
+        "",
+        0U,
+    };
+    const nsealr::SelectedSessionAccount nsec_selected =
+        nsealr::select_session_account(nsec_keyring, nsec_descriptor);
+    assert(nsec_selected.public_key == std::string(nsec_proof.expected_public_key));
+    assert(nsec_selected.source_fingerprint == std::string(nsec_proof.source_fingerprint));
+    assert(!nsec_selected.source_public_key_proof_verified);
 }
 
 void test_qr_signing_request_rejections() {
@@ -3122,6 +3193,7 @@ int main() {
     test_session_account_selection_binds_qr_review_identity_without_derivation();
     test_session_account_selection_validates_source_route_and_recovery_shape();
     test_session_account_selection_does_not_satisfy_public_key_proof_gate();
+    test_session_account_selection_consumes_shared_source_public_key_proof_metadata_without_derivation();
     test_qr_signing_request_rejections();
     test_qr_signing_request_rejects_shared_invalid_request_vectors();
     test_qr_review_pages_match_shared_basic_vector();

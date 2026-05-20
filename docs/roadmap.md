@@ -760,9 +760,12 @@ acceptance, and companion signed-output acceptance remain pending.
   review flow and QR review I/O harness after the descriptor's reviewed
   source fingerprint matches the selected source. The selected account still
   reports `source_public_key_proof_verified: false`, and signing-readiness
-  tests keep `source_public_key_proof` missing when that value is used.
-  NIP-06 derivation, public-key derivation proof, camera/import UX integration,
-  and signing remain pending.
+  tests keep `source_public_key_proof` missing when that value is used. Host
+  tests consume the shared source-public-key proof vectors as metadata
+  conformance for the expected public key, source fingerprint, path, and
+  account index, but this is not public-key derivation inside firmware and it
+  does not clear the production proof gate. NIP-06 derivation, public-key
+  derivation proof, camera/import UX integration, and signing remain pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
   vector. Real signing, response display hardware, scan-back, and end-to-end
