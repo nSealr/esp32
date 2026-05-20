@@ -12,7 +12,6 @@
     "parameter": "1",
     "event_kind": 1
   },
-  "decision": "allow_until_expiry",
   "expires_at": 1710003600,
   "rate_limit": {
     "max_uses": 5,
