@@ -719,6 +719,14 @@ reaches the final page and is approved. Hardware RNG wiring, physical backup
 display/output acceptance, response QR output, reset-loss evidence, and real
 signing remain pending.
 
+Status note, 2026-05-20: the same backup/export ceremony now has a host-core
+display/button/output harness for future ESP32 QR vault adapters. It renders
+bounded danger-zone review frames before each local button read and emits the
+recovery payload to an injected output sink only after final-page approval.
+Rejection, early approval, and bounded non-terminal button streams emit
+nothing. This is not physical display/output acceptance, persistence, policy
+automation, or signing.
+
 Status note, 2026-05-19: host-core now has a decoded session-source QR parser
 for future ESP32 QR vault camera adapters. Canonical NIP-19 `nsec`, plain
 BIP-39 English mnemonic QR text, SeedSigner Standard SeedQR digit streams, and

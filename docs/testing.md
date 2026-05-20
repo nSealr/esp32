@@ -132,6 +132,11 @@ tests with strict C++ warnings.
   SeedQR, and CompactSeedQR inputs load the RAM-only keyring only after local
   import-review final-page approval, while rejection and invalid decoded QR
   inputs leave the keyring empty.
+- Host-core session-source backup/output tests prove bounded danger-zone
+  review frames are displayed before local button reads, approved flows emit
+  the BIP-39/SeedQR or NIP-19 `nsec` recovery payload only after final-page
+  approval, and rejection, early approval, or bounded non-terminal button
+  streams emit nothing.
 - Host-core session-account selection tests prove an ESP32 QR vault account
   descriptor binds a RAM-only BIP-39 or standalone `nsec` source to a public
   signer identity used by trusted review, while rejecting wrong routes,

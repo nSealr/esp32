@@ -316,6 +316,37 @@ public:
     std::vector<nsealr::QrResponseDisplayFrame> frames;
 };
 
+class RecordingSessionSourceBackupIo : public nsealr::SessionSourceBackupIo {
+public:
+    explicit RecordingSessionSourceBackupIo(std::vector<nsealr::ReviewButton> buttons)
+        : buttons_(std::move(buttons)) {}
+
+    void show_backup_review_frame(const nsealr::ReviewDisplayFrame& frame) override {
+        frames.push_back(frame);
+        events.push_back("frame:" + frame.title);
+    }
+
+    nsealr::ReviewButton read_backup_review_button() override {
+        assert(!buttons_.empty());
+        const nsealr::ReviewButton button = buttons_.front();
+        buttons_.erase(buttons_.begin());
+        events.push_back("button");
+        return button;
+    }
+
+    void emit_backup_payload(const nsealr::SessionSourceBackupPayload& payload) override {
+        payloads.push_back(payload);
+        events.push_back("payload");
+    }
+
+    std::vector<nsealr::ReviewDisplayFrame> frames;
+    std::vector<nsealr::SessionSourceBackupPayload> payloads;
+    std::vector<std::string> events;
+
+private:
+    std::vector<nsealr::ReviewButton> buttons_;
+};
+
 class NextOnlyQrReviewIo : public nsealr::QrReviewIo {
 public:
     std::string scan_request_qr() override {
@@ -1079,6 +1110,65 @@ void test_session_source_backup_flow_reveals_only_after_local_approval() {
     expect_throw("approval requires viewing every review page", [&] {
         (void)nsealr::run_session_source_backup_flow(keyring.source_at(0), {nsealr::ReviewButton::Approve});
     });
+}
+
+void test_session_source_backup_io_reveals_only_after_displayed_approval() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_nsec("nsec test vector", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+    RecordingSessionSourceBackupIo io{{nsealr::ReviewButton::Next, nsealr::ReviewButton::Approve}};
+
+    const nsealr::SessionSourceBackupFlowResult result =
+        nsealr::run_session_source_backup_io_flow(keyring.source_at(0), io);
+
+    assert(result.approved);
+    assert(result.revealed);
+    assert(result.backup_payload.has_value());
+    assert(result.backup_payload->nsec == std::string(nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(io.payloads.size() == 1U);
+    assert(io.payloads[0].nsec == std::string(nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(io.frames.size() == 2U);
+    assert(io.frames[0].title == "Backup source");
+    assert(io.frames[0].page_indicator == "Page 1/2");
+    assert(lines_contain(io.frames[0].body_lines, "Danger: secret export"));
+    assert(!lines_contain(io.frames[0].body_lines, nsealr::test_vectors::kNip19NsecTestKey1));
+    assert(!lines_contain(io.frames[0].body_lines, nsealr::test_vectors::kNip19NsecTestKey1SecretKey));
+    assert(io.frames[1].title == "Show secret?");
+    assert(io.frames[1].page_indicator == "Page 2/2");
+    assert((io.events == std::vector<std::string>{
+        "frame:Backup source",
+        "button",
+        "frame:Show secret?",
+        "button",
+        "payload",
+    }));
+}
+
+void test_session_source_backup_io_rejection_or_timeout_does_not_emit_payload() {
+    nsealr::StatelessSessionKeyring keyring;
+    keyring.add_nsec("nsec test vector", nsealr::decode_nsec_secret_key(nsealr::test_vectors::kNip19NsecTestKey1));
+
+    RecordingSessionSourceBackupIo rejected_io{{nsealr::ReviewButton::Reject}};
+    const nsealr::SessionSourceBackupFlowResult rejected =
+        nsealr::run_session_source_backup_io_flow(keyring.source_at(0), rejected_io);
+    assert(!rejected.approved);
+    assert(!rejected.revealed);
+    assert(!rejected.backup_payload.has_value());
+    assert(rejected_io.payloads.empty());
+    assert(rejected_io.frames.size() == 1U);
+
+    RecordingSessionSourceBackupIo timeout_io{{nsealr::ReviewButton::Next, nsealr::ReviewButton::Back}};
+    expect_throw("max button steps", [&] {
+        (void)nsealr::run_session_source_backup_io_flow(keyring.source_at(0), timeout_io, {}, 1U);
+    });
+    assert(timeout_io.payloads.empty());
+    assert(timeout_io.frames.size() == 1U);
+
+    RecordingSessionSourceBackupIo early_approval_io{{nsealr::ReviewButton::Approve}};
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)nsealr::run_session_source_backup_io_flow(keyring.source_at(0), early_approval_io);
+    });
+    assert(early_approval_io.payloads.empty());
+    assert(early_approval_io.frames.size() == 1U);
 }
 
 void test_policy_change_review_matches_shared_vector() {
@@ -3319,6 +3409,8 @@ int main() {
     test_session_source_backup_review_matches_shared_danger_zone_vectors();
     test_session_source_backup_payload_matches_shared_secret_payloads();
     test_session_source_backup_flow_reveals_only_after_local_approval();
+    test_session_source_backup_io_reveals_only_after_displayed_approval();
+    test_session_source_backup_io_rejection_or_timeout_does_not_emit_payload();
     test_policy_change_review_matches_shared_vector();
     test_policy_change_review_flow_requires_device_approval();
     test_policy_change_review_rejects_companion_authority_or_secret_material();

@@ -128,8 +128,11 @@ hardware readiness can differ, final vault behavior must converge.
   `nsec`-equivalent sources in the same RAM-only import/review/keyring
   boundary. Host-core now also models the separate danger-zone backup review
   that can reveal BIP-39 words/SeedQR or NIP-19 `nsec` recovery payloads only
-  after final-page local approval. Hardware RNG wiring, physical backup
-  display/output acceptance, and physical acceptance remain pending.
+  after final-page local approval. A host-core backup/output harness displays
+  bounded danger-zone frames before local button reads and emits the recovery
+  payload to an injected output sink only after final-page approval. Hardware
+  RNG wiring, physical backup display/output acceptance, and physical
+  acceptance remain pending.
 - Host-core QR response-envelope encoding for already-produced response JSON.
   Static `nsealr1:` and animated `nsealr1a:` output match the shared signed
   response vector. A host-core response-display harness now chooses static

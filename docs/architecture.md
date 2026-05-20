@@ -161,6 +161,11 @@ The first firmware foundation is host-buildable C++ under
   RAM-only QR-vault source and reveals BIP-39 words/SeedQR or NIP-19 `nsec`
   payloads only after final-page local approval. It is a recovery ceremony,
   not import approval, not signing approval, and not persistent storage.
+  `run_session_source_backup_io_flow` is the future adapter-facing boundary:
+  it renders bounded backup review frames before every local button read and
+  emits the recovery payload to an injected output sink only after final-page
+  approval. Rejection, early approval, and bounded non-terminal button streams
+  emit nothing.
 - `session_source_qr`: normalizes decoded QR session-source inputs for future
   camera adapters. It maps canonical NIP-19 `nsec`, plain BIP-39 English
   mnemonic QR text, SeedSigner Standard SeedQR digit streams, and CompactSeedQR

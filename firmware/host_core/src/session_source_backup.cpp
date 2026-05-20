@@ -2,6 +2,8 @@
 
 #include <iomanip>
 #include <sstream>
+#include <string_view>
+#include <utility>
 
 #include "nsealr/bip39_english.hpp"
 #include "nsealr/nip19_nsec.hpp"
@@ -73,6 +75,21 @@ std::string backup_approval_digest(
     material += "\n";
     material += backup_format;
     return sha256_hex(material);
+}
+
+ReviewPage backup_review_page_for_display(const TrustedReviewPage& page) {
+    std::vector<std::string_view> lines;
+    lines.reserve(page.lines.size());
+    for (const std::string& line : page.lines) {
+        lines.push_back(line);
+    }
+    return ReviewPage{
+        page.title,
+        std::move(lines),
+        page.action,
+        page.page_indicator,
+        page.body_line_styles,
+    };
 }
 
 }  // namespace
@@ -178,6 +195,48 @@ SessionSourceBackupFlowResult run_session_source_backup_flow(
     }
 
     throw SessionSourceBackupError("session source backup review did not reach approval or rejection");
+}
+
+SessionSourceBackupFlowResult run_session_source_backup_io_flow(
+    const SessionKeySource& source,
+    SessionSourceBackupIo& io,
+    ReviewDisplayLimits limits,
+    std::size_t max_button_steps) {
+    if (max_button_steps == 0U) {
+        throw SessionSourceBackupError("session source backup flow max button steps must be positive");
+    }
+
+    SessionSourceBackupFlowResult result;
+    result.review = build_session_source_backup_review(source);
+    ReviewControlSession controls(result.review.pages.size());
+
+    for (std::size_t step_count = 0; step_count < max_button_steps; ++step_count) {
+        const std::size_t page_index = controls.current_page_index();
+        const ReviewPage page = backup_review_page_for_display(result.review.pages.at(page_index));
+        io.show_backup_review_frame(render_review_page(page, page_index, result.review.pages.size(), limits));
+
+        const ReviewButton button = io.read_backup_review_button();
+        const std::optional<bool> decision = controls.handle_button(button);
+        const bool revealed = decision.has_value() && *decision;
+        result.transcript.push_back(SessionSourceBackupTranscriptStep{
+            page_index,
+            button,
+            decision,
+            revealed,
+        });
+
+        if (decision.has_value()) {
+            result.approved = *decision;
+            result.revealed = revealed;
+            if (revealed) {
+                result.backup_payload = session_source_backup_payload(source);
+                io.emit_backup_payload(*result.backup_payload);
+            }
+            return result;
+        }
+    }
+
+    throw SessionSourceBackupError("session source backup review exceeded max button steps");
 }
 
 }  // namespace nsealr
