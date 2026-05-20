@@ -151,14 +151,15 @@ hardware readiness can differ, final vault behavior must converge.
 - QR-derived trusted-review session creation that drives the existing bounded
   display-frame and approval-gate state machines. It is still host-core only
   and has no signing backend.
-- `QrReviewFlow` host-core boundary from raw scanned `nsealr1:` QR envelope to
-  trusted review frames and physical approval state. It rejects unsafe QR
-  requests before a future camera/display adapter can display them.
+- `QrReviewFlow` host-core boundary from raw scanned static `nsealr1:` QR
+  envelope or complete animated `nsealr1a:` request frame set to trusted
+  review frames and physical approval state. It rejects unsafe QR requests
+  before a future camera/display adapter can display them.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
-  physical-button drivers. It scans one QR request, shows each trusted frame
-  before reading a button, bounds non-terminal button streams, and returns the
-  terminal approval state plus the exact displayed frame/button transcript; it
-  still has no signing backend.
+  physical-button drivers. It scans one static or complete animated QR
+  request, shows each trusted frame before reading a button, bounds
+  non-terminal button streams, and returns the terminal approval state plus the
+  exact displayed frame/button transcript; it still has no signing backend.
 - Serial/USB `sign_event` trusted-review boundary for decoded request JSON.
   It builds the same review pages and `approval_digest` as the QR path before
   the runtime dispatcher returns `signing_disabled`.

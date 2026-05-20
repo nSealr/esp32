@@ -176,8 +176,10 @@ tests with strict C++ warnings.
   non-signing copy before the ESP-IDF runtime paints them.
 - QR trusted-review session tests proving parsed QR requests drive bounded
   display frames, final-page traversal, and request/digest-bound approval.
-- QR review-flow tests proving raw scanned QR envelopes drive trusted review
-  without a signing backend and unsafe QR requests are rejected before display.
+- QR review-flow tests proving raw scanned static `nsealr1:` envelopes and
+  complete animated `nsealr1a:` request frame sets drive trusted review without
+  a signing backend, and unsafe or mixed QR requests are rejected before
+  display.
 - Animated QR host-core tests proving shared `nsealr1a:` frames reconstruct to
   the expected payload JSON and reject empty, missing-frame, and checksum-
   mismatched frame sets before future camera adapters exist.

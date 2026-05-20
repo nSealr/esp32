@@ -353,20 +353,21 @@ physical controls provide `next`, `approve`, or `reject`. The harness records
 the frame/button transcript and terminal approval state but still has no
 signature-producing function.
 
-`QrReviewFlow` packages that sequence for future scanner/display adapters: raw
-QR envelope decode, request parsing, trusted-review construction, frame
-rendering, and button handling. Rejected QR requests fail before any review
-frame is shown. Approval only reaches the host-core approval state; there is no
-signature-producing function in this flow.
+`QrReviewFlow` packages that sequence for future scanner/display adapters:
+static `nsealr1:` decode or complete animated `nsealr1a:` frame-set decode,
+request parsing, trusted-review construction, frame rendering, and button
+handling. Rejected QR requests fail before any review frame is shown. Approval
+only reaches the host-core approval state; there is no signature-producing
+function in this flow.
 
 `QrReviewIo` is the first driver-facing harness for that flow. A future camera
-adapter provides one scanned QR envelope, a display adapter paints the bounded
-frame supplied by host-core, and physical controls provide `next`, `approve`,
-or `reject`. The harness shows the current trusted frame before every button
-read, bounds non-terminal button streams, and returns the terminal approval
-state together with the exact frame/button transcript produced by the adapter
-loop, keeping camera/display/GPIO bring-up separate from key storage and
-signing.
+adapter provides one scanned static request or complete animated frame set, a
+display adapter paints the bounded frame supplied by host-core, and physical
+controls provide `next`, `approve`, or `reject`. The harness shows the current
+trusted frame before every button read, bounds non-terminal button streams, and
+returns the terminal approval state together with the exact frame/button
+transcript produced by the adapter loop, keeping camera/display/GPIO bring-up
+separate from key storage and signing.
 
 The QR review transcript helper and `QrReviewIo` result both record the frame
 shown before each physical button input, the optional terminal decision, and

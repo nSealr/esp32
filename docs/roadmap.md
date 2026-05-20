@@ -84,6 +84,9 @@
   review frames and approval state, without signing.
 - `QrReviewIo` host-core adapter harness for future scanner, display, and
   physical-button drivers, without signing.
+- Complete animated `nsealr1a:` request frame-set support in `QrReviewFlow`
+  and `QrReviewIo`, so large valid QR requests can reach the same host-core
+  review loop as static `nsealr1:` requests.
 - Bounded `QrReviewIo` loop that fails on non-terminal button streams instead
   of hanging a future adapter.
 - `QrReviewIo` result transcript covering the exact frame/button sequence shown
@@ -147,6 +150,12 @@ now checked against shared `nSealr/specs` vectors. The
 host-core QR parser also mirrors the shared v0 limit profile and rejects
 applicable invalid QR-envelope and signing-request vectors before trusted review
 can begin.
+
+Status note, 2026-05-20: `QrReviewFlow` and `QrReviewIo` now accept complete
+newline-separated animated `nsealr1a:` request frame sets as scanner output in
+addition to static `nsealr1:` requests. Mixed static/animated scans are rejected
+before display. This is host-core camera-adapter groundwork only; camera
+capture, response QR display hardware, scan-back, and signing remain pending.
 
 Status note, 2026-05-08: the host-core serial decoder now mirrors the shared v0
 `max_serial_frame_bytes` limit and rejects the shared invalid serial-frame

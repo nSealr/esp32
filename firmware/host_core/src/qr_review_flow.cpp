@@ -1,6 +1,10 @@
 #include "nsealr/qr_review_flow.hpp"
 
+#include <algorithm>
 #include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 #include <utility>
 
 #include "nsealr/qr_envelope.hpp"
@@ -8,11 +12,77 @@
 namespace nsealr {
 namespace {
 
+constexpr const char* kStaticQrPrefix = "nsealr1:";
+constexpr const char* kAnimatedQrPrefix = "nsealr1a:";
+
+bool starts_with(std::string_view value, std::string_view prefix) {
+    return value.size() >= prefix.size() && value.substr(0U, prefix.size()) == prefix;
+}
+
+std::string trim_ascii(std::string_view value) {
+    std::size_t start = 0;
+    while (start < value.size()) {
+        const char ch = value[start];
+        if (ch != ' ' && ch != '\n' && ch != '\r' && ch != '\t') {
+            break;
+        }
+        ++start;
+    }
+    std::size_t end = value.size();
+    while (end > start) {
+        const char ch = value[end - 1U];
+        if (ch != ' ' && ch != '\n' && ch != '\r' && ch != '\t') {
+            break;
+        }
+        --end;
+    }
+    return std::string(value.substr(start, end - start));
+}
+
+std::vector<std::string> non_empty_qr_lines(const std::string& scanned_qr) {
+    std::vector<std::string> frames;
+    std::size_t start = 0;
+    while (start <= scanned_qr.size()) {
+        const std::size_t end = scanned_qr.find('\n', start);
+        const std::string_view raw_line = end == std::string::npos
+            ? std::string_view(scanned_qr).substr(start)
+            : std::string_view(scanned_qr).substr(start, end - start);
+        const std::string line = trim_ascii(raw_line);
+        if (!line.empty()) {
+            frames.push_back(line);
+        }
+        if (end == std::string::npos) {
+            break;
+        }
+        start = end + 1U;
+    }
+    return frames;
+}
+
+QrEnvelope decode_scanned_request_qr(const std::string& scanned_qr) {
+    const std::vector<std::string> frames = non_empty_qr_lines(scanned_qr);
+    if (frames.empty()) {
+        throw QrEnvelopeError("QR review flow requires a scanned request QR");
+    }
+    if (frames.size() == 1U && starts_with(frames[0], kStaticQrPrefix)) {
+        return decode_qr_envelope(frames[0]);
+    }
+    if (std::all_of(frames.begin(), frames.end(), [](const std::string& frame) {
+            return starts_with(frame, kAnimatedQrPrefix);
+        })) {
+        return decode_animated_qr_envelope_frames(frames);
+    }
+    if (frames.size() == 1U) {
+        return decode_qr_envelope(frames[0]);
+    }
+    throw QrEnvelopeError("QR review flow requires static nsealr1 or animated nsealr1a request QR");
+}
+
 TrustedReviewRequest review_request_from_qr(
     const std::string& qr_envelope,
     const SignerIdentity& signer_identity,
     ReviewDisplayLimits limits) {
-    const QrEnvelope envelope = decode_qr_envelope(qr_envelope);
+    const QrEnvelope envelope = decode_scanned_request_qr(qr_envelope);
     const QrSigningRequest request = parse_qr_signing_request(envelope);
     return build_qr_display_review_request(request, signer_identity, limits);
 }

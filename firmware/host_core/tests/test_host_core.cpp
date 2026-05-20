@@ -243,6 +243,17 @@ std::string joined_lines_for_title(
     return joined;
 }
 
+std::string joined_qr_frames(const std::vector<std::string>& frames) {
+    std::string joined;
+    for (const std::string& frame : frames) {
+        if (!joined.empty()) {
+            joined.push_back('\n');
+        }
+        joined += frame;
+    }
+    return joined;
+}
+
 bool lines_contain(const std::vector<std::string>& lines, const std::string& needle) {
     for (const std::string& line : lines) {
         if (line.find(needle) != std::string::npos) {
@@ -263,10 +274,13 @@ void assert_session_seed_words_equal(
 
 class RecordingQrReviewIo : public nsealr::QrReviewIo {
 public:
-    explicit RecordingQrReviewIo(std::vector<nsealr::ReviewButton> buttons) : buttons_(std::move(buttons)) {}
+    explicit RecordingQrReviewIo(
+        std::vector<nsealr::ReviewButton> buttons,
+        std::string scanned_request = nsealr::test_vectors::kQrEnvelopeKind1Basic)
+        : buttons_(std::move(buttons)), scanned_request_(std::move(scanned_request)) {}
 
     std::string scan_request_qr() override {
-        return nsealr::test_vectors::kQrEnvelopeKind1Basic;
+        return scanned_request_;
     }
 
     void show_review_frame(const nsealr::ReviewDisplayFrame& frame) override {
@@ -284,6 +298,7 @@ public:
 
 private:
     std::vector<nsealr::ReviewButton> buttons_;
+    std::string scanned_request_;
 };
 
 class NextOnlyQrReviewIo : public nsealr::QrReviewIo {
@@ -1977,6 +1992,37 @@ void test_qr_review_flow_drives_scanned_qr_without_signing_backend() {
     assert(flow.decision() == nsealr::ApprovalDecision::Approved);
 }
 
+void test_qr_review_flow_accepts_animated_scanned_request_frames() {
+    const nsealr::QrEnvelope static_envelope =
+        nsealr::decode_qr_envelope(nsealr::test_vectors::kQrEnvelopeKind1Basic);
+    const std::string animated_request = joined_qr_frames(
+        nsealr::encode_animated_qr_envelope_json(static_envelope.payload_json, 24U));
+
+    nsealr::QrReviewFlow flow{animated_request};
+    assert(flow.request_id() == "req-kind-1-basic");
+    assert(flow.approval_digest() == nsealr::test_vectors::kBasicReviewScreenApprovalDigest);
+    assert(flow.current_frame().title == "Event");
+
+    RecordingQrReviewIo io{{nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Next,
+                            nsealr::ReviewButton::Approve},
+                           animated_request};
+    const nsealr::QrReviewIoFlowResult result = nsealr::run_qr_review_io_flow(io);
+    assert(result.request_id == "req-kind-1-basic");
+    assert(result.approved_for_signing);
+    assert(io.frames.size() == 4U);
+}
+
+void test_qr_review_flow_rejects_mixed_scanned_request_frames() {
+    expect_throw("requires static nsealr1 or animated nsealr1a request QR", [] {
+        nsealr::QrReviewFlow flow{
+            std::string(nsealr::test_vectors::kQrEnvelopeKind1Basic) + "\n" +
+            std::string("nsealr1a:not-a-compatible-frame")};
+        (void)flow;
+    });
+}
+
 void test_qr_review_flow_binds_selected_session_account_identity() {
     nsealr::StatelessSessionKeyring keyring;
     keyring.add_bip39_seed(
@@ -3211,6 +3257,8 @@ int main() {
     test_qr_display_review_pages_use_scroll_line_indicators_for_long_sections();
     test_qr_trusted_review_session_binds_qr_digest_and_navigation();
     test_qr_review_flow_drives_scanned_qr_without_signing_backend();
+    test_qr_review_flow_accepts_animated_scanned_request_frames();
+    test_qr_review_flow_rejects_mixed_scanned_request_frames();
     test_qr_review_flow_binds_selected_session_account_identity();
     test_qr_review_flow_rejects_unsafe_scanned_qr();
     test_qr_review_flow_transcript_records_display_and_approval_steps();
