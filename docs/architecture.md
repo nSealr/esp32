@@ -181,6 +181,13 @@ The first firmware foundation is host-buildable C++ under
   `source_public_key_proof_verified` false so fingerprint binding cannot be
   mistaken for derivation proof. It does not derive NIP-06 keys, persist
   secrets, evaluate policy, or sign.
+- `policy_change_review`: builds the local review boundary for future
+  persistent-device policy changes such as enabling a scoped automation policy
+  on `esp32_usb_nip46`. It validates that the proposal requires device review
+  and physical approval, rejects companion-authoritative or secret-bearing
+  proposals, emits the shared policy-change review pages and
+  `approval_digest`, and models the approval loop without writing policy state,
+  persisting grants, or enabling signing.
 - `qr_review`: converts parsed QR signing requests into renderer-neutral
   trusted-review pages and QR-derived `approval_digest` values that match the
   shared review-screen vectors.

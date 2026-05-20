@@ -114,6 +114,7 @@ def validate_firmware_project(project: Path) -> None:
         "bip39_english.cpp",
         "device_protocol.cpp",
         "nip19_nsec.cpp",
+        "policy_change_review.cpp",
         "qr_envelope.cpp",
         "qr_review.cpp",
         "qr_review_flow.cpp",

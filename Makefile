@@ -24,6 +24,7 @@ host-core-test: generate-host-vectors
 		firmware/host_core/src/bip39_english.cpp \
 		firmware/host_core/src/device_protocol.cpp \
 		firmware/host_core/src/nip19_nsec.cpp \
+		firmware/host_core/src/policy_change_review.cpp \
 		firmware/host_core/src/qr_envelope.cpp \
 		firmware/host_core/src/qr_review.cpp \
 		firmware/host_core/src/qr_review_flow.cpp \

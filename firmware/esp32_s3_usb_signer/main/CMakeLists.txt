@@ -14,6 +14,7 @@ idf_component_register(
         "../../host_core/src/bip39_english.cpp"
         "../../host_core/src/device_protocol.cpp"
         "../../host_core/src/nip19_nsec.cpp"
+        "../../host_core/src/policy_change_review.cpp"
         "../../host_core/src/qr_envelope.cpp"
         "../../host_core/src/qr_review.cpp"
         "../../host_core/src/qr_review_flow.cpp"

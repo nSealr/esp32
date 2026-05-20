@@ -365,6 +365,84 @@ def session_source_backup_vector_factories(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def cpp_optional_string(value: str | None) -> str:
+    if value is None:
+        return "std::nullopt"
+    return f"std::optional<std::string>{{{cpp_string(value)}}}"
+
+
+def policy_change_proposal_initializer(proposal: dict) -> list[str]:
+    requester = proposal["requested_by"]
+    grant_values = ", ".join(cpp_string(grant_id) for grant_id in proposal["proposed_grant_ids"])
+    return [
+        "            nsealr::PolicyChangeProposal{",
+        f"                .proposal_id = {cpp_string(proposal['proposal_id'])},",
+        f"                .account_id = {cpp_string(proposal['account_id'])},",
+        f"                .route_type = {cpp_string(proposal['route_type'])},",
+        f"                .action = {cpp_string(proposal['action'])},",
+        f"                .current_policy_id = {cpp_string(proposal['current_policy_id'])},",
+        f"                .proposed_policy_id = {cpp_string(proposal['proposed_policy_id'])},",
+        f"                .proposed_grant_ids = {{{grant_values}}},",
+        "                .requested_by = nsealr::PolicyChangeRequester{",
+        f"                    .surface = {cpp_string(requester['surface'])},",
+        f"                    .client_pubkey = {cpp_string(requester['client_pubkey'])},",
+        f"                    .label = {cpp_optional_string(requester.get('label'))},",
+        "                },",
+        f"                .created_at = {proposal['created_at']}ULL,",
+        f"                .device_review_required = {str(proposal['device_review_required']).lower()},",
+        f"                .physical_approval_required = {str(proposal['physical_approval_required']).lower()},",
+        f"                .companion_authoritative = {str(proposal['companion_authoritative']).lower()},",
+        f"                .contains_secret_material = {str(proposal['contains_secret_material']).lower()},",
+        "            },",
+    ]
+
+
+def policy_change_review_vector_factories(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct PolicyChangeReviewVector {",
+        "    const char* name;",
+        "    nsealr::PolicyChangeProposal proposal;",
+        "    nsealr::PolicyChangeReview review;",
+        "};",
+        "",
+        "inline std::vector<PolicyChangeReviewVector> policy_change_review_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        review = vector["review"]
+        lines.extend(
+            [
+                "        PolicyChangeReviewVector{",
+                f"            {cpp_string(vector['name'])},",
+            ]
+        )
+        lines.extend(policy_change_proposal_initializer(vector["proposal"]))
+        lines.extend(
+            [
+                "            nsealr::PolicyChangeReview{",
+                f"                {cpp_string(review['proposal_id'])},",
+                f"                {cpp_string(review['approval_digest'])},",
+                "                {",
+            ]
+        )
+        for page in review["pages"]:
+            lines.extend(trusted_review_page_initializer(page))
+        lines.extend(
+            [
+                "                },",
+                "            },",
+                "        },",
+            ]
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def cpp_session_account_recovery_kind(recovery_type: str) -> str:
     if recovery_type == "nip06":
         return "nsealr::SessionAccountRecoveryKind::Nip06"
@@ -480,6 +558,10 @@ def main() -> int:
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((specs / "vectors/session-source-backups").glob("*.json"))
     ]
+    policy_change_review_vectors = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((specs / "vectors/policy-changes").glob("*.json"))
+    ]
     nip06_key_vector = json.loads((specs / "vectors/keys/nip06-account-0-leader.json").read_text(encoding="utf-8"))
     basic_review_screen = json.loads(
         (specs / "vectors/review-screens/kind-1-basic.json").read_text(encoding="utf-8")
@@ -543,6 +625,7 @@ def main() -> int:
                 "#include <vector>",
                 "",
                 '#include "nsealr/qr_review_flow.hpp"',
+                '#include "nsealr/policy_change_review.hpp"',
                 '#include "nsealr/session_account.hpp"',
                 '#include "nsealr/trusted_review.hpp"',
                 "",
@@ -620,6 +703,8 @@ def main() -> int:
                 *session_import_review_vector_factories(session_import_review_vectors),
                 "",
                 *session_source_backup_vector_factories(session_source_backup_vectors),
+                "",
+                *policy_change_review_vector_factories(policy_change_review_vectors),
                 "",
                 *session_account_descriptor_factory(
                     "esp32_qr_nip06_account_0_descriptor",

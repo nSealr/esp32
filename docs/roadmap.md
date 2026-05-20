@@ -35,6 +35,10 @@
   RAM-only key source, account descriptor, route, and public key to the trusted
   review identity without deriving keys, persisting policy, or enabling
   signing.
+- Host-core policy-change review boundary for future ESP32 USB/NIP-46
+  persistent policy updates, using the shared policy-change vector, local
+  review pages, physical-style approval, and `approval_digest` without
+  persisting grants or enabling signing.
 - Shared-spec `sign_event` disabled response through host-core protocol
   handling.
 - Dynamic serial request-id echo for valid `get_capabilities`,
@@ -460,6 +464,15 @@ be constructed with an explicit signer identity from that selected session
 account, so future camera/display/GPIO adapters do not silently fall back to
 the development public key once a RAM-only account has been selected. Signing
 and NIP-06 derivation remain disconnected.
+
+Status note, 2026-05-19: the ESP32 host-core now consumes the shared
+`esp32-usb-enable-kind-1-automation` policy-change vector as a local
+device-review contract. It builds the expected review pages, reproduces the
+shared `approval_digest`, requires final-page physical-style approval, permits
+early rejection, and rejects proposals that are companion-authoritative, lack
+physical approval, or contain secret material. This is only a policy-change
+review gate for the future persistent USB/NIP-46 route; it does not persist
+policy, create grants, provision storage, or enable signing.
 
 ## M7: Firmware Foundation
 

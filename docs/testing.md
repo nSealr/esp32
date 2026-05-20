@@ -71,6 +71,11 @@ tests with strict C++ warnings.
   route-selection metadata cannot drift from account descriptors, and it keeps
   scoped automation behind device-reviewed policy change plus physical
   approval.
+- Policy-change review tests proving the host-core consumes the shared
+  `esp32-usb-enable-kind-1-automation` vector, reproduces its review pages and
+  `approval_digest`, requires local review traversal before approval, allows
+  rejection, and rejects proposals that try to make the companion authoritative,
+  omit physical approval, or carry secret material.
 - Security-profile validation proving the ESP32-S3 USB signer scaffold remains
   development-only, with production signing disabled and secure boot, flash
   encryption, debug lock, key provisioning, source public-key proof, trusted

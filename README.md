@@ -199,6 +199,12 @@ hardware readiness can differ, final vault behavior must converge.
   reach future scoped automation only through a device-reviewed policy-change
   proposal, while `esp32_qr_vault` remains manual-only/stateless with
   `persistent_grants: false` and no TROPIC01 dependency.
+- Host-core policy-change review for the future ESP32 USB/NIP-46 persistent
+  route. The firmware can build the shared device-review pages and
+  `approval_digest` for `esp32-usb-enable-kind-1-automation`, requires local
+  page traversal plus physical-style approval, rejects companion-authoritative
+  or secret-bearing proposals, and still does not persist grants, provision
+  storage, or enable signing.
 - Machine-readable ESP32-S3 USB signer security profile that records the
   current development-only hardening state and production blockers before any
   persistent-secret or real-signing path can be claimed.

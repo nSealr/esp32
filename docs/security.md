@@ -51,6 +51,11 @@ The current profile is `development_scaffold`:
   they do not enable persistent grants or signatures on this development
   scaffold, and scoped automation still requires device review plus physical
   approval
+- policy-change review: host-core can review the future
+  `esp32-usb-enable-kind-1-automation` proposal locally and bind approval to
+  the shared `approval_digest`, but the result is not persisted and cannot
+  enable scoped automation until storage, provisioning, and production signing
+  gates exist
 - future persistent-device vault: seed profiles, BIP-39 passphrase namespaces,
   NIP-06 accounts, standalone key slots, and per-public-key policy remain a
   production design target, not current firmware behavior; v0 uses one

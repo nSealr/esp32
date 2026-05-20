@@ -13,6 +13,7 @@
 #include "nsealr/device_protocol.hpp"
 #include "nsealr/limits.hpp"
 #include "nsealr/nip19_nsec.hpp"
+#include "nsealr/policy_change_review.hpp"
 #include "nsealr/qr_envelope.hpp"
 #include "nsealr/qr_review.hpp"
 #include "nsealr/qr_review_flow.hpp"
@@ -172,6 +173,18 @@ nsealr::test_vectors::SessionSourceBackupVector session_source_backup_vector_by_
         }
     }
     assert(false && "missing session source backup vector");
+    return {};
+}
+
+nsealr::test_vectors::PolicyChangeReviewVector policy_change_review_vector_by_name(
+    const std::string& name) {
+    for (const nsealr::test_vectors::PolicyChangeReviewVector& vector :
+         nsealr::test_vectors::policy_change_review_vectors()) {
+        if (std::string(vector.name) == name) {
+            return vector;
+        }
+    }
+    assert(false && "missing policy change review vector");
     return {};
 }
 
@@ -947,6 +960,85 @@ void test_session_source_backup_flow_reveals_only_after_local_approval() {
     assert(!rejected.backup_payload.has_value());
     expect_throw("approval requires viewing every review page", [&] {
         (void)nsealr::run_session_source_backup_flow(keyring.source_at(0), {nsealr::ReviewButton::Approve});
+    });
+}
+
+void test_policy_change_review_matches_shared_vector() {
+    const nsealr::test_vectors::PolicyChangeReviewVector vector =
+        policy_change_review_vector_by_name("esp32-usb-enable-kind-1-automation");
+
+    const nsealr::PolicyChangeReview review = nsealr::build_policy_change_review(vector.proposal);
+    assert(review.proposal_id == std::string(vector.review.proposal_id));
+    assert(review.approval_digest == std::string(vector.review.approval_digest));
+    assert_trusted_review_pages(review.pages, vector.review.pages);
+
+    const nsealr::TrustedReviewRequest trusted_request =
+        nsealr::build_policy_change_trusted_review_request(vector.proposal);
+    assert(trusted_request.request_id == vector.proposal.proposal_id);
+    assert(trusted_request.approval_digest == review.approval_digest);
+    assert_trusted_review_pages(trusted_request.pages, vector.review.pages);
+
+    assert(lines_contain_text(review.pages, "Review on device"));
+    assert(lines_contain_text(review.pages, "Physical approval required"));
+    assert(lines_contain_text(review.pages, "Companion cannot approve alone"));
+}
+
+void test_policy_change_review_flow_requires_device_approval() {
+    const nsealr::test_vectors::PolicyChangeReviewVector vector =
+        policy_change_review_vector_by_name("esp32-usb-enable-kind-1-automation");
+
+    const nsealr::PolicyChangeReviewFlowResult approved =
+        nsealr::run_policy_change_review_flow(vector.proposal,
+                                              {
+                                                  nsealr::ReviewButton::Next,
+                                                  nsealr::ReviewButton::Next,
+                                                  nsealr::ReviewButton::Next,
+                                                  nsealr::ReviewButton::Approve,
+                                              });
+    assert(approved.approved);
+    assert(approved.review.approval_digest == std::string(vector.review.approval_digest));
+    assert(approved.transcript.size() == 4U);
+    assert(approved.transcript.front().page_index == 0U);
+    assert(!approved.transcript.front().decision.has_value());
+    assert(!approved.transcript.front().approved_for_policy_change);
+    assert(approved.transcript.back().page_index == 3U);
+    assert(approved.transcript.back().decision.has_value() && *approved.transcript.back().decision);
+    assert(approved.transcript.back().approved_for_policy_change);
+
+    const nsealr::PolicyChangeReviewFlowResult rejected =
+        nsealr::run_policy_change_review_flow(vector.proposal, {nsealr::ReviewButton::Reject});
+    assert(!rejected.approved);
+    assert(rejected.transcript.size() == 1U);
+    assert(rejected.transcript.front().decision.has_value() && !*rejected.transcript.front().decision);
+    assert(!rejected.transcript.front().approved_for_policy_change);
+
+    expect_throw("approval requires viewing every review page", [&] {
+        (void)nsealr::run_policy_change_review_flow(vector.proposal, {nsealr::ReviewButton::Approve});
+    });
+    expect_throw("did not reach approval or rejection", [&] {
+        (void)nsealr::run_policy_change_review_flow(vector.proposal, {nsealr::ReviewButton::Next});
+    });
+}
+
+void test_policy_change_review_rejects_companion_authority_or_secret_material() {
+    nsealr::PolicyChangeProposal unsafe = policy_change_review_vector_by_name(
+        "esp32-usb-enable-kind-1-automation").proposal;
+
+    unsafe.companion_authoritative = true;
+    expect_throw("companion_authoritative must be false", [&] {
+        (void)nsealr::build_policy_change_review(unsafe);
+    });
+
+    unsafe = policy_change_review_vector_by_name("esp32-usb-enable-kind-1-automation").proposal;
+    unsafe.contains_secret_material = true;
+    expect_throw("contains_secret_material must be false", [&] {
+        (void)nsealr::build_policy_change_review(unsafe);
+    });
+
+    unsafe = policy_change_review_vector_by_name("esp32-usb-enable-kind-1-automation").proposal;
+    unsafe.physical_approval_required = false;
+    expect_throw("physical_approval_required must be true", [&] {
+        (void)nsealr::build_policy_change_review(unsafe);
     });
 }
 
@@ -3015,6 +3107,9 @@ int main() {
     test_session_source_backup_review_matches_shared_danger_zone_vectors();
     test_session_source_backup_payload_matches_shared_secret_payloads();
     test_session_source_backup_flow_reveals_only_after_local_approval();
+    test_policy_change_review_matches_shared_vector();
+    test_policy_change_review_flow_requires_device_approval();
+    test_policy_change_review_rejects_companion_authority_or_secret_material();
     test_session_source_qr_parses_ram_only_sources();
     test_session_source_qr_rejects_invalid_inputs();
     test_session_source_qr_import_flow_loads_only_after_review_approval();
