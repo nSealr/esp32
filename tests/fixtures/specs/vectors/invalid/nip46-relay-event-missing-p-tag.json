@@ -1,0 +1,12 @@
+{
+  "name": "nip46-relay-event-missing-p-tag",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-relay-event",
+  "expected_error": "NIP-46 relay event must include exactly one p tag",
+  "relay_event": {
+    "kind": 24133,
+    "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "content": "nip44-v2-ciphertext-placeholder",
+    "tags": []
+  }
+}
