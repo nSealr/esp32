@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-duplicate-perms",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "perms must appear at most once",
+  "uri": "nostrconnect://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com&secret=client-secret&perms=sign_event%3A1&perms=ping"
+}

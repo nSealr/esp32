@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-metadata-url-fragment",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "url must be an http(s) URL without credentials or fragment",
+  "uri": "nostrconnect://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com&secret=client-secret&url=https%3A%2F%2Fclient.example.com%2Fprofile%23section"
+}
