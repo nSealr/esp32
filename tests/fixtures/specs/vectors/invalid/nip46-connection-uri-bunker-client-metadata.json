@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-bunker-client-metadata",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "bunker URI must not include client metadata or requested permissions",
+  "uri": "bunker://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com&name=Example+Client"
+}

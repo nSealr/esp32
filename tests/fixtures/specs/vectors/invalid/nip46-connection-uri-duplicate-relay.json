@@ -1,0 +1,7 @@
+{
+  "name": "nip46-connection-uri-duplicate-relay",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-connection-uri",
+  "expected_error": "relays must be unique",
+  "uri": "nostrconnect://cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc?relay=wss%3A%2F%2Frelay.example.com&relay=wss%3A%2F%2Frelay.example.com%2F&secret=client-secret"
+}
