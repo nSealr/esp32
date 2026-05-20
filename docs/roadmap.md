@@ -741,6 +741,13 @@ shared signed-response vector. This makes QR response transport partial only:
 firmware signing, response QR display hardware, camera scan-back, hardware
 acceptance, and companion signed-output acceptance remain pending.
 
+Status note, 2026-05-20: host-core now has a QR response-display harness for
+already-produced response JSON. It selects one static `nsealr1:` frame when the
+response fits the static QR limit, selects animated `nsealr1a:` frames for
+larger valid responses, and cycles animated frames for a future display
+adapter. QR matrix rendering, physical display output, camera scan-back,
+companion signed-output acceptance, and real signing remain pending.
+
 ## M8.5: ESP32-S3 QR Vault Target
 
 - Camera/display board selection. Status: LILYGO T-Display S3 Pro with OV5640
@@ -777,7 +784,8 @@ acceptance, and companion signed-output acceptance remain pending.
   derivation proof, camera/import UX integration, and signing remain pending.
 - QR response output. Status: host-core can encode response JSON into static
   and animated QR envelopes that match the shared signed-response transport
-  vector. Real signing, response display hardware, scan-back, and end-to-end
+  vector, then drive a response-display adapter with static or animated frame
+  cycles. Real signing, QR matrix/display hardware, scan-back, and end-to-end
   acceptance remain pending.
 - Trusted review pages using shared review-screen vectors and `approval_digest`.
 - Physical approve/reject loop.

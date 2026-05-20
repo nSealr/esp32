@@ -15,6 +15,7 @@
 #include "nsealr/nip19_nsec.hpp"
 #include "nsealr/policy_change_review.hpp"
 #include "nsealr/qr_envelope.hpp"
+#include "nsealr/qr_response_display.hpp"
 #include "nsealr/qr_review.hpp"
 #include "nsealr/qr_review_flow.hpp"
 #include "nsealr/review_controls.hpp"
@@ -254,6 +255,11 @@ std::string joined_qr_frames(const std::vector<std::string>& frames) {
     return joined;
 }
 
+std::string response_json_with_content_bytes(std::size_t content_bytes) {
+    return std::string(R"({"version":1,"request_id":"req-response-display","ok":true,"result":{"content":")") +
+           std::string(content_bytes, 'a') + R"("}})";
+}
+
 bool lines_contain(const std::vector<std::string>& lines, const std::string& needle) {
     for (const std::string& line : lines) {
         if (line.find(needle) != std::string::npos) {
@@ -299,6 +305,15 @@ public:
 private:
     std::vector<nsealr::ReviewButton> buttons_;
     std::string scanned_request_;
+};
+
+class RecordingQrResponseDisplayIo : public nsealr::QrResponseDisplayIo {
+public:
+    void show_response_qr_frame(const nsealr::QrResponseDisplayFrame& frame) override {
+        frames.push_back(frame);
+    }
+
+    std::vector<nsealr::QrResponseDisplayFrame> frames;
 };
 
 class NextOnlyQrReviewIo : public nsealr::QrReviewIo {
@@ -420,6 +435,82 @@ void test_qr_envelope_encodes_signed_response_vectors_without_signing() {
            nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
     assert(nsealr::decode_animated_qr_envelope_frames(animated_frames).payload_json ==
            nsealr::test_vectors::kAnimatedQrResponseKind1BasicJson);
+}
+
+void test_qr_response_display_builds_static_frame_for_small_response() {
+    const std::string response_json = R"({"version":1,"request_id":"req-static-response","ok":true})";
+    const std::vector<nsealr::QrResponseDisplayFrame> frames =
+        nsealr::build_qr_response_display_frames(response_json);
+
+    assert(frames.size() == 1U);
+    assert(frames[0].payload == nsealr::encode_qr_envelope_json(response_json));
+    assert(frames[0].index == 1U);
+    assert(frames[0].total == 1U);
+    assert(!frames[0].animated);
+}
+
+void test_qr_response_display_cycles_animated_frames_for_large_response() {
+    const std::string response_json = response_json_with_content_bytes(900U);
+    const std::vector<nsealr::QrResponseDisplayFrame> frames =
+        nsealr::build_qr_response_display_frames(response_json, 48U);
+
+    assert(frames.size() > 1U);
+    for (std::size_t offset = 0; offset < frames.size(); ++offset) {
+        assert(frames[offset].payload.rfind("nsealr1a:", 0) == 0);
+        assert(frames[offset].index == offset + 1U);
+        assert(frames[offset].total == frames.size());
+        assert(frames[offset].animated);
+    }
+
+    std::vector<std::string> encoded_frames;
+    encoded_frames.reserve(frames.size());
+    for (const nsealr::QrResponseDisplayFrame& frame : frames) {
+        encoded_frames.push_back(frame.payload);
+    }
+    assert(nsealr::decode_animated_qr_envelope_frames(encoded_frames).payload_json == response_json);
+
+    RecordingQrResponseDisplayIo io;
+    const nsealr::QrResponseDisplayResult result =
+        nsealr::run_qr_response_display_io(io, response_json, 48U, 2U);
+
+    assert(result.frames.size() == frames.size() * 2U);
+    assert(io.frames.size() == frames.size() * 2U);
+    assert(io.frames.front().payload == frames.front().payload);
+    assert(io.frames[frames.size()].payload == frames.front().payload);
+    assert(io.frames.back().payload == frames.back().payload);
+}
+
+void test_qr_response_display_shows_static_frame_once() {
+    const std::string response_json = R"({"version":1,"request_id":"req-static-response","ok":false})";
+    RecordingQrResponseDisplayIo io;
+
+    const nsealr::QrResponseDisplayResult result =
+        nsealr::run_qr_response_display_io(io, response_json, nsealr::kMaxAnimatedQrFramePayloadChars, 5U);
+
+    assert(result.frames.size() == 1U);
+    assert(io.frames.size() == 1U);
+    assert(!io.frames[0].animated);
+}
+
+void test_qr_response_display_rejects_invalid_json_and_bad_cycles() {
+    RecordingQrResponseDisplayIo io;
+
+    expect_throw("QR envelope payload is not valid JSON", [] {
+        (void)nsealr::build_qr_response_display_frames("not json");
+    });
+    expect_throw("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes", [] {
+        (void)nsealr::build_qr_response_display_frames(response_json_with_content_bytes(5000U), 64U);
+    });
+    expect_throw("QR response display animated cycles must be non-zero", [&] {
+        (void)nsealr::run_qr_response_display_io(io, R"({"version":1,"request_id":"req","ok":true})", 64U, 0U);
+    });
+    expect_throw("exceed max_qr_response_display_cycles", [&] {
+        (void)nsealr::run_qr_response_display_io(
+            io,
+            R"({"version":1,"request_id":"req","ok":true})",
+            64U,
+            nsealr::kMaxQrResponseDisplayCycles + 1U);
+    });
 }
 
 void test_qr_envelope_parses_sign_event_request_metadata() {
@@ -3202,6 +3293,10 @@ int main() {
     test_qr_envelope_decodes_shared_vector();
     test_animated_qr_envelope_decodes_shared_vector();
     test_qr_envelope_encodes_signed_response_vectors_without_signing();
+    test_qr_response_display_builds_static_frame_for_small_response();
+    test_qr_response_display_cycles_animated_frames_for_large_response();
+    test_qr_response_display_shows_static_frame_once();
+    test_qr_response_display_rejects_invalid_json_and_bad_cycles();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_parses_event_template_fields();

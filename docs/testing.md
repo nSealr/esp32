@@ -390,6 +390,10 @@ tests with strict C++ warnings.
 - Host-core QR response-envelope tests must prove already-produced response
   JSON can be encoded as static `nsealr1:` and animated `nsealr1a:` output
   against the shared signed-response vector without enabling firmware signing.
+- Host-core QR response-display tests must prove small responses display as one
+  static frame, larger responses display as animated frame cycles, invalid JSON
+  is rejected, and zero/oversized display cycles are impossible before hardware
+  QR rendering or scan-back exist.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,
