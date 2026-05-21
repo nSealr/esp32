@@ -1,0 +1,17 @@
+{
+  "name": "response-unknown-top-level-field",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "response",
+  "expected_error": "unknown top-level response fields",
+  "response": {
+    "version": 1,
+    "request_id": "req-invalid-response-unknown-field",
+    "ok": false,
+    "error": {
+      "code": "user_rejected",
+      "message": "Rejected",
+      "retryable": false
+    },
+    "debug": "host-injected"
+  }
+}

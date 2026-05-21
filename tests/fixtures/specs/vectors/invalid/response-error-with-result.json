@@ -1,0 +1,19 @@
+{
+  "name": "response-error-with-result",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "response",
+  "expected_error": "error response must not include result",
+  "response": {
+    "version": 1,
+    "request_id": "req-invalid-response-error-with-result",
+    "ok": false,
+    "error": {
+      "code": "user_rejected",
+      "message": "Rejected",
+      "retryable": false
+    },
+    "result": {
+      "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
+    }
+  }
+}

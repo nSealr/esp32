@@ -1,0 +1,14 @@
+{
+  "name": "response-request-id-invalid",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "response",
+  "expected_error": "request_id is invalid",
+  "response": {
+    "version": 1,
+    "request_id": "invalid response id",
+    "ok": true,
+    "result": {
+      "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
+    }
+  }
+}
