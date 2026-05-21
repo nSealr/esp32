@@ -1,7 +1,10 @@
 IDF_PROJECT := firmware/esp32_s3_usb_signer
 IDF_PORT ?= /dev/cu.usbmodem1101
+IDF_ACCEPTANCE_REPORT ?= build/acceptance/t-display-s3-acceptance-report.json
+IDF_ACCEPTANCE_MANUAL ?= not-recorded
+IDF_FIRMWARE_REVISION ?= not-recorded
 
-.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses
+.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report
 
 setup:
 	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
@@ -72,6 +75,9 @@ idf-smoke-review-scenarios: idf-env-check
 
 idf-audit-security-fuses: idf-env-check
 	python scripts/audit_security_fuses.py --port $(IDF_PORT)
+
+idf-acceptance-report: idf-env-check
+	python scripts/acceptance_report.py --port $(IDF_PORT) --firmware-revision $(IDF_FIRMWARE_REVISION) --manual-observation $(IDF_ACCEPTANCE_MANUAL) --out $(IDF_ACCEPTANCE_REPORT)
 
 test:
 	python3 scripts/verify_repo.py

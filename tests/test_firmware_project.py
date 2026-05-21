@@ -206,6 +206,63 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertNotIn("burn_efuse", command)
         self.assertNotIn("burn_key", command)
 
+    def test_acceptance_report_builds_non_production_hardware_evidence(self) -> None:
+        self.assertTrue((ROOT / "scripts/acceptance_report.py").exists())
+        from scripts import acceptance_report
+
+        capability_response = smoke_capabilities.load_capability_frames()[1]
+        review_response = smoke_capabilities.load_signing_disabled_frames()[1]
+        rejection_frame = smoke_capabilities.encode_serial_frame(
+            "error",
+            smoke_capabilities.base64url_json(smoke_capabilities.UNSUPPORTED_REQUEST_ERROR),
+        )
+        fuse_audit = {
+            "schema": "nsealr-esp32-security-fuse-audit-v0",
+            "target": "esp32s3",
+            "port": "/dev/cu.usbmodem1101",
+            "read_only": True,
+            "production_blockers": ["secure_boot", "flash_encryption", "debug_lock"],
+            "production_signing_ready": False,
+        }
+
+        report = acceptance_report.build_acceptance_report(
+            port="/dev/cu.usbmodem1101",
+            source_revision="981ca56",
+            firmware_revision="3a67803",
+            capability_frames=[capability_response, rejection_frame],
+            review_frames=[review_response, rejection_frame],
+            review_scenarios=("show-review", "show-request-error"),
+            fuse_audit=fuse_audit,
+            manual_observation="passed",
+            hard_reset_after_fuse_audit=True,
+        )
+
+        self.assertEqual(report["schema"], "nsealr-esp32-t-display-s3-acceptance-report-v0")
+        self.assertEqual(report["target"], "t-display-s3-usb-display-signer")
+        self.assertEqual(report["port"], "/dev/cu.usbmodem1101")
+        self.assertEqual(report["source_revision"], "981ca56")
+        self.assertEqual(report["firmware_revision"], "3a67803")
+        self.assertEqual(report["capability_smoke"]["verified_exchanges"], 2)
+        self.assertEqual(report["capability_smoke"]["response_frames"], 1)
+        self.assertEqual(report["capability_smoke"]["expected_rejection_frames"], 1)
+        self.assertEqual(report["review_scenario_smoke"]["scenarios"], ["show-review", "show-request-error"])
+        self.assertEqual(report["review_scenario_smoke"]["verified_exchanges"], 2)
+        self.assertEqual(report["manual_display_button_observation"]["status"], "passed")
+        self.assertIn("show-dense-tags", report["manual_display_button_observation"]["required_scenarios"])
+        self.assertIs(report["security_fuse_audit"]["read_only"], True)
+        self.assertEqual(report["security_fuse_audit"]["production_blockers"], ["secure_boot", "flash_encryption", "debug_lock"])
+        self.assertFalse(report["production_signing_ready"])
+        self.assertFalse(report["signing_enabled"])
+        self.assertTrue(report["post_fuse_audit_hard_reset_performed"])
+
+    def test_makefile_exposes_repeatable_acceptance_report_target(self) -> None:
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+
+        self.assertIn("idf-acceptance-report:", makefile)
+        self.assertIn("scripts/acceptance_report.py", makefile)
+        self.assertIn("IDF_ACCEPTANCE_MANUAL", makefile)
+        self.assertIn("IDF_FIRMWARE_REVISION", makefile)
+
     def test_esp32_s3_usb_signer_builds_host_core_protocol(self) -> None:
         cmake = (ROOT / "firmware/esp32_s3_usb_signer/main/CMakeLists.txt").read_text(encoding="utf-8")
         main = (ROOT / "firmware/esp32_s3_usb_signer/main/main.cpp").read_text(encoding="utf-8")

@@ -280,3 +280,16 @@ not be treated as production hardening and does not enable signing.
 After the read-only fuse audit, hard-reset the board before running app
 protocol smokes or manual review-display commands. The audit can leave the
 chip outside the running application protocol until reset.
+
+To collect the current development acceptance evidence into one machine-readable
+report, run:
+
+```sh
+make IDF_PORT=/dev/cu.<device> IDF_ACCEPTANCE_MANUAL=passed IDF_FIRMWARE_REVISION=<flashed-revision> idf-acceptance-report
+```
+
+This target runs capability smoke, review-scenario smoke, the read-only fuse
+audit, and a non-destructive post-audit hard reset. It writes
+`build/acceptance/t-display-s3-acceptance-report.json`. Use
+`IDF_ACCEPTANCE_MANUAL=passed` only after the manual display/button observation
+checklist has been completed for the flashed firmware revision.

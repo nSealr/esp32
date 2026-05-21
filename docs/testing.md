@@ -309,6 +309,13 @@ tests with strict C++ warnings.
   verifies the protocol still returns `signing_disabled` or deterministic
   `unsupported_request` frames. It does not replace human visual inspection of
   the display.
+- Optional hardware acceptance-report target with `make idf-acceptance-report`
+  after exporting ESP-IDF and flashing the intended firmware. It composes the
+  capability smoke, review-scenario smoke, read-only security-fuse audit,
+  post-audit hard reset, host source revision, optional flashed firmware
+  revision, and manual display/button observation status into
+  `build/acceptance/t-display-s3-acceptance-report.json`. It remains
+  development evidence and keeps `production_signing_ready: false`.
 - Historical T-Display S3 head-smoke evidence recorded for revision `8307c4b`
   on
   `/dev/cu.usbmodem1101`: ESP-IDF build and flash passed, capability smoke

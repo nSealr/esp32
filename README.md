@@ -330,6 +330,7 @@ Physical board detection can be checked with:
 make detect-board
 make idf-smoke-capabilities
 make idf-audit-security-fuses
+make IDF_ACCEPTANCE_MANUAL=passed IDF_FIRMWARE_REVISION=<flashed-revision> idf-acceptance-report
 ```
 
 The hardware smoke sends the shared fixture requests and additional dynamic
@@ -350,6 +351,11 @@ Real signing is still expected to return `signing_disabled`.
 The security-fuse audit is read-only. It calls `espefuse.py summary` and prints
 JSON describing current secure boot, flash encryption, download-mode, and
 debug-lock state.
+The acceptance-report target runs the capability smoke, review-scenario smoke,
+read-only fuse audit, and post-audit hard reset, then writes a development
+JSON report under `build/acceptance/`. Set `IDF_ACCEPTANCE_MANUAL=passed` only
+after a human has completed the display/button checklist for the flashed
+firmware revision.
 
 For manual T-Display S3 display inspection after flashing, use:
 
