@@ -1,0 +1,19 @@
+{
+  "name": "nip46-relay-event-tag-not-array",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-relay-event",
+  "expected_error": "NIP-46 relay event tag must be an array",
+  "direction": "client_to_remote_signer",
+  "relay_event": {
+    "kind": 24133,
+    "pubkey": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "content": "nip44-v2-ciphertext-placeholder",
+    "tags": [
+      [
+        "p",
+        "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
+      ],
+      "not-a-tag"
+    ]
+  }
+}

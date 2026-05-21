@@ -1,0 +1,21 @@
+{
+  "name": "nip46-relay-event-invalid-signature",
+  "format": "pre-signing-invalid-vector-v0",
+  "category": "nip46-relay-event",
+  "expected_error": "NIP-46 relay event signature is invalid",
+  "direction": "remote_signer_to_client",
+  "relay_event": {
+    "id": "9616592e612272300d09cc2b27b78075c169ca0f3441238d59d538c31856c74f",
+    "kind": 24133,
+    "pubkey": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+    "created_at": 1710000001,
+    "content": "nip44-v2-response-ciphertext-placeholder",
+    "tags": [
+      [
+        "p",
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ]
+    ],
+    "sig": "0161d7ac0e27cfcdc5781810c95fad2e368abd215bb9806c4e6df24bb9c8b14f7879b31771bf18138c333dd93f0eeb610bbd42e39dc02aad7e82225ade65a52e"
+  }
+}
