@@ -352,10 +352,10 @@ The security-fuse audit is read-only. It calls `espefuse.py summary` and prints
 JSON describing current secure boot, flash encryption, download-mode, and
 debug-lock state.
 The acceptance-report target runs the capability smoke, review-scenario smoke,
-read-only fuse audit, and post-audit hard reset, then writes a development
-JSON report under `build/acceptance/`. Set `IDF_ACCEPTANCE_MANUAL=passed` only
-after a human has completed the display/button checklist for the flashed
-firmware revision.
+read-only fuse audit, post-audit hard reset, and a post-reset protocol recovery
+smoke, then writes a development JSON report under `build/acceptance/`. Set
+`IDF_ACCEPTANCE_MANUAL=passed` only after a human has completed the
+display/button checklist for the flashed firmware revision.
 
 For manual T-Display S3 display inspection after flashing, use:
 

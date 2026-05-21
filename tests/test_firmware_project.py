@@ -235,6 +235,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             fuse_audit=fuse_audit,
             manual_observation="passed",
             hard_reset_after_fuse_audit=True,
+            post_fuse_recovery_frames=[capability_response],
         )
 
         self.assertEqual(report["schema"], "nsealr-esp32-t-display-s3-acceptance-report-v0")
@@ -254,6 +255,8 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertFalse(report["production_signing_ready"])
         self.assertFalse(report["signing_enabled"])
         self.assertTrue(report["post_fuse_audit_hard_reset_performed"])
+        self.assertEqual(report["post_fuse_audit_protocol_recovery"]["status"], "passed")
+        self.assertEqual(report["post_fuse_audit_protocol_recovery"]["verified_exchanges"], 1)
 
     def test_makefile_exposes_repeatable_acceptance_report_target(self) -> None:
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")

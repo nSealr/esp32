@@ -96,13 +96,31 @@ def build_acceptance_report(
     fuse_audit: dict,
     manual_observation: str,
     hard_reset_after_fuse_audit: bool,
+    post_fuse_recovery_frames: Sequence[str] | None,
 ) -> dict[str, object]:
     if manual_observation not in MANUAL_OBSERVATION_CHOICES:
         raise ValueError(f"manual observation must be one of: {', '.join(MANUAL_OBSERVATION_CHOICES)}")
 
     fuse_blockers = list(fuse_audit.get("production_blockers", []))
     manual_blockers = [] if manual_observation == "passed" else ["manual_display_button_observation"]
-    production_blockers = [*fuse_blockers, *manual_blockers, "runtime_signing_disabled"]
+    if post_fuse_recovery_frames is None:
+        post_fuse_recovery = {
+            "status": "not-run",
+            "verified_exchanges": 0,
+            "response_frames": 0,
+            "expected_rejection_frames": 0,
+        }
+    else:
+        post_fuse_recovery = {
+            "status": "passed",
+            **count_protocol_frames(post_fuse_recovery_frames),
+        }
+    recovery_blockers = (
+        ["post_fuse_audit_protocol_recovery"]
+        if hard_reset_after_fuse_audit and post_fuse_recovery["status"] != "passed"
+        else []
+    )
+    production_blockers = [*fuse_blockers, *manual_blockers, *recovery_blockers, "runtime_signing_disabled"]
 
     return {
         "schema": SCHEMA,
@@ -113,7 +131,7 @@ def build_acceptance_report(
         "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "signing_enabled": False,
         "production_signing_ready": False,
-        "development_acceptance_ready": not manual_blockers,
+        "development_acceptance_ready": not manual_blockers and not recovery_blockers,
         "capability_smoke": {
             "status": "passed",
             **count_protocol_frames(capability_frames),
@@ -130,6 +148,7 @@ def build_acceptance_report(
         },
         "security_fuse_audit": fuse_audit,
         "post_fuse_audit_hard_reset_performed": hard_reset_after_fuse_audit,
+        "post_fuse_audit_protocol_recovery": post_fuse_recovery,
         "production_blockers": production_blockers,
     }
 
@@ -151,8 +170,10 @@ def run_acceptance(
     )
     fuse_summary = audit_security_fuses.run_espefuse_summary(port)
     fuse_audit = audit_security_fuses.parse_espefuse_summary(fuse_summary, port=port)
+    post_fuse_recovery_frames = None
     if hard_reset_after_fuse_audit:
         run_hard_reset(port)
+        post_fuse_recovery_frames = smoke_capabilities.run_smoke(port=port, timeout=timeout, baudrate=baudrate)
 
     return build_acceptance_report(
         port=port,
@@ -164,6 +185,7 @@ def run_acceptance(
         fuse_audit=fuse_audit,
         manual_observation=manual_observation,
         hard_reset_after_fuse_audit=hard_reset_after_fuse_audit,
+        post_fuse_recovery_frames=post_fuse_recovery_frames,
     )
 
 
