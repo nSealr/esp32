@@ -571,6 +571,18 @@ void test_qr_response_display_rejects_non_response_payload_shapes() {
     });
 }
 
+void test_qr_response_display_rejects_shared_top_level_invalid_response_vectors() {
+    for (const auto& vector : nsealr::test_vectors::invalid_qr_response_display_vectors()) {
+        try {
+            (void)nsealr::build_qr_response_display_frames(vector.response_json);
+        } catch (const std::exception&) {
+            continue;
+        }
+        std::cerr << "unexpectedly accepted invalid QR response display vector: " << vector.name << "\n";
+        assert(false && "invalid QR response display vector accepted");
+    }
+}
+
 void test_qr_response_display_allows_nested_json_unicode_escapes() {
     const std::string response_json =
         R"({"version":1,"request_id":"req-response-display","ok":true,"result":{"content":"snowman \u2603"}})";
@@ -3426,6 +3438,7 @@ int main() {
     test_qr_response_display_shows_static_frame_once();
     test_qr_response_display_rejects_invalid_json_and_bad_cycles();
     test_qr_response_display_rejects_non_response_payload_shapes();
+    test_qr_response_display_rejects_shared_top_level_invalid_response_vectors();
     test_qr_response_display_allows_nested_json_unicode_escapes();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();

@@ -561,6 +561,29 @@ def invalid_signing_request_factory(vectors: list[dict]) -> list[str]:
     return lines
 
 
+def invalid_qr_response_display_factory(vectors: list[dict]) -> list[str]:
+    lines = [
+        "struct InvalidQrResponseDisplayVector {",
+        "    const char* name;",
+        "    const char* response_json;",
+        "};",
+        "",
+        "inline std::vector<InvalidQrResponseDisplayVector> invalid_qr_response_display_vectors() {",
+        "    return {",
+    ]
+    for vector in vectors:
+        lines.append(
+            f"        InvalidQrResponseDisplayVector{{{cpp_string(vector['name'])}, {cpp_string(compact_json(vector['response']))}}},"
+        )
+    lines.extend(
+        [
+            "    };",
+            "}",
+        ]
+    )
+    return lines
+
+
 def animated_qr_frames_factory(name: str, frames: list[str]) -> list[str]:
     frame_values = ", ".join(cpp_string(frame) for frame in frames)
     return [
@@ -658,6 +681,12 @@ def main() -> int:
     invalid_signing_requests = [
         vector for vector in invalid_vectors if vector.get("category") == "signing-request"
     ]
+    invalid_qr_response_display_names = [
+        "response-error-with-result",
+        "response-request-id-invalid",
+        "response-unknown-top-level-field",
+    ]
+    invalid_qr_response_display = [invalid_by_name[name] for name in invalid_qr_response_display_names]
     capability_request_payload = base64url_json(capability_vector["request"])
     capability_response_payload = base64url_json(capability_vector["response"])
     sign_event_request_payload = base64url_json(sign_event_disabled_vector["request"])
@@ -740,6 +769,8 @@ def main() -> int:
                 f"constexpr const char* kInvalidSerialFrameUnsupportedType = {cpp_string(invalid_by_name['serial-frame-unsupported-type']['frame'])};",
                 "",
                 *invalid_signing_request_factory(invalid_signing_requests),
+                "",
+                *invalid_qr_response_display_factory(invalid_qr_response_display),
                 "",
                 *review_display_limits_factory(
                     "long_content_display_limits_20x3",

@@ -398,8 +398,9 @@ tests with strict C++ warnings.
 - Host-core QR response-display tests must prove small responses display as one
   static frame, larger responses display as animated frame cycles, non-response
   JSON, malformed nested JSON, and top-level response-shape errors are
-  rejected, and zero/oversized display cycles are impossible before hardware QR
-  rendering or scan-back exist.
+  rejected, including the applicable shared invalid response vectors, and
+  zero/oversized display cycles are impossible before hardware QR rendering or
+  scan-back exist.
 - ESP32 USB/NIP-46 persistent-vault tests must be added before real signing:
   one device-level unlock ceremony, encrypted storage, seed profiles,
   passphrase namespaces, standalone key slots, per-public-key policy,
