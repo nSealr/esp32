@@ -18,11 +18,13 @@ from typing import Sequence
 
 try:
     from scripts import audit_security_fuses
+    from scripts import detect_esp32_s3
     from scripts import manual_review_display
     from scripts import smoke_capabilities
     from scripts import smoke_review_scenarios
 except ImportError:  # pragma: no cover - used when executed as scripts/foo.py
     import audit_security_fuses  # type: ignore[no-redef]
+    import detect_esp32_s3  # type: ignore[no-redef]
     import manual_review_display  # type: ignore[no-redef]
     import smoke_capabilities  # type: ignore[no-redef]
     import smoke_review_scenarios  # type: ignore[no-redef]
@@ -90,6 +92,7 @@ def build_acceptance_report(
     port: str,
     source_revision: str,
     firmware_revision: str,
+    board_detection: dict,
     capability_frames: Sequence[str],
     review_frames: Sequence[str],
     review_scenarios: Sequence[str],
@@ -128,6 +131,7 @@ def build_acceptance_report(
         "port": port,
         "source_revision": source_revision,
         "firmware_revision": firmware_revision,
+        "board_detection": board_detection,
         "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "signing_enabled": False,
         "production_signing_ready": False,
@@ -162,6 +166,7 @@ def run_acceptance(
     firmware_revision: str,
     hard_reset_after_fuse_audit: bool,
 ) -> dict[str, object]:
+    board_detection = detect_esp32_s3.build_detection_report()
     capability_frames = smoke_capabilities.run_smoke(port=port, timeout=timeout, baudrate=baudrate)
     review_frames, review_scenarios = smoke_review_scenarios.run_review_smoke(
         port=port,
@@ -179,6 +184,7 @@ def run_acceptance(
         port=port,
         source_revision=git_revision(),
         firmware_revision=firmware_revision,
+        board_detection=board_detection,
         capability_frames=capability_frames,
         review_frames=review_frames,
         review_scenarios=review_scenarios,

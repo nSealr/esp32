@@ -229,6 +229,19 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             port="/dev/cu.usbmodem1101",
             source_revision="981ca56",
             firmware_revision="3a67803",
+            board_detection={
+                "connected": True,
+                "ports": ["/dev/cu.usbmodem1101"],
+                "usb": {
+                    "vendor": "Espressif",
+                    "product": "USB JTAG/serial debug unit",
+                    "serial_number": "1234",
+                    "native_usb_jtag_serial": True,
+                },
+                "toolchain": {"idf.py": "/esp/idf.py", "esptool.py": "/python/esptool.py", "esptool": None},
+                "ready_for_idf_build": True,
+                "ready_for_flash": True,
+            },
             capability_frames=[capability_response, rejection_frame],
             review_frames=[review_response, rejection_frame],
             review_scenarios=("show-review", "show-request-error"),
@@ -243,6 +256,10 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
         self.assertEqual(report["port"], "/dev/cu.usbmodem1101")
         self.assertEqual(report["source_revision"], "981ca56")
         self.assertEqual(report["firmware_revision"], "3a67803")
+        self.assertTrue(report["board_detection"]["connected"])
+        self.assertEqual(report["board_detection"]["ports"], ["/dev/cu.usbmodem1101"])
+        self.assertTrue(report["board_detection"]["usb"]["native_usb_jtag_serial"])
+        self.assertTrue(report["board_detection"]["ready_for_flash"])
         self.assertEqual(report["capability_smoke"]["verified_exchanges"], 2)
         self.assertEqual(report["capability_smoke"]["response_frames"], 1)
         self.assertEqual(report["capability_smoke"]["expected_rejection_frames"], 1)

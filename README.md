@@ -353,7 +353,8 @@ JSON describing current secure boot, flash encryption, download-mode, and
 debug-lock state.
 The acceptance-report target runs the capability smoke, review-scenario smoke,
 read-only fuse audit, post-audit hard reset, and a post-reset protocol recovery
-smoke, then writes a development JSON report under `build/acceptance/`. Set
+smoke, then writes a development JSON report under `build/acceptance/` with
+the detected serial ports, USB identity, and ESP-IDF/esptool availability. Set
 `IDF_ACCEPTANCE_MANUAL=passed` only after a human has completed the
 display/button checklist for the flashed firmware revision.
 

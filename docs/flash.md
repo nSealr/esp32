@@ -291,6 +291,7 @@ make IDF_PORT=/dev/cu.<device> IDF_ACCEPTANCE_MANUAL=passed IDF_FIRMWARE_REVISIO
 This target runs capability smoke, review-scenario smoke, the read-only fuse
 audit, a non-destructive post-audit hard reset, and a post-reset protocol
 recovery smoke. It writes
-`build/acceptance/t-display-s3-acceptance-report.json`. Use
+`build/acceptance/t-display-s3-acceptance-report.json` with the detected serial
+ports, USB identity, and ESP-IDF/esptool availability. Use
 `IDF_ACCEPTANCE_MANUAL=passed` only after the manual display/button observation
 checklist has been completed for the flashed firmware revision.

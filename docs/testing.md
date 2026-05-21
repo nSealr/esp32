@@ -313,8 +313,8 @@ tests with strict C++ warnings.
   after exporting ESP-IDF and flashing the intended firmware. It composes the
   capability smoke, review-scenario smoke, read-only security-fuse audit,
   post-audit hard reset, post-reset protocol recovery smoke, host source
-  revision, optional flashed firmware revision, and manual display/button
-  observation status into
+  revision, optional flashed firmware revision, board/toolchain detection, and
+  manual display/button observation status into
   `build/acceptance/t-display-s3-acceptance-report.json`. It remains
   development evidence and keeps `production_signing_ready: false`.
 - Historical T-Display S3 head-smoke evidence recorded for revision `8307c4b`
