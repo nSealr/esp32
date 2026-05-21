@@ -75,6 +75,15 @@ enable secure boot, enable flash encryption, disable download mode, or lock
 debug access. It reports whether those irreversible production-hardening steps
 are still blockers.
 
+Hardware note, 2026-05-21: revision `3a67803` was built with ESP-IDF
+`v5.5.4`, flashed to the attached T-Display S3 on
+`/dev/cu.usbmodem1101`, and passed capability smoke, review-scenario smoke,
+manual visual review scenarios, approve/reject button observation, and the
+read-only security-fuse audit. The audit still reported secure boot, flash
+encryption, debug lock, download mode, and manual flash-encryption download as
+production blockers. A hard reset was required after the fuse audit before the
+application serial protocol responded again.
+
 Before any real signing path can be enabled, the production profile must prove:
 
 - trusted display acceptance

@@ -276,3 +276,7 @@ This target runs only `espefuse.py --chip esp32s3 --port <port> summary` and
 prints JSON for secure boot, flash encryption, download-mode, and debug-lock
 state. It is an M9 gap measurement tool, not a provisioning command. It must
 not be treated as production hardening and does not enable signing.
+
+After the read-only fuse audit, hard-reset the board before running app
+protocol smokes or manual review-display commands. The audit can leave the
+chip outside the running application protocol until reset.

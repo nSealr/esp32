@@ -343,6 +343,16 @@ tests with strict C++ warnings.
   Host-core raster tests verify Value lines use the dedicated yellow color;
   the hardware smoke does not replace human visual color inspection and does
   not enable signing.
+- T-Display S3 physical acceptance evidence recorded for revision `3a67803` on
+  `/dev/cu.usbmodem1101`: ESP-IDF `v5.5.4` build and flash passed,
+  capability smoke passed with 40 exchanges, review-scenario smoke passed with
+  8 scenarios, manual visual inspection passed for basic review, dense tags,
+  control escapes, Unicode fallback, and request-error screens, and manual
+  button observation passed for long-press approve and reject paths. The
+  read-only security-fuse audit reported secure boot, flash encryption, debug
+  lock, download mode, and manual flash-encryption download as production
+  blockers. A hard reset was required after the fuse audit before app-protocol
+  smokes resumed.
 - Regression tests require the ESP-IDF console defaults to use native USB
   Serial/JTAG as the primary console; secondary USB logging is not enough for
   input-driven protocol smoke tests.

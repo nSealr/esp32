@@ -332,6 +332,19 @@ color change. The smoke records protocol/display-path evidence only; human
 visual color confirmation remains separate from production trusted-display
 acceptance.
 
+Hardware note, 2026-05-21: revision `3a67803` was built with ESP-IDF
+`v5.5.4`, flashed to the attached T-Display S3 on `/dev/cu.usbmodem1101`, and
+passed capability smoke with 40 exchanges, 9 response frames, and 31 expected
+rejections. The review-scenario smoke passed 8 scenarios with 9 exchanges, 8
+response frames, and 1 expected rejection. Human observation confirmed the
+basic Event review, dense structured tags, control-character escapes, Unicode
+fallback, request-error state, long KEY/GPIO14 approve path, and long
+BOOT/GPIO0 reject path rendered or behaved as expected. The read-only
+security-fuse audit reported secure boot, flash encryption, debug lock,
+download mode, and manual flash-encryption download as production blockers.
+A hard reset after the fuse audit was required before the application serial
+protocol responded again. Signing remains disabled.
+
 Status note, 2026-05-09: the T-Display S3 button press classifier is now
 factored into a host-buildable state machine shared by the ESP-IDF GPIO polling
 adapter. Host-core tests cover debounce rejection, short press mapping, long
