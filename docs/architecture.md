@@ -114,9 +114,10 @@ The first firmware foundation is host-buildable C++ under
   `created_at`, `kind`, `tags`, and `content`, with constrained tag/content
   limits mirrored from `nSealr/specs`.
 - `qr_response_display`: chooses static versus animated QR response frames for
-  already-produced response JSON and drives a display adapter with bounded
-  animated cycles. It does not render QR matrices, perform camera scan-back, or
-  produce signatures.
+  already-produced response JSON after a v0 top-level response-shape gate, and
+  drives a display adapter with bounded animated cycles. It does not render QR
+  matrices, perform camera scan-back, perform full signed-output verification,
+  or produce signatures.
 - `nip19_nsec`: decodes canonical lowercase NIP-19 `nsec` Bech32 private-key
   payloads into a 32-byte RAM-only secret-key buffer and lowercase hex for test
   comparison. It exists only as a QR-vault key-source parser; it does not

@@ -136,7 +136,8 @@ hardware readiness can differ, final vault behavior must converge.
 - Host-core QR response-envelope encoding for already-produced response JSON.
   Static `nsealr1:` and animated `nsealr1a:` output match the shared signed
   response vector. A host-core response-display harness now chooses static
-  versus animated frame output and cycles animated frames for future display
+  versus animated frame output only after the response JSON passes a v0
+  top-level response-shape gate, then cycles animated frames for future display
   adapters. Firmware signing, QR matrix/display hardware, camera scan-back, and
   physical acceptance remain pending.
 - Shared nSealr v0 implementation limits for constrained firmware parsing,

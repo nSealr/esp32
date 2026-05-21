@@ -469,7 +469,7 @@ void test_qr_envelope_encodes_signed_response_vectors_without_signing() {
 }
 
 void test_qr_response_display_builds_static_frame_for_small_response() {
-    const std::string response_json = R"({"version":1,"request_id":"req-static-response","ok":true})";
+    const std::string response_json = R"({"version":1,"request_id":"req-static-response","ok":true,"result":{}})";
     const std::vector<nsealr::QrResponseDisplayFrame> frames =
         nsealr::build_qr_response_display_frames(response_json);
 
@@ -512,7 +512,8 @@ void test_qr_response_display_cycles_animated_frames_for_large_response() {
 }
 
 void test_qr_response_display_shows_static_frame_once() {
-    const std::string response_json = R"({"version":1,"request_id":"req-static-response","ok":false})";
+    const std::string response_json =
+        R"({"version":1,"request_id":"req-static-response","ok":false,"error":{"code":"signing_disabled","message":"Signing is disabled.","retryable":false}})";
     RecordingQrResponseDisplayIo io;
 
     const nsealr::QrResponseDisplayResult result =
@@ -526,22 +527,59 @@ void test_qr_response_display_shows_static_frame_once() {
 void test_qr_response_display_rejects_invalid_json_and_bad_cycles() {
     RecordingQrResponseDisplayIo io;
 
-    expect_throw("QR envelope payload is not valid JSON", [] {
+    expect_throw("response must be a JSON object", [] {
         (void)nsealr::build_qr_response_display_frames("not json");
     });
     expect_throw("animated QR decoded JSON exceeds max_animated_qr_decoded_json_bytes", [] {
         (void)nsealr::build_qr_response_display_frames(response_json_with_content_bytes(5000U), 64U);
     });
     expect_throw("QR response display animated cycles must be non-zero", [&] {
-        (void)nsealr::run_qr_response_display_io(io, R"({"version":1,"request_id":"req","ok":true})", 64U, 0U);
+        (void)nsealr::run_qr_response_display_io(
+            io,
+            R"({"version":1,"request_id":"req","ok":true,"result":{}})",
+            64U,
+            0U);
     });
     expect_throw("exceed max_qr_response_display_cycles", [&] {
         (void)nsealr::run_qr_response_display_io(
             io,
-            R"({"version":1,"request_id":"req","ok":true})",
+            R"({"version":1,"request_id":"req","ok":true,"result":{}})",
             64U,
             nsealr::kMaxQrResponseDisplayCycles + 1U);
     });
+}
+
+void test_qr_response_display_rejects_non_response_payload_shapes() {
+    expect_throw("response must be a JSON object", [] {
+        (void)nsealr::build_qr_response_display_frames(R"(["not-a-response"])");
+    });
+    expect_throw("unknown top-level field", [] {
+        (void)nsealr::build_qr_response_display_frames(
+            R"({"version":1,"request_id":"req-response-display","ok":true,"result":{},"extra":true})");
+    });
+    expect_throw("successful response requires result", [] {
+        (void)nsealr::build_qr_response_display_frames(
+            R"({"version":1,"request_id":"req-response-display","ok":true})");
+    });
+    expect_throw("error response must not include result", [] {
+        (void)nsealr::build_qr_response_display_frames(
+            R"({"version":1,"request_id":"req-response-display","ok":false,"result":{},"error":{}})");
+    });
+    expect_throw("JSON scalar is invalid", [] {
+        (void)nsealr::build_qr_response_display_frames(
+            R"({"version":1,"request_id":"req-response-display","ok":true,"result":{"bad":?}})");
+    });
+}
+
+void test_qr_response_display_allows_nested_json_unicode_escapes() {
+    const std::string response_json =
+        R"({"version":1,"request_id":"req-response-display","ok":true,"result":{"content":"snowman \u2603"}})";
+
+    const std::vector<nsealr::QrResponseDisplayFrame> frames =
+        nsealr::build_qr_response_display_frames(response_json);
+
+    assert(frames.size() == 1U);
+    assert(nsealr::decode_qr_envelope(frames[0].payload).payload_json == response_json);
 }
 
 void test_qr_envelope_parses_sign_event_request_metadata() {
@@ -3387,6 +3425,8 @@ int main() {
     test_qr_response_display_cycles_animated_frames_for_large_response();
     test_qr_response_display_shows_static_frame_once();
     test_qr_response_display_rejects_invalid_json_and_bad_cycles();
+    test_qr_response_display_rejects_non_response_payload_shapes();
+    test_qr_response_display_allows_nested_json_unicode_escapes();
     test_qr_envelope_parses_sign_event_request_metadata();
     test_qr_envelope_extracts_event_template_boundary();
     test_qr_envelope_parses_event_template_fields();
