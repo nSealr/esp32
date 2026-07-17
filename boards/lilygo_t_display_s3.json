@@ -70,5 +70,8 @@
   ],
   "wireless_policy": "Wireless must not participate in signing approval or request transport for the USB/display signer MVP.",
   "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
-  "production_signing": "disabled until display, physical controls, storage, provisioning, and signing tests pass"
+  "production_signing": "disabled until display, physical controls, storage, provisioning, and signing tests pass",
+  "reference_notes": [
+    "Legacy/dev reference: kept because the current esp32 firmware config and tests are wired to it; the curated Waveshare ESP32-S3-Touch family is the canonical esp32_usb_nip46 wallet hardware. Scheduled for retirement in the phase-05 esp32-wallet-universal phase (do not remove until then)."
+  ]
 }

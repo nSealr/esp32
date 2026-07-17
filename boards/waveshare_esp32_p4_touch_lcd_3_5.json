@@ -1,0 +1,64 @@
+{
+  "name": "Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5",
+  "target": "esp32p4",
+  "native_usb": true,
+  "status": "esp32_p4_qr_vault_reference",
+  "variant": "esp32_p4_camera_vault_board",
+  "accepted_skus": [
+    "ESP32-P4-WIFI6-Touch-LCD-3.5"
+  ],
+  "source": "https://www.waveshare.com/esp32-p4-wifi6-touch-lcd-3.5.htm",
+  "firmware_targets": [
+    "esp32_qr_vault"
+  ],
+  "coprocessor": {
+    "module": "ESP32-C6",
+    "function": "companion_radio",
+    "status": "disabled_for_air_gap",
+    "notes": "The ESP32-C6 companion radio is unpopulated/disabled for the air-gapped QR vault; no Wi-Fi or BLE path may participate in signing approval or request transport."
+  },
+  "display": {
+    "required_for_signing": true,
+    "driver": "ST7796",
+    "connection": "SPI",
+    "resolution": {
+      "short_edge": 320,
+      "long_edge": 480
+    },
+    "touch": {
+      "driver": "FT6336",
+      "connection": "I2C",
+      "approval_allowed": false,
+      "notes": "Touch may be used for page navigation experiments, not final approve/reject signing consent."
+    },
+    "notes": "The 3.5 inch 320x480 display is the reason this ESP32-P4 board is the reference ESP32 QR vault target for local Nostr event review."
+  },
+  "camera": {
+    "module": "OV5647",
+    "required_for_qr": true,
+    "connection": "MIPI-CSI",
+    "pinout_status": "confirm MIPI-CSI camera pinout on physical hardware before driver acceptance",
+    "notes": "Native MIPI-CSI camera for QR scan; the ESP32-P4 has a native MIPI camera interface (decision spec 3)."
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a physical control or explicitly reviewed hardware approval model after the air-gap review; touch-only approval remains disallowed."
+    },
+    {
+      "name": "reject",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a different physical control or explicitly reviewed hardware rejection model after the air-gap review."
+    }
+  ],
+  "wireless_policy": "Wireless must be disabled or excluded in high-assurance QR vault builds; the ESP32-C6 companion radio is unpopulated/disabled for the air gap, so no Wi-Fi or BLE path may participate in signing approval.",
+  "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
+  "production_signing": "disabled until the ESP32-P4 MIPI-DSI/CSI drivers, display, camera, physical controls, storage, provisioning, and signing tests pass",
+  "reference_notes": [
+    "esp32_qr_vault reference board: ESP32-P4 (400 MHz dual RISC-V), radio-less air gap with the ESP32-C6 radio disabled, native MIPI camera for QR scan (decision spec 2/3).",
+    "Design lineage aligned with Kern's ESP32-P4 vault work and libwally-based BIP derivation.",
+    "Waveshare ESP32-P4-WIFI6-Touch-LCD-4B (Kern's board) is a compatible secondary - no profile is added until requested (decision spec 3).",
+    "Verify exact flash/PSRAM, ST7796 bus, FT6336 touch, and OV5647 camera pinout against the Waveshare wiki before driver acceptance."
+  ]
+}

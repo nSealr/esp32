@@ -1,0 +1,53 @@
+{
+  "name": "Waveshare ESP32-S3-Touch-LCD-1.69",
+  "target": "esp32s3",
+  "native_usb": true,
+  "status": "compact_usb_wallet_candidate",
+  "variant": "compact_no_camera_touch_board",
+  "accepted_skus": [
+    "ESP32-S3-Touch-LCD-1.69"
+  ],
+  "source": "https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-1.69",
+  "firmware_targets": [
+    "esp32_usb_nip46"
+  ],
+  "memory": {
+    "flash": "16MB",
+    "psram": "8MB"
+  },
+  "display": {
+    "required_for_signing": true,
+    "driver": "ST7789V2",
+    "connection": "SPI",
+    "resolution": {
+      "short_edge": 240,
+      "long_edge": 280
+    },
+    "touch": {
+      "driver": "CST816",
+      "connection": "I2C",
+      "approval_allowed": false,
+      "notes": "Touch is navigation-only and never approve/reject signing consent."
+    },
+    "notes": "240x280 compact panel over SPI; the compact reference board for the universal esp32_usb_nip46 wallet firmware (nSealr Key)."
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a physical control after exact board revision validation; touch-only approval remains disallowed."
+    },
+    {
+      "name": "reject",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a different physical control after exact board revision validation."
+    }
+  ],
+  "wireless_policy": "Wi-Fi/BLE must not participate in signing approval or request transport for the USB wallet MVP; signing transport is USB-only in v1.",
+  "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
+  "production_signing": "disabled until display, physical controls, storage, provisioning, and signing tests pass",
+  "reference_notes": [
+    "Compact-role board of the curated Waveshare ESP32-S3-Touch wallet family for the universal esp32_usb_nip46 firmware.",
+    "The ST7789V2 + CST816 combination is also the reference external panel for the custom-wallet display-agnostic FPC registry."
+  ]
+}

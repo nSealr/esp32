@@ -1,0 +1,51 @@
+{
+  "name": "custom-wallet-min display-agnostic panel registry",
+  "status": "custom_wallet_display_panel_registry",
+  "firmware_targets": [
+    "custom_hardware_wallet"
+  ],
+  "board": "custom-wallet-min",
+  "connection": "FPC",
+  "fpc_connector": "Hirose FH12-18S-0.5SH(55), 18-pin 0.5mm",
+  "source": "https://www.waveshare.com/wiki/1.69inch_Touch_LCD_Module",
+  "reference_panel": {
+    "name": "Waveshare 1.69inch ST7789V2 + CST816",
+    "display": {
+      "driver": "ST7789V2",
+      "connection": "SPI",
+      "resolution": {
+        "short_edge": 240,
+        "long_edge": 280
+      }
+    },
+    "touch": {
+      "driver": "CST816",
+      "connection": "I2C",
+      "approval_allowed": false,
+      "notes": "External-panel touch is navigation-only; the on-board physical confirm button is the sole approve/reject control (WYSIWYS preserved)."
+    }
+  },
+  "driver_family": [
+    {
+      "driver": "ST7789",
+      "connection": "SPI",
+      "notes": "Curated driver-family member for the display-agnostic external SPI panel."
+    },
+    {
+      "driver": "ST7789V2",
+      "connection": "SPI",
+      "notes": "Curated driver-family member; the reference 1.69 inch panel uses this driver."
+    },
+    {
+      "driver": "ST7796",
+      "connection": "SPI",
+      "notes": "Curated driver-family member for larger external SPI panels."
+    }
+  ],
+  "physical_confirm": "On-board physical confirm button stays on the security board (not the external touch); the firmware renders the dumb external SPI panel itself so WYSIWYS is preserved over the FPC.",
+  "reference_notes": [
+    "Metadata only: this is the display driver-family registry the custom-wallet board-profile registry consumes (decision spec 5). The custom-wallet-min board itself is designed in the phase-02 custom-wallet-board phase; this task adds the panel metadata only.",
+    "No MCU target: this is a display-panel registry, not a signer board profile. The custom-wallet-min host MCU is ESP32-S3-WROOM-1-N16R8 (tracked with the board design, not here).",
+    "Two layout variants share this registry: (A) core-behind-display over the FPC connector, (B) core-with-display with the panel mounted directly."
+  ]
+}

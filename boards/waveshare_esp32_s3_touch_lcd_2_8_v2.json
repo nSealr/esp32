@@ -1,0 +1,57 @@
+{
+  "name": "Waveshare ESP32-S3-Touch-LCD-2.8 (V2)",
+  "target": "esp32s3",
+  "native_usb": true,
+  "status": "primary_usb_wallet_candidate",
+  "variant": "v2_no_camera_touch_board",
+  "accepted_skus": [
+    "ESP32-S3-Touch-LCD-2.8"
+  ],
+  "source": "https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-2.8",
+  "firmware_targets": [
+    "esp32_usb_nip46"
+  ],
+  "memory": {
+    "flash": "16MB",
+    "psram": "8MB"
+  },
+  "display": {
+    "required_for_signing": true,
+    "driver": "ST7789",
+    "connection": "SPI",
+    "resolution": {
+      "short_edge": 240,
+      "long_edge": 320
+    },
+    "touch": {
+      "driver": "CST3530",
+      "connection": "I2C",
+      "approval_allowed": false,
+      "revision_controllers": {
+        "v1": "CST328",
+        "v2": "CST3530"
+      },
+      "notes": "V1/V2 controller split: V1 boards ship the CST328 touch controller, V2 boards ship the CST3530 (same ST7789 display driver). Verify the exact controller against the label on the back of the board. Touch is navigation-only and never approve/reject signing consent."
+    },
+    "notes": "240x320 IPS panel over SPI; the primary reference board for the universal esp32_usb_nip46 wallet firmware (nSealr Key)."
+  },
+  "approval_inputs": [
+    {
+      "name": "approve",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a physical control after exact board revision validation; touch-only approval remains disallowed."
+    },
+    {
+      "name": "reject",
+      "connection": "separate_physical_control_required",
+      "notes": "Map to a different physical control after exact board revision validation."
+    }
+  ],
+  "wireless_policy": "Wi-Fi/BLE must not participate in signing approval or request transport for the USB wallet MVP; signing transport is USB-only in v1.",
+  "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
+  "production_signing": "disabled until display, physical controls, storage, provisioning, and signing tests pass",
+  "reference_notes": [
+    "Primary reference board of the curated Waveshare ESP32-S3-Touch wallet family for the universal esp32_usb_nip46 firmware.",
+    "V1 was discontinued in favour of V2; the only hardware delta is the touch controller (CST328 -> CST3530)."
+  ]
+}

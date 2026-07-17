@@ -572,7 +572,7 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
             {"approve", "reject"},
         )
 
-    def test_waveshare_esp32_s3_touch_lcd_3_5b_c_board_profile_documents_qr_constraints(self) -> None:
+    def test_waveshare_esp32_s3_touch_lcd_3_5b_c_board_profile_documents_premium_wallet_role(self) -> None:
         profile_path = ROOT / "boards/waveshare_esp32_s3_touch_lcd_3_5b_c.json"
 
         self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-S3 Touch LCD 3.5B-C board profile")
@@ -580,21 +580,142 @@ ENABLE_SECURITY_DOWNLOAD (BLOCK0)                  Set this bit to enable secure
 
         profile = json.loads(profile_path.read_text(encoding="utf-8"))
         self.assertEqual(profile["target"], "esp32s3")
-        self.assertEqual(profile["status"], "secondary_qr_vault_candidate")
+        # Retagged from the stale secondary QR-vault framing to the premium role of
+        # the universal esp32_usb_nip46 wallet family (nSealr Key).
+        self.assertEqual(profile["status"], "premium_usb_wallet_candidate")
+        self.assertEqual(profile["firmware_targets"], ["esp32_usb_nip46"])
         self.assertEqual(profile["variant"], "case_with_ov5640_camera")
         self.assertEqual(profile["accepted_skus"], ["ESP32-S3-Touch-LCD-3.5B-C"])
+        # Structured display/camera/SKU fields stay pinned: the cross-repo hardware
+        # QR-requirements alignment reads them.
         self.assertEqual(profile["camera"]["module"], "OV5640")
         self.assertTrue(profile["camera"]["required_for_qr"])
         self.assertEqual(profile["display"]["resolution"]["short_edge"], 320)
         self.assertEqual(profile["display"]["resolution"]["long_edge"], 480)
         self.assertEqual(profile["display"]["driver"], "AXS15231B")
         self.assertEqual(profile["display"]["connection"], "QSPI")
+        # Touch controller is not asserted as FT6336; it stays to-validate on the
+        # exact 3.5B-C SKU per the Waveshare wiki.
+        self.assertEqual(profile["display"]["touch"]["driver"], "to_validate_on_3_5b_c")
+        self.assertNotIn("FT6336", profile["display"]["touch"]["driver"])
         self.assertFalse(profile["display"]["touch"]["approval_allowed"])
         self.assertIn("Wireless must be disabled", profile["wireless_policy"])
         self.assertEqual(
             {approval_input["name"] for approval_input in profile["approval_inputs"]},
             {"approve", "reject"},
         )
+
+    def test_waveshare_esp32_p4_touch_lcd_3_5_board_profile_documents_vault_role(self) -> None:
+        profile_path = ROOT / "boards/waveshare_esp32_p4_touch_lcd_3_5.json"
+
+        self.assertTrue(profile_path.exists(), "missing Waveshare ESP32-P4 Touch LCD 3.5 board profile")
+        validate_firmware.validate_board_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        self.assertEqual(profile["target"], "esp32p4")
+        self.assertEqual(profile["status"], "esp32_p4_qr_vault_reference")
+        self.assertEqual(profile["firmware_targets"], ["esp32_qr_vault"])
+        # ESP32-C6 companion radio disabled for the air gap.
+        self.assertEqual(profile["coprocessor"]["module"], "ESP32-C6")
+        self.assertEqual(profile["coprocessor"]["status"], "disabled_for_air_gap")
+        self.assertEqual(profile["display"]["driver"], "ST7796")
+        self.assertEqual(profile["display"]["connection"], "SPI")
+        self.assertEqual(profile["display"]["resolution"]["short_edge"], 320)
+        self.assertEqual(profile["display"]["resolution"]["long_edge"], 480)
+        self.assertEqual(profile["display"]["touch"]["driver"], "FT6336")
+        self.assertEqual(profile["display"]["touch"]["connection"], "I2C")
+        self.assertFalse(profile["display"]["touch"]["approval_allowed"])
+        self.assertEqual(profile["camera"]["module"], "OV5647")
+        self.assertTrue(profile["camera"]["required_for_qr"])
+        self.assertEqual(profile["camera"]["connection"], "MIPI-CSI")
+        self.assertIn("Wireless must be disabled", profile["wireless_policy"])
+        self.assertEqual(
+            {approval_input["name"] for approval_input in profile["approval_inputs"]},
+            {"approve", "reject"},
+        )
+        # The ESP32-P4 4-inch board (4B) is a compatible secondary, no profile yet.
+        self.assertTrue(
+            any("ESP32-P4-WIFI6-Touch-LCD-4B" in note for note in profile["reference_notes"]),
+            "P4 profile must note the 4B board as a compatible secondary",
+        )
+
+    def test_esp32_s3_touch_wallet_family_profiles_document_roles(self) -> None:
+        # Curated universal esp32_usb_nip46 wallet family: role (via status),
+        # display driver, and touch controller per board.
+        expected = {
+            "boards/waveshare_esp32_s3_touch_lcd_2_8_v2.json": {
+                "status": "primary_usb_wallet_candidate",
+                "driver": "ST7789",
+                "touch": "CST3530",
+                "short_edge": 240,
+                "long_edge": 320,
+            },
+            "boards/waveshare_esp32_s3_touch_lcd_1_69.json": {
+                "status": "compact_usb_wallet_candidate",
+                "driver": "ST7789V2",
+                "touch": "CST816",
+                "short_edge": 240,
+                "long_edge": 280,
+            },
+            "boards/waveshare_esp32_s3_touch_lcd_2_0.json": {
+                "status": "standard_usb_wallet_candidate",
+                "driver": "ST7789",
+                "touch": "CST816D",
+                "short_edge": 240,
+                "long_edge": 320,
+            },
+            "boards/waveshare_esp32_s3_touch_lcd_3_5b_c.json": {
+                "status": "premium_usb_wallet_candidate",
+                "driver": "AXS15231B",
+                "touch": None,
+                "short_edge": 320,
+                "long_edge": 480,
+            },
+        }
+        for rel_path, fields in expected.items():
+            profile_path = ROOT / rel_path
+            self.assertTrue(profile_path.exists(), f"missing wallet family board profile: {rel_path}")
+            validate_firmware.validate_board_profile(profile_path)
+            profile = json.loads(profile_path.read_text(encoding="utf-8"))
+            self.assertEqual(profile["target"], "esp32s3", rel_path)
+            self.assertEqual(profile["status"], fields["status"], rel_path)
+            self.assertEqual(profile["firmware_targets"], ["esp32_usb_nip46"], rel_path)
+            self.assertEqual(profile["display"]["driver"], fields["driver"], rel_path)
+            self.assertEqual(profile["display"]["resolution"]["short_edge"], fields["short_edge"], rel_path)
+            self.assertEqual(profile["display"]["resolution"]["long_edge"], fields["long_edge"], rel_path)
+            self.assertFalse(profile["display"]["touch"]["approval_allowed"], rel_path)
+            if fields["touch"] is not None:
+                self.assertEqual(profile["display"]["touch"]["driver"], fields["touch"], rel_path)
+            self.assertEqual(
+                {approval_input["name"] for approval_input in profile["approval_inputs"]},
+                {"approve", "reject"},
+                rel_path,
+            )
+        # The primary board captures the V1/V2 touch-controller split.
+        primary = json.loads(
+            (ROOT / "boards/waveshare_esp32_s3_touch_lcd_2_8_v2.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(primary["display"]["touch"]["revision_controllers"], {"v1": "CST328", "v2": "CST3530"})
+
+    def test_custom_wallet_min_display_panel_registry(self) -> None:
+        profile_path = ROOT / "boards/custom_wallet_min_display_panels.json"
+
+        self.assertTrue(profile_path.exists(), "missing custom-wallet display panel registry")
+        validate_firmware.validate_board_profile(profile_path)
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        # No MCU target: this is a display-panel registry, not a signer board.
+        self.assertNotIn("target", profile)
+        self.assertEqual(profile["firmware_targets"], ["custom_hardware_wallet"])
+        self.assertEqual(profile["board"], "custom-wallet-min")
+        self.assertEqual(profile["reference_panel"]["display"]["driver"], "ST7789V2")
+        self.assertEqual(profile["reference_panel"]["touch"]["driver"], "CST816")
+        self.assertFalse(profile["reference_panel"]["touch"]["approval_allowed"])
+        self.assertEqual(
+            [entry["driver"] for entry in profile["driver_family"]],
+            ["ST7789", "ST7789V2", "ST7796"],
+        )
+        self.assertTrue(profile["physical_confirm"].strip())
 
     def test_lilygo_t_display_s3_board_profile_documents_usb_display_constraints(self) -> None:
         profile_path = ROOT / "boards/lilygo_t_display_s3.json"

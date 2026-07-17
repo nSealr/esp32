@@ -2,14 +2,14 @@
   "name": "Waveshare ESP32-S3 Touch LCD 3.5B-C",
   "target": "esp32s3",
   "native_usb": true,
-  "status": "secondary_qr_vault_candidate",
+  "status": "premium_usb_wallet_candidate",
   "variant": "case_with_ov5640_camera",
   "accepted_skus": [
     "ESP32-S3-Touch-LCD-3.5B-C"
   ],
   "source": "https://www.waveshare.com/esp32-s3-touch-lcd-3.5.htm",
   "firmware_targets": [
-    "esp32_s3_qr_vault"
+    "esp32_usb_nip46"
   ],
   "memory": {
     "flash": "16MB",
@@ -27,16 +27,16 @@
       "driver": "to_validate_on_3_5b_c",
       "connection": "to_validate_on_3_5b_c",
       "approval_allowed": false,
-      "notes": "Touch may be used for page navigation experiments, not final approve/reject signing consent."
+      "notes": "Touch controller unverified on the exact 3.5B-C SKU: the Waveshare wiki describes the AXS15231B as an integrated LCD+touch controller (QSPI display / I2C touch), so do not assert FT6336 - verify against the Waveshare wiki on physical hardware before driver acceptance. Touch is navigation-only and never approve/reject signing consent."
     },
-    "notes": "The 3.5 inch 320x480 display is the reason this board family is preferred as the secondary ESP32 QR vault target for local Nostr event review."
+    "notes": "The large 3.5 inch 320x480 display is why this board is the premium reference of the curated ESP32-S3-Touch wallet family (esp32_usb_nip46, nSealr Key)."
   },
   "camera": {
     "module": "OV5640",
     "required_for_qr": true,
     "connection": "integrated_camera_interface",
     "pinout_status": "3.5B-C selected; verify camera pinout on physical hardware before driver acceptance",
-    "notes": "Only the case-plus-OV5640 3.5B-C variant is accepted for this target. Historical SeedSigner MicroPython prior art references a 3.5B display path."
+    "notes": "The case-plus-OV5640 3.5B-C SKU carries an onboard OV5640 camera; the USB wallet firmware does not use it. The camera fields are retained as a hardware fact and to keep the cross-repo hardware QR-requirements alignment stable until the hardware repo is re-scoped in a later phase."
   },
   "approval_inputs": [
     {
@@ -54,8 +54,8 @@
   "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
   "production_signing": "disabled until exact case-plus-OV5640 SKU, camera, display, physical controls, storage, provisioning, and signing tests pass",
   "reference_notes": [
-    "Preferred secondary ESP32 stateless QR vault target after LILYGO T-Display S3 Pro.",
-    "Do not treat historical seedsigner-micropython comments as current official SeedSigner support.",
-    "The confirmed implementation SKU is ESP32-S3-Touch-LCD-3.5B-C, with AXS15231B/QSPI display work pending."
+    "Premium reference board of the curated Waveshare ESP32-S3-Touch wallet family for the universal esp32_usb_nip46 firmware (nSealr Key). Retagged from the retired secondary ESP32 QR-vault framing.",
+    "The confirmed implementation SKU is ESP32-S3-Touch-LCD-3.5B-C, with AXS15231B/QSPI display work pending.",
+    "Camera fields are retained for cross-repo hardware QR-requirements alignment; the USB wallet firmware does not use the onboard camera."
   ]
 }

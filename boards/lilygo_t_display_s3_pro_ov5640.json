@@ -51,5 +51,8 @@
   },
   "wireless_policy": "Wireless must be disabled or excluded in high-assurance QR vault builds; no Wi-Fi or BLE path may participate in signing approval.",
   "debug_policy": "Debug access stays enabled for board bring-up and must be locked before any production-key experiment.",
-  "production_signing": "disabled until camera, display, physical controls, storage, provisioning, and signing tests pass"
+  "production_signing": "disabled until camera, display, physical controls, storage, provisioning, and signing tests pass",
+  "reference_notes": [
+    "Legacy/dev reference: kept because the current esp32 firmware config and tests are wired to it; the Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5 is the canonical esp32_qr_vault hardware. Scheduled for retirement in the phase-05 esp32-wallet-universal phase (do not remove until then)."
+  ]
 }
