@@ -94,7 +94,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         grant = json.loads((specs / "vectors/grants/esp32-usb-kind-1-session.json").read_text(encoding="utf-8"))
 
         self.assertEqual(qr_account["signer_route"]["type"], "esp32_qr_vault")
-        self.assertEqual(qr_account["signer_route"]["repository"], "esp32")
+        self.assertEqual(qr_account["signer_route"]["repository"], "firmware")
         self.assertEqual(qr_account["signer_route"]["transport"], "qr")
         self.assertEqual(qr_account["signer_route"]["custody"], "stateless_session")
         self.assertEqual(qr_account["signer_route"]["trusted_review"], "device_display")
@@ -114,7 +114,7 @@ class FirmwareProjectValidationTests(unittest.TestCase):
         self.assertFalse(qr_selection["selection"]["contains_secret_material"])
 
         self.assertEqual(usb_account["signer_route"]["type"], "esp32_usb_nip46")
-        self.assertEqual(usb_account["signer_route"]["repository"], "esp32")
+        self.assertEqual(usb_account["signer_route"]["repository"], "firmware")
         self.assertEqual(usb_account["signer_route"]["transport"], "usb")
         self.assertEqual(usb_account["signer_route"]["custody"], "device_persistent")
         self.assertEqual(usb_account["signer_route"]["trusted_review"], "device_display")

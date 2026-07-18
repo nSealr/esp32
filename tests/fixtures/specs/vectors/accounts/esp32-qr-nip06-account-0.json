@@ -5,7 +5,7 @@
   "public_key": "17162c921dc4d2518f9a101db33695df1afb56ab82f5ff3e5da6eec3ca5cd917",
   "signer_route": {
     "type": "esp32_qr_vault",
-    "repository": "esp32",
+    "repository": "firmware",
     "transport": "qr",
     "custody": "stateless_session",
     "trusted_review": "device_display",

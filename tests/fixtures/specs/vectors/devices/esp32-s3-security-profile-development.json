@@ -3,7 +3,7 @@
   "format": "firmware-boot-hardening-profile-v0",
   "contract_id": "firmware-boot-hardening-v0",
   "solution": "esp32_usb_nip46",
-  "repository": "esp32",
+  "repository": "firmware",
   "target": "esp32_s3_usb_signer",
   "profile": "development_scaffold",
   "current": "partial",

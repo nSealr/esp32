@@ -5,7 +5,7 @@
   "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
   "signer_route": {
     "type": "esp32_usb_nip46",
-    "repository": "esp32",
+    "repository": "firmware",
     "transport": "usb",
     "custody": "device_persistent",
     "trusted_review": "device_display",
