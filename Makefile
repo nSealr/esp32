@@ -4,7 +4,11 @@ IDF_ACCEPTANCE_REPORT ?= build/acceptance/t-display-s3-acceptance-report.json
 IDF_ACCEPTANCE_MANUAL ?= not-recorded
 IDF_FIRMWARE_REVISION ?= not-recorded
 
-.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report
+.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet rust-ci
+
+# Rust workspace gates (see rust-ci target near the end of this file).
+RISCV_TARGET := riscv32imafc-unknown-none-elf
+RUST_COVERAGE_JSON := build/rust-coverage.json
 
 setup:
 	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
@@ -96,4 +100,31 @@ docs:
 	python3 scripts/verify_repo.py
 	python3 scripts/validate_firmware.py
 
-ci: setup test lint audit docs
+# ---------------------------------------------------------------------------
+# Rust workspace gates (EXECUTION-ETHICS.md Section C). Additive to the C++ CI;
+# the C++ host-core-test path above is untouched. The `std` cargo feature is
+# proven non-inert by the std-gated test in `cargo-test`.
+# ---------------------------------------------------------------------------
+cargo-fmt:
+	cargo fmt --all --check
+
+cargo-clippy:
+	cargo clippy --all-targets -- -D warnings -D dead_code
+	cargo clippy --all-targets --all-features -- -D warnings -D dead_code
+
+cargo-test:
+	cargo test --workspace
+	cargo test -p nsealr-core --features std
+	cargo build -p nsealr-core --target $(RISCV_TARGET)
+
+cargo-deny:
+	cargo deny check
+
+coverage-ratchet:
+	@mkdir -p build
+	cargo llvm-cov --workspace --all-features --summary-only --json --output-path $(RUST_COVERAGE_JSON)
+	python3 ci/check_coverage_ratchet.py $(RUST_COVERAGE_JSON) ci/ratchet.json
+
+rust-ci: cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet
+
+ci: setup test lint audit docs rust-ci

@@ -13,4 +13,16 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Install pinned Rust toolchain
+        # `rustup toolchain install` reads rust-toolchain.toml and installs
+        # the pinned channel plus its declared components (rustfmt, clippy,
+        # llvm-tools-preview) and the riscv32imafc target. (`rustup show` as
+        # an installer is deprecated since rustup 1.28.)
+        run: |
+          rustup toolchain install
+          cargo --version
+      - name: Install cargo-deny and cargo-llvm-cov
+        run: |
+          cargo install --locked cargo-deny
+          cargo install --locked cargo-llvm-cov
       - run: make ci

@@ -1,0 +1,13 @@
+{
+  "_about": "Coverage floors and dead-code baseline for the firmware Rust workspace. Established by Phase 03 Task 02 (the adopting task). Floors only ever tighten, never loosen (EXECUTION-ETHICS.md §D). Enforced by `make coverage-ratchet` via ci/check_coverage_ratchet.py + cargo-llvm-cov. The phase that adds a new crate must add its measured floor here; check_coverage_ratchet.py fails if a workspace package has no floor entry.",
+  "coverage": {
+    "metric": "line-percent",
+    "floors": {
+      "nsealr-core": 100.0
+    }
+  },
+  "dead_code": {
+    "_about": "Zero dead code is enforced directly by `make cargo-clippy` (-D dead_code); this baseline records the ratcheted allowance.",
+    "max_allowed_items": 0
+  }
+}

@@ -1,0 +1,50 @@
+# cargo-deny configuration for the nSealr firmware workspace.
+# Gate: `cargo deny check` (licenses / advisories / bans / sources).
+# Schema targets cargo-deny 0.20.x (v2, no legacy `version` keys).
+
+[graph]
+# Evaluate the dependency graph as it resolves for the real firmware target and
+# the host toolchains that run the tests, with every feature enabled.
+targets = [
+    "riscv32imafc-unknown-none-elf",
+    "aarch64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+]
+all-features = true
+
+[advisories]
+# Deny yanked crates; RUSTSEC vulnerabilities are denied by default in v2.
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Permissive allow-list only. Anything outside this set fails the gate; add a
+# license here (with a LEDGER.md rationale) rather than weakening the check.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.93
+# The allow-list is forward-looking (real deps land in later tasks), so do not
+# warn about entries no crate has matched yet.
+unused-allowed-license = "allow"
+
+[bans]
+# No duplicate crate versions (the coverage/size ratchets assume a single graph)
+# and no wildcard version requirements.
+multiple-versions = "deny"
+wildcards = "deny"
+allow = []
+deny = []
+
+[sources]
+# Only crates.io and no unvetted git sources.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
