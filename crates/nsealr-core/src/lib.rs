@@ -15,9 +15,10 @@
 //! default and pulls in nothing on-device.
 //!
 //! Phase 03 ports the C++ `host_core` logic into this crate one milestone at a
-//! time. The first ported surface is the two low-level primitives every higher
-//! layer builds on: [`hash`] (SHA-256) and [`base64url`] (URL-safe unpadded
-//! Base64).
+//! time. Ported so far: the low-level primitives [`hash`] (SHA-256) and
+//! [`base64url`] (URL-safe unpadded Base64), and the encoding layer [`bip39`]
+//! (English mnemonic parsing), [`nip19`] (`nsec` Bech32), [`seedqr`]
+//! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers).
 #![no_std]
 #![deny(missing_docs)]
 
@@ -27,7 +28,11 @@
 extern crate std;
 
 pub mod base64url;
+pub mod bip39;
 pub mod hash;
+pub mod nip19;
+pub mod seedqr;
+pub mod unicode;
 
 #[cfg(test)]
 mod tests {
