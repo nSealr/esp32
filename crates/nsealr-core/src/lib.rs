@@ -14,8 +14,10 @@
 //! [`std`] facade for host/desktop consumers and test tooling; it is off by
 //! default and pulls in nothing on-device.
 //!
-//! At this scaffold stage the crate exposes no public API surface — it only
-//! proves that the `no_std`/`std` split builds and that the test harness runs.
+//! Phase 03 ports the C++ `host_core` logic into this crate one milestone at a
+//! time. The first ported surface is the two low-level primitives every higher
+//! layer builds on: [`hash`] (SHA-256) and [`base64url`] (URL-safe unpadded
+//! Base64).
 #![no_std]
 #![deny(missing_docs)]
 
@@ -23,6 +25,9 @@
 // consumers. It is opt-in and off by default; on-device builds never pull it in.
 #[cfg(feature = "std")]
 extern crate std;
+
+pub mod base64url;
+pub mod hash;
 
 #[cfg(test)]
 mod tests {
