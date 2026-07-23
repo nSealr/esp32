@@ -1,0 +1,15 @@
+[package]
+name = "nsealr-core"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.95"
+description = "no_std backbone crate for the nSealr firmware family (empty scaffold; logic ported in later tasks)."
+license = "MIT"
+publish = false
+
+[features]
+# Default build is `no_std` for the firmware targets. `std` is an opt-in facade
+# for host/desktop consumers; it is exercised by the `std`-gated test so the flag
+# is never inert (EXECUTION-ETHICS.md §C, zero inert surface).
+default = []
+std = []

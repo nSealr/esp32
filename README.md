@@ -309,11 +309,41 @@ vectors, `approval_digest`, and signing vectors from `nSealr/specs`; it
 should not depend on Raspberry implementation code. It has no persistent secret
 and no TROPIC01 dependency.
 
-## Initial Layout
+## Layout
 
-- `firmware/`: ESP-IDF firmware projects and shared modules.
+- `Cargo.toml`, `crates/`, `apps/`: the Rust workspace (see below), the new home
+  for all firmware logic.
+- `firmware/`: the **legacy** C++ ESP-IDF projects and shared `host_core`
+  modules. This tree is **retired in Phase 03 Task 05**; its semantics are being
+  rewritten into `crates/nsealr-core`. Until then it still builds and its tests
+  still run under `make ci` (the `host-core-test` target).
 - `boards/`: board profiles, pinouts, displays, buttons, and hardware configs.
+- `ci/`: the coverage ratchet baseline (`ratchet.json`) and its checker.
 - `docs/`: build, flash, provisioning, and security notes.
+
+## Rust workspace
+
+The Rust cargo workspace is the backbone for every nSealr target:
+
+- `crates/nsealr-core`: the shared, `#![no_std]` signer core. It builds bare-metal
+  by default (verified against `riscv32imafc-unknown-none-elf`) and exposes an
+  opt-in `std` feature (default-off) for host/desktop consumers and tests. It is
+  an empty-but-building scaffold at this stage; C++ `host_core` logic is ported in
+  later Phase 03 tasks.
+- `apps/`: reserved for the per-target Rust binaries added by later phases
+  (`vault-esp32`, `key`, `one`, `vault-pi`). No app crates exist yet — see
+  `apps/README.md`. `crates/board-registry` is likewise reserved, not scaffolded.
+
+The toolchain is pinned in `rust-toolchain.toml` (explicit stable channel +
+the `riscv32imafc-unknown-none-elf` target). The Xtensa ESP32-S3 is not a rustup
+target; its `esp` toolchain is set up in Phase 05 Task 00, not here.
+
+The full Rust gate set (`cargo fmt --check`, `cargo clippy -- -D warnings
+-D dead_code`, `cargo test` on both the default `no_std` and the `std` feature
+plus a `riscv32imafc` `no_std` build, `cargo deny check`, and the
+`cargo-llvm-cov` coverage ratchet against `ci/ratchet.json`) runs as the
+`rust-ci` target and is wired into `make ci` alongside the existing C++ gates.
+Run just the Rust gates with `make rust-ci`.
 
 ## Quality Baseline
 

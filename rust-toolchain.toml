@@ -1,0 +1,12 @@
+# Pinned Rust toolchain for the nSealr firmware workspace.
+#
+# The channel is pinned to an explicit stable version for reproducibility; it is
+# only ever bumped deliberately (ratchets tighten, never drift). The Xtensa
+# ESP32-S3 is NOT a rustup target — it needs the `esp` channel installed via
+# `espup`, which cannot be pinned here; that toolchain is set up in Phase 05
+# Task 00. The ESP32-P4 is RISC-V and builds on this stock target.
+[toolchain]
+channel = "1.95.0"
+profile = "minimal"
+components = ["rustfmt", "clippy", "llvm-tools-preview"]
+targets = ["riscv32imafc-unknown-none-elf"]
