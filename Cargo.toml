@@ -1,9 +1,10 @@
 # nSealr firmware — Rust cargo workspace.
 #
-# The Rust tree (`crates/`, `apps/`) lives side by side with the legacy C++
-# firmware under `firmware/` (retired in Phase 03 Task 05). Only crates that
-# already have contents are listed as members; `apps/*` and future infra crates
-# are added by the phases that create them.
+# The all-Rust tree (`crates/`, `apps/`) is the sole firmware backbone; the
+# legacy C++ `host_core` and ESP-IDF app that used to live under `firmware/`
+# were retired in Phase 03 Task 05. Only crates that already have contents are
+# listed as members; `apps/*` and future infra crates are added by the phases
+# that create them.
 [workspace]
 resolver = "2"
 members = ["crates/nsealr-core", "apps/desktop-simulator"]

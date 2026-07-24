@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""Validate the nSealr firmware board profiles.
+
+The C++ `host_core` and the ESP-IDF `esp32_s3_usb_signer` app were retired in
+Phase 03 Task 05 (their protocol/review/session logic now lives in the Rust
+`crates/nsealr-core` crate, proven at parity by `apps/desktop-simulator`). What
+remains here is the toolchain-agnostic validation of the `boards/*.json`
+registry: the signer-board profiles and the custom-wallet display-panel
+registry that every firmware target consumes regardless of implementation
+language.
+"""
+
 from __future__ import annotations
 
 import json
@@ -6,212 +17,6 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-REQUIRED_PROJECT_FILES = [
-    "CMakeLists.txt",
-    "main/CMakeLists.txt",
-    "main/main.cpp",
-    "security_profile.json",
-    "sdkconfig.defaults",
-]
-
-FORBIDDEN_CLAIMS = [
-    "production ready",
-    "secure by default",
-    "real key signing enabled",
-]
-
-REQUIRED_SECURITY_BLOCKERS = {
-    "runtime_signing_feature",
-    "trusted_review_display",
-    "physical_approval_controls",
-    "unicode_review_rendering",
-    "key_provisioning",
-    "source_public_key_proof",
-    "secure_boot",
-    "flash_encryption",
-    "debug_lock",
-    "companion_signed_output_verification",
-}
-
-ACCEPTANCE_STATUSES = {"manual_development_acceptance_passed"}
-
-
-def _require_non_empty_string_list(value: object, path: Path, field: str) -> None:
-    if not isinstance(value, list) or not value:
-        raise ValueError(f"{path}: {field} must be a non-empty list")
-    for item in value:
-        if not isinstance(item, str) or not item.strip():
-            raise ValueError(f"{path}: {field} must contain non-empty strings")
-
-
-def _validate_manual_acceptance_evidence(path: Path, profile: dict, field: str) -> dict:
-    value = profile.get(field)
-    if not isinstance(value, dict):
-        raise ValueError(f"{path}: {field} must be an object")
-    if value.get("status") not in ACCEPTANCE_STATUSES:
-        allowed = ", ".join(sorted(ACCEPTANCE_STATUSES))
-        raise ValueError(f"{path}: {field}.status must be one of {allowed}")
-    if value.get("required_before_signing") is not True:
-        raise ValueError(f"{path}: {field}.required_before_signing must be true")
-    if value.get("production_claim") != "blocked_until_production_acceptance":
-        raise ValueError(f"{path}: {field}.production_claim must remain blocked_until_production_acceptance")
-    _require_non_empty_string_list(value.get("evidence_reports"), path, f"{field}.evidence_reports")
-    return value
-
-
-def _validate_unicode_review_rendering(path: Path, profile: dict) -> None:
-    value = profile.get("unicode_review_rendering")
-    if not isinstance(value, dict):
-        raise ValueError(f"{path}: unicode_review_rendering must be an object")
-    if value.get("status") != "ascii_safe_codepoint_fallback_only":
-        raise ValueError(f"{path}: unicode_review_rendering.status must be ascii_safe_codepoint_fallback_only")
-    if value.get("required_before_signing") is not True:
-        raise ValueError(f"{path}: unicode_review_rendering.required_before_signing must be true")
-    if value.get("production_claim") != "blocked_until_full_unicode_review_acceptance":
-        raise ValueError(
-            f"{path}: unicode_review_rendering.production_claim must remain blocked_until_full_unicode_review_acceptance"
-        )
-    _require_non_empty_string_list(
-        value.get("evidence_reports"),
-        path,
-        "unicode_review_rendering.evidence_reports",
-    )
-
-
-def validate_firmware_project(project: Path) -> None:
-    for rel in REQUIRED_PROJECT_FILES:
-        path = project / rel
-        if not path.exists():
-            raise ValueError(f"{project}: missing required ESP-IDF file {rel}")
-        if not path.read_text(encoding="utf-8").strip():
-            raise ValueError(f"{project}: empty required ESP-IDF file {rel}")
-
-    root_cmake = (project / "CMakeLists.txt").read_text(encoding="utf-8")
-    if "project.cmake" not in root_cmake or "project(" not in root_cmake:
-        raise ValueError(f"{project}: root CMakeLists.txt must include ESP-IDF project.cmake and project()")
-
-    sdkconfig = (project / "sdkconfig.defaults").read_text(encoding="utf-8")
-    if "CONFIG_IDF_TARGET=\"esp32s3\"" not in sdkconfig:
-        raise ValueError(f"{project}: sdkconfig.defaults must target esp32s3")
-    if "CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y" not in sdkconfig:
-        raise ValueError(f"{project}: sdkconfig.defaults must match the observed 16MB ESP32-S3 flash")
-
-    main = (project / "main/main.cpp").read_text(encoding="utf-8")
-    if "app_main" not in main:
-        raise ValueError(f"{project}: main.cpp must define app_main")
-    component_cmake = (project / "main/CMakeLists.txt").read_text(encoding="utf-8")
-    for required_source in (
-        "main.cpp",
-        "t_display_s3_board.cpp",
-        "t_display_s3_button_logic.cpp",
-        "t_display_s3_buttons.cpp",
-        "t_display_s3_display.cpp",
-        "t_display_s3_raster.cpp",
-        "t_display_s3_review_state.cpp",
-        "t_display_s3_status_frames.cpp",
-        "approval_gate.cpp",
-        "bip39_english.cpp",
-        "device_protocol.cpp",
-        "nip19_nsec.cpp",
-        "policy_change_review.cpp",
-        "qr_envelope.cpp",
-        "qr_review.cpp",
-        "qr_review_flow.cpp",
-        "review_controls.cpp",
-        "review_display.cpp",
-        "serial_frame.cpp",
-        "serial_review.cpp",
-        "seedqr.cpp",
-        "session_import_flow.cpp",
-        "session_import_review.cpp",
-        "session_keyring.cpp",
-        "session_source_generation.cpp",
-        "session_source_qr.cpp",
-        "session_source_qr_import_flow.cpp",
-        "sha256.cpp",
-        "signing_policy.cpp",
-        "trusted_review.cpp",
-    ):
-        if required_source not in component_cmake:
-            raise ValueError(f"{project}: ESP-IDF component must compile {required_source}")
-    lowered = main.lower()
-    for claim in FORBIDDEN_CLAIMS:
-        if claim in lowered:
-            raise ValueError(f"{project}: forbidden unsupported firmware claim: {claim}")
-    validate_security_profile(project / "security_profile.json")
-
-
-def validate_security_profile(path: Path) -> None:
-    profile = json.loads(path.read_text(encoding="utf-8"))
-    if profile.get("schema") != "nsealr-esp32-security-profile-v0":
-        raise ValueError(f"{path}: schema must be nsealr-esp32-security-profile-v0")
-    if profile.get("target") != "esp32_s3_usb_signer":
-        raise ValueError(f"{path}: target must be esp32_s3_usb_signer")
-    if profile.get("production_signing_allowed") is not False:
-        raise ValueError(f"{path}: production signing cannot be allowed by the v0 security profile")
-    if profile.get("profile") != "development_scaffold":
-        raise ValueError(f"{path}: v0 profile must remain development_scaffold")
-    if profile.get("runtime_signing_feature_enabled") is not False:
-        raise ValueError(f"{path}: runtime signing feature must remain disabled")
-
-    secure_boot = profile.get("secure_boot")
-    if not isinstance(secure_boot, dict) or secure_boot.get("enabled") is not False:
-        raise ValueError(f"{path}: secure_boot.enabled must be false until production hardening")
-    flash_encryption = profile.get("flash_encryption")
-    if not isinstance(flash_encryption, dict) or flash_encryption.get("enabled") is not False:
-        raise ValueError(f"{path}: flash_encryption.enabled must be false until production hardening")
-    debug_access = profile.get("debug_access")
-    if not isinstance(debug_access, dict) or debug_access.get("locked") is not False:
-        raise ValueError(f"{path}: debug_access.locked must be false for the development scaffold")
-
-    key_provisioning = profile.get("key_provisioning")
-    if not isinstance(key_provisioning, dict) or not key_provisioning.get("status"):
-        raise ValueError(f"{path}: key_provisioning.status is required")
-    if key_provisioning.get("persistent_secret_storage") != "not_implemented":
-        raise ValueError(f"{path}: persistent secret storage must remain not_implemented")
-
-    source_public_key_proof = profile.get("source_public_key_proof")
-    if (
-        not isinstance(source_public_key_proof, dict)
-        or source_public_key_proof.get("status") != "not_implemented"
-        or source_public_key_proof.get("required_before_signing") is not True
-    ):
-        raise ValueError(f"{path}: source_public_key_proof must remain not_implemented and required before signing")
-
-    blockers = profile.get("production_blockers")
-    if not isinstance(blockers, list):
-        raise ValueError(f"{path}: production_blockers must be a list")
-    missing_blockers = REQUIRED_SECURITY_BLOCKERS - set(blockers)
-    if missing_blockers:
-        missing = ", ".join(sorted(missing_blockers))
-        raise ValueError(f"{path}: missing production blockers: {missing}")
-
-    _validate_manual_acceptance_evidence(path, profile, "trusted_review_display")
-    _require_non_empty_string_list(
-        profile.get("display_review_protocol_evidence"),
-        path,
-        "display_review_protocol_evidence",
-    )
-    _validate_unicode_review_rendering(path, profile)
-    _require_non_empty_string_list(
-        profile.get("companion_transport_evidence"),
-        path,
-        "companion_transport_evidence",
-    )
-    _require_non_empty_string_list(
-        profile.get("firmware_protocol_evidence"),
-        path,
-        "firmware_protocol_evidence",
-    )
-    _require_non_empty_string_list(
-        profile.get("security_fuse_audit_evidence"),
-        path,
-        "security_fuse_audit_evidence",
-    )
-    physical_controls = _validate_manual_acceptance_evidence(path, profile, "physical_approval_controls")
-    if physical_controls.get("touch_approval_allowed") is not False:
-        raise ValueError(f"{path}: physical_approval_controls.touch_approval_allowed must be false")
 
 
 # Supported MCU build targets for the ESP32 signer board line. esp32s3 is the
@@ -321,9 +126,8 @@ def validate_board_profiles(board_dir: Path) -> None:
 
 
 def main() -> int:
-    validate_firmware_project(ROOT / "firmware/esp32_s3_usb_signer")
     validate_board_profiles(ROOT / "boards")
-    print("nSealr ESP32 firmware validation passed")
+    print("nSealr firmware board-profile validation passed")
     return 0
 
 

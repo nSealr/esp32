@@ -1,96 +1,26 @@
-IDF_PROJECT := firmware/esp32_s3_usb_signer
-IDF_PORT ?= /dev/cu.usbmodem1101
-IDF_ACCEPTANCE_REPORT ?= build/acceptance/t-display-s3-acceptance-report.json
-IDF_ACCEPTANCE_MANUAL ?= not-recorded
-IDF_FIRMWARE_REVISION ?= not-recorded
+# nSealr firmware — all-Rust workspace gates.
+#
+# The C++ `host_core` and the ESP-IDF `esp32_s3_usb_signer` app were retired in
+# Phase 03 Task 05; `crates/nsealr-core` is the sole signer backbone and
+# `apps/desktop-simulator` is its vector-parity oracle. Only one toolchain (Rust)
+# remains, so `make ci` is a single Rust gate set plus the generic Python
+# repo/board validators.
 
-.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet vector-harness rust-ci
+.PHONY: test lint audit docs ci cargo-fmt cargo-clippy cargo-test cargo-deny \
+	coverage-ratchet vector-harness rust-ci
 
-# Rust workspace gates (see rust-ci target near the end of this file).
 RISCV_TARGET := riscv32imafc-unknown-none-elf
 RUST_COVERAGE_JSON := build/rust-coverage.json
 
-setup:
-	@echo "Run '. /path/to/esp-idf/export.sh' before ESP-IDF build, flash, or monitor targets."
-
-generate-host-vectors:
-	mkdir -p build/host_core
-	python3 scripts/generate_transport_vector_header.py
-
-host-core-test: generate-host-vectors
-	c++ -std=c++20 -Wall -Wextra -Werror \
-		-Ifirmware/host_core/include \
-		-Ifirmware/esp32_s3_usb_signer/main \
-		-Ibuild/host_core \
-		firmware/esp32_s3_usb_signer/main/t_display_s3_button_logic.cpp \
-		firmware/esp32_s3_usb_signer/main/t_display_s3_raster.cpp \
-		firmware/esp32_s3_usb_signer/main/t_display_s3_serial_input.cpp \
-		firmware/esp32_s3_usb_signer/main/t_display_s3_status_frames.cpp \
-		firmware/host_core/src/approval_gate.cpp \
-		firmware/host_core/src/base64url.cpp \
-		firmware/host_core/src/bip39_english.cpp \
-		firmware/host_core/src/device_protocol.cpp \
-		firmware/host_core/src/nip19_nsec.cpp \
-		firmware/host_core/src/policy_change_review.cpp \
-		firmware/host_core/src/qr_envelope.cpp \
-		firmware/host_core/src/qr_response_display.cpp \
-		firmware/host_core/src/qr_review.cpp \
-		firmware/host_core/src/qr_review_flow.cpp \
-		firmware/host_core/src/review_controls.cpp \
-		firmware/host_core/src/review_display.cpp \
-		firmware/host_core/src/serial_frame.cpp \
-		firmware/host_core/src/serial_review.cpp \
-		firmware/host_core/src/seedqr.cpp \
-		firmware/host_core/src/session_account.cpp \
-		firmware/host_core/src/session_import_flow.cpp \
-		firmware/host_core/src/session_import_review.cpp \
-		firmware/host_core/src/session_keyring.cpp \
-		firmware/host_core/src/session_source_backup.cpp \
-		firmware/host_core/src/session_source_generation.cpp \
-		firmware/host_core/src/session_source_qr.cpp \
-		firmware/host_core/src/session_source_qr_import_flow.cpp \
-		firmware/host_core/src/sha256.cpp \
-		firmware/host_core/src/signing_policy.cpp \
-		firmware/host_core/src/trusted_review.cpp \
-		firmware/host_core/tests/test_host_core.cpp \
-		-o build/host_core/test_host_core
-	build/host_core/test_host_core
-
-detect-board:
-	python3 scripts/detect_esp32_s3.py --json
-
-idf-env-check:
-	@command -v idf.py >/dev/null || (echo "ERROR: idf.py not found. Export ESP-IDF before running this target." && exit 1)
-
-idf-build: idf-env-check generate-host-vectors
-	cd $(IDF_PROJECT) && idf.py build
-
-idf-flash: idf-build
-	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) flash
-
-idf-monitor: idf-env-check
-	cd $(IDF_PROJECT) && idf.py -p $(IDF_PORT) monitor
-
-idf-smoke-capabilities: idf-env-check
-	python scripts/smoke_capabilities.py --port $(IDF_PORT)
-
-idf-smoke-review-scenarios: idf-env-check
-	python scripts/smoke_review_scenarios.py --port $(IDF_PORT)
-
-idf-audit-security-fuses: idf-env-check
-	python scripts/audit_security_fuses.py --port $(IDF_PORT)
-
-idf-acceptance-report: idf-env-check
-	python scripts/acceptance_report.py --port $(IDF_PORT) --firmware-revision $(IDF_FIRMWARE_REVISION) --manual-observation $(IDF_ACCEPTANCE_MANUAL) --out $(IDF_ACCEPTANCE_REPORT)
-
+# ---------------------------------------------------------------------------
+# Generic (toolchain-agnostic) Python gates.
+# ---------------------------------------------------------------------------
 test:
 	python3 scripts/verify_repo.py
-	python3 -m unittest discover -s tests
-	$(MAKE) host-core-test
 
 lint:
 	python3 scripts/verify_repo.py
-	python3 -m compileall -q scripts tests
+	python3 -m compileall -q scripts
 
 audit:
 	python3 scripts/verify_repo.py
@@ -101,9 +31,8 @@ docs:
 	python3 scripts/validate_firmware.py
 
 # ---------------------------------------------------------------------------
-# Rust workspace gates (EXECUTION-ETHICS.md Section C). Additive to the C++ CI;
-# the C++ host-core-test path above is untouched. The `std` cargo feature is
-# proven non-inert by the std-gated test in `cargo-test`.
+# Rust workspace gates (EXECUTION-ETHICS.md Section C). The `std` cargo feature
+# is proven non-inert by the std-gated test in `cargo-test`.
 # ---------------------------------------------------------------------------
 cargo-fmt:
 	cargo fmt --all --check
@@ -134,4 +63,4 @@ coverage-ratchet:
 
 rust-ci: cargo-fmt cargo-clippy cargo-test vector-harness cargo-deny coverage-ratchet
 
-ci: setup test lint audit docs rust-ci
+ci: test lint audit docs rust-ci

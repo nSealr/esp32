@@ -26,7 +26,7 @@ REQUIRED_DIRS = {
     "specs": ["protocols", "schemas", "vectors", "examples", "docs", "scripts"],
     "companion": ["apps", "packages", "docs", "scripts"],
     "raspberry": ["app", "os", "docs", "scripts"],
-    "firmware": ["firmware", "boards", "docs", "scripts"],
+    "firmware": ["crates", "apps", "ci", "boards", "docs", "scripts"],
     "smartcard": ["applet", "tools", "docs", "scripts"],
     "hardware": ["pcb", "bom", "enclosures", "docs", "scripts"],
     "website": ["content", "public", "design", "docs", "scripts"],
