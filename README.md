@@ -327,12 +327,23 @@ The Rust cargo workspace is the backbone for every nSealr target:
 
 - `crates/nsealr-core`: the shared, `#![no_std]` signer core. It builds bare-metal
   by default (verified against `riscv32imafc-unknown-none-elf`) and exposes an
-  opt-in `std` feature (default-off) for host/desktop consumers and tests. It is
-  an empty-but-building scaffold at this stage; C++ `host_core` logic is ported in
-  later Phase 03 tasks.
-- `apps/`: reserved for the per-target Rust binaries added by later phases
-  (`vault-esp32`, `key`, `one`, `vault-pi`). No app crates exist yet — see
-  `apps/README.md`. `crates/board-registry` is likewise reserved, not scaffolded.
+  opt-in `std` feature (default-off) for host/desktop consumers and tests. The
+  C++ `host_core` logic is ported into it (transports, session/custody, policy,
+  trusted review, device protocol).
+- `apps/desktop-simulator`: the permanent `std` vector-replay harness — **the
+  parity oracle every Rust app in this workspace must pass** before it may claim
+  vector compliance (`apps/vault-esp32`, `apps/key`, `apps/one`, `apps/vault-pi`
+  included, as they land). Its test suite exhaustively replays every in-scope
+  `specs/vectors/<category>/*.json` file (glob-driven over the sibling `specs`
+  checkout; root overridable via `NSEALR_VECTORS_ROOT`) end-to-end through
+  `nsealr-core`'s public API and asserts each vector's own expected outcome; a
+  completeness rule fails the suite if a `specs/vectors/` directory is neither
+  in-scope nor on the documented exclusion list. The same loader backs a CLI for
+  ad hoc debugging: `cargo run -p desktop-simulator -- transports/qr-envelope-kind-1-basic.json`.
+  Run it via `make vector-harness` (wired into `rust-ci`/`ci`).
+- `apps/`: the remaining per-target Rust binaries land in later phases
+  (`vault-esp32`, `key`, `one`, `vault-pi`) — see `apps/README.md`.
+  `crates/board-registry` is likewise reserved, not scaffolded.
 
 The toolchain is pinned in `rust-toolchain.toml` (explicit stable channel +
 the `riscv32imafc-unknown-none-elf` target). The Xtensa ESP32-S3 is not a rustup
@@ -340,10 +351,10 @@ target; its `esp` toolchain is set up in Phase 05 Task 00, not here.
 
 The full Rust gate set (`cargo fmt --check`, `cargo clippy -- -D warnings
 -D dead_code`, `cargo test` on both the default `no_std` and the `std` feature
-plus a `riscv32imafc` `no_std` build, `cargo deny check`, and the
-`cargo-llvm-cov` coverage ratchet against `ci/ratchet.json`) runs as the
-`rust-ci` target and is wired into `make ci` alongside the existing C++ gates.
-Run just the Rust gates with `make rust-ci`.
+plus a `riscv32imafc` `no_std` build, the `vector-harness` parity oracle,
+`cargo deny check`, and the `cargo-llvm-cov` coverage ratchet against
+`ci/ratchet.json`) runs as the `rust-ci` target and is wired into `make ci`
+alongside the existing C++ gates. Run just the Rust gates with `make rust-ci`.
 
 ## Quality Baseline
 

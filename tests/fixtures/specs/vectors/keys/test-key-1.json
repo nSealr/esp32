@@ -1,0 +1,6 @@
+{
+  "name": "test-key-1",
+  "warning": "Deterministic public fixture key for tests only. Never use in production.",
+  "secret_key": "1111111111111111111111111111111111111111111111111111111111111111",
+  "public_key": "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa"
+}

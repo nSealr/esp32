@@ -1,11 +1,12 @@
-# `apps/` — reserved for the Rust firmware binaries
+# `apps/` — the Rust firmware binaries
 
-This directory is a placeholder. No app crates are created here yet, and none
-are workspace members until the phase that owns each one scaffolds it. Reserving
-the layout now (without empty crates) avoids speculative scaffolding ahead of
-the phases that own the work.
+First tenant:
 
-Planned occupants:
+- `apps/desktop-simulator` — the permanent `std` vector-replay harness (Phase 03
+  Task 04): the CI-enforced parity oracle every Rust app below must pass before
+  claiming vector compliance. See the root `README.md` ("Rust workspace").
+
+Planned occupants (each added by the phase that owns it):
 
 - `apps/vault-esp32` — ESP32 stateless QR vault (Phase 04).
 - `apps/key` — ESP32 USB/NIP-46 signer (Phase 05).

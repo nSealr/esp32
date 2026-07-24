@@ -6,4 +6,4 @@
 # are added by the phases that create them.
 [workspace]
 resolver = "2"
-members = ["crates/nsealr-core"]
+members = ["crates/nsealr-core", "apps/desktop-simulator"]

@@ -1,0 +1,36 @@
+# desktop-simulator — the permanent, `std`-only vector-replay parity oracle.
+#
+# This crate exhaustively replays every in-scope `specs/vectors/<category>/*.json`
+# file end-to-end through `nsealr-core`'s public API and asserts each vector's own
+# expected outcome. It is the CI-enforced parity oracle every current and future
+# Rust app in this workspace must pass before claiming vector compliance
+# (Phase 03 Task 04; decision spec §3).
+#
+# The lib target holds the loader + per-category replay engine; both the CLI
+# binary (`src/main.rs`) and the exhaustive integration test (`tests/vectors.rs`)
+# call into it, so there is exactly one vector-loading/replay code path.
+[package]
+name = "desktop-simulator"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.95"
+description = "Permanent std vector-replay parity oracle for nsealr-core (Phase 03 Task 04)."
+license = "MIT"
+publish = false
+
+[lib]
+name = "desktop_simulator"
+path = "src/lib.rs"
+
+[[bin]]
+name = "desktop-simulator"
+path = "src/main.rs"
+
+[dependencies]
+# The signer core under test, with its host/desktop `std` facade linked.
+nsealr-core = { path = "../../crates/nsealr-core", version = "0.0.0", features = ["std"] }
+# Reads the on-disk vector JSON. `serde_json::Value` navigation only (no derive).
+# `preserve_order` keeps object key order as written on disk, so requests
+# re-serialized into the parsers are byte-faithful to the canonical vectors;
+# `Value` equality stays order-independent regardless.
+serde_json = { version = "1", features = ["preserve_order"] }
