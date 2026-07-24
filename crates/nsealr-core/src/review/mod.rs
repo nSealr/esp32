@@ -6,6 +6,9 @@
 //!
 //! - [`signer_identity`] ← `signer_identity.hpp` (migrated out of
 //!   `session/account.rs` to its definitive home)
+//! - [`buttons`] ← the debounce state machine the C++ board app carried in
+//!   `esp32_s3_usb_signer/main/t_display_s3_button_logic.cpp/.hpp`,
+//!   generalized over caller-supplied timings (M-T3.7)
 //! - [`controls`] ← `review_controls.cpp/.hpp`
 //! - [`display`] ← `review_display.cpp/.hpp`
 //! - [`trusted`] ← `trusted_review.cpp/.hpp` (session logic; the data model
@@ -17,6 +20,7 @@
 //! The device protocol on top of this layer (`device_protocol.cpp/.hpp`) lives
 //! in [`crate::protocol`].
 
+pub mod buttons;
 pub mod controls;
 pub mod display;
 pub mod qr;

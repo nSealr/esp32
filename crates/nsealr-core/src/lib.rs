@@ -20,14 +20,16 @@
 //! (English mnemonic parsing), [`nip19`] (`nsec` Bech32), [`seedqr`]
 //! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers), the
 //! transport layer [`qr`] (QR envelope / animated envelope / response-display
-//! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing), and the
+//! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing plus the
+//! byte-wise line accumulator with overlong-frame draining), and the
 //! session/custody core [`session`] (RAM-only keyring with volatile secret
 //! wiping, source parsing/generation, secret-hiding import/backup reviews,
 //! account selection) with the fixed-capacity text type [`text`], the
 //! policy/approval layer [`policy`] (approval-digest binding gate,
 //! signing-readiness gates, policy-change review), the trusted-review layer
 //! [`review`] (data model, signer identity, display rendering, physical
-//! controls, review sessions, QR/serial review flows), and the device
+//! controls with button debounce classification, review sessions, QR/serial
+//! review flows), and the device
 //! protocol [`protocol`] (serial frame in, response frame out, trusted-review
 //! preview).
 #![no_std]
@@ -43,6 +45,9 @@ extern crate std;
 // inputs (Vec/String) without touching the shipped `no_std` surface.
 #[cfg(all(test, not(feature = "std")))]
 extern crate std;
+
+#[cfg(test)]
+mod board_profile_tests;
 
 pub mod base64url;
 pub mod bip39;
