@@ -24,7 +24,9 @@
 //! session/custody core [`session`] (RAM-only keyring with volatile secret
 //! wiping, source parsing/generation, secret-hiding import/backup reviews,
 //! account selection) with its shared review data model [`review`] and the
-//! fixed-capacity text type [`text`].
+//! fixed-capacity text type [`text`], and the policy/approval layer [`policy`]
+//! (approval-digest binding gate, signing-readiness gates, policy-change
+//! review).
 #![no_std]
 #![deny(missing_docs)]
 
@@ -43,6 +45,7 @@ pub mod base64url;
 pub mod bip39;
 pub mod hash;
 pub mod nip19;
+pub mod policy;
 pub mod qr;
 pub mod review;
 pub mod seedqr;

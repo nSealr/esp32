@@ -19,8 +19,10 @@ use core::str::FromStr;
 
 /// Maximum byte length of a review page title.
 pub const MAX_REVIEW_PAGE_TITLE_CHARS: usize = 32;
-/// Maximum byte length of one review body line.
-pub const MAX_REVIEW_PAGE_LINE_CHARS: usize = 96;
+/// Maximum byte length of one review body line. Raised from 96 in M-T3.5: the
+/// policy-change review renders `"Account: "` + an up-to-128-byte stable id on
+/// one line (137 bytes worst case), and the C++ never bounded line length.
+pub const MAX_REVIEW_PAGE_LINE_CHARS: usize = 144;
 /// Maximum number of body lines on one review page.
 pub const MAX_REVIEW_PAGE_LINES: usize = 8;
 /// Maximum byte length of a page indicator (for example `"Page 1/2"`).
@@ -190,6 +192,119 @@ pub struct TrustedReviewPage {
     pub logical_page_id: FixedStr<MAX_REVIEW_LOGICAL_PAGE_ID_CHARS>,
 }
 
+impl TrustedReviewPage {
+    /// Creates an empty page. This is the const seed for fixed-capacity page
+    /// lists (analogous to [`ReviewPageLine::new`]); its [`ReviewPageAction`] is
+    /// [`ReviewPageAction::Next`], the neutral non-terminal action.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            title: FixedStr::new(),
+            lines: ReviewPageLines::new(),
+            action: ReviewPageAction::Next,
+            page_indicator: FixedStr::new(),
+            body_line_styles: ReviewBodyLineStyles::new(),
+            logical_page_id: FixedStr::new(),
+        }
+    }
+}
+
+impl Default for TrustedReviewPage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Maximum byte length of a trusted-review request id. Covers the policy-change
+/// proposal id (`"proposal-"` + up to 119 id chars).
+pub const MAX_TRUSTED_REVIEW_REQUEST_ID_CHARS: usize = 128;
+
+/// Maximum number of pages a [`TrustedReviewRequest`] carries. Sized for the
+/// policy-change review (exactly four pages); milestone M-T3.6 revisits this
+/// when its variable-length QR review requests land (same "M-T3.6 revisits" rule
+/// as the other capacities in this module).
+pub const MAX_TRUSTED_REVIEW_PAGES: usize = 4;
+
+/// A trusted-review request id rendered as bounded inline text.
+pub type TrustedReviewRequestId = FixedStr<MAX_TRUSTED_REVIEW_REQUEST_ID_CHARS>;
+
+/// A SHA-256 approval digest rendered as 64 lowercase hex characters (C++
+/// `approval_digest`).
+pub type TrustedReviewApprovalDigest = FixedStr<64>;
+
+/// A fixed-capacity list of trusted-review pages — the allocation-free stand-in
+/// for the C++ `std::vector<TrustedReviewPage>` a [`TrustedReviewRequest`]
+/// carries.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReviewPageList {
+    pages: [TrustedReviewPage; MAX_TRUSTED_REVIEW_PAGES],
+    len: usize,
+}
+
+impl ReviewPageList {
+    /// Creates an empty list.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            pages: [const { TrustedReviewPage::new() }; MAX_TRUSTED_REVIEW_PAGES],
+            len: 0,
+        }
+    }
+
+    /// Appends one page.
+    ///
+    /// # Errors
+    ///
+    /// [`TextError::TooLong`] if the list already holds
+    /// [`MAX_TRUSTED_REVIEW_PAGES`] pages.
+    pub fn try_push(&mut self, page: TrustedReviewPage) -> Result<(), TextError> {
+        if self.len >= MAX_TRUSTED_REVIEW_PAGES {
+            return Err(TextError::TooLong);
+        }
+        self.pages[self.len] = page;
+        self.len += 1;
+        Ok(())
+    }
+
+    /// Returns the active pages as a slice.
+    #[must_use]
+    pub fn as_slice(&self) -> &[TrustedReviewPage] {
+        &self.pages[..self.len]
+    }
+
+    /// Returns the number of pages held.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Returns `true` if the list holds no pages.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+}
+
+impl Default for ReviewPageList {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// A trusted-review request: an id, its approval digest, and the ordered pages
+/// to display. Mirrors the C++ `TrustedReviewRequest` (`trusted_review.hpp`)
+/// field for field. This is the pure data model only; the review *session*
+/// logic that consumes it (`TrustedReviewSession`) arrives with M-T3.6.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrustedReviewRequest {
+    /// Stable request id (C++ `request_id`).
+    pub request_id: TrustedReviewRequestId,
+    /// SHA-256 approval digest binding the pages (C++ `approval_digest`).
+    pub approval_digest: TrustedReviewApprovalDigest,
+    /// The ordered review pages (C++ `pages`).
+    pub pages: ReviewPageList,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -247,5 +362,35 @@ mod tests {
             Err(TextError::TooLong),
         );
         assert_eq!(styles.len(), MAX_REVIEW_PAGE_LINES);
+    }
+
+    // Container plumbing for the trusted-review request page list added for the
+    // policy-change review port (M-T3.5). Same shape as the line/style lists;
+    // no single named C++ case (the C++ used std::vector directly).
+    #[test]
+    fn page_list_pushes_and_rejects_overflow() {
+        let empty = TrustedReviewPage::new();
+        assert_eq!(empty, TrustedReviewPage::default());
+        assert_eq!(empty.action, ReviewPageAction::Next);
+        assert!(empty.title.is_empty());
+        assert!(empty.lines.is_empty());
+
+        let mut pages = ReviewPageList::new();
+        assert!(pages.is_empty());
+        assert_eq!(pages.len(), 0);
+        assert_eq!(pages, ReviewPageList::default());
+
+        let mut page = TrustedReviewPage::new();
+        page.title = FixedStr::from_str("Policy change").unwrap();
+        page.action = ReviewPageAction::ApproveOrReject;
+        for _ in 0..MAX_TRUSTED_REVIEW_PAGES {
+            pages.try_push(page.clone()).unwrap();
+        }
+        assert_eq!(pages.len(), MAX_TRUSTED_REVIEW_PAGES);
+        assert!(!pages.is_empty());
+        assert_eq!(pages.as_slice()[0], page);
+        assert_eq!(pages.clone(), pages);
+        assert_eq!(pages.try_push(page), Err(TextError::TooLong));
+        assert_eq!(pages.len(), MAX_TRUSTED_REVIEW_PAGES);
     }
 }
