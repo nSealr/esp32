@@ -18,9 +18,13 @@
 //! time. Ported so far: the low-level primitives [`hash`] (SHA-256) and
 //! [`base64url`] (URL-safe unpadded Base64), the encoding layer [`bip39`]
 //! (English mnemonic parsing), [`nip19`] (`nsec` Bech32), [`seedqr`]
-//! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers), and
-//! the transport layer [`qr`] (QR envelope / animated envelope / response-display
-//! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing).
+//! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers), the
+//! transport layer [`qr`] (QR envelope / animated envelope / response-display
+//! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing), and the
+//! session/custody core [`session`] (RAM-only keyring with volatile secret
+//! wiping, source parsing/generation, secret-hiding import/backup reviews,
+//! account selection) with its shared review data model [`review`] and the
+//! fixed-capacity text type [`text`].
 #![no_std]
 #![deny(missing_docs)]
 
@@ -40,8 +44,11 @@ pub mod bip39;
 pub mod hash;
 pub mod nip19;
 pub mod qr;
+pub mod review;
 pub mod seedqr;
 pub mod serial;
+pub mod session;
+pub mod text;
 pub mod unicode;
 
 #[cfg(test)]
