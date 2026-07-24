@@ -23,10 +23,15 @@ pub const MAX_REVIEW_PAGE_TITLE_CHARS: usize = 32;
 /// policy-change review renders `"Account: "` + an up-to-128-byte stable id on
 /// one line (137 bytes worst case), and the C++ never bounded line length.
 pub const MAX_REVIEW_PAGE_LINE_CHARS: usize = 144;
-/// Maximum number of body lines on one review page.
-pub const MAX_REVIEW_PAGE_LINES: usize = 8;
-/// Maximum byte length of a page indicator (for example `"Page 1/2"`).
-pub const MAX_REVIEW_PAGE_INDICATOR_CHARS: usize = 16;
+/// Maximum number of body lines on one review page. Raised from 8 in M-T3.6:
+/// the display-review builders emit up to `max_compact_body_lines` lines per
+/// page (9 in the shared t-display-s3 profile and the
+/// `specs/vectors/review-detail-pages` fixtures).
+pub const MAX_REVIEW_PAGE_LINES: usize = 10;
+/// Maximum byte length of a page indicator. Raised from 16 in M-T3.6: scroll
+/// windows render `"Page 3/4 Lines 10-18/48"`-shaped indicators (the C++ never
+/// bounded the string).
+pub const MAX_REVIEW_PAGE_INDICATOR_CHARS: usize = 32;
 /// Maximum byte length of a logical page id (for example
 /// `"session-import-summary"`).
 pub const MAX_REVIEW_LOGICAL_PAGE_ID_CHARS: usize = 32;
@@ -94,6 +99,17 @@ impl ReviewPageLines {
     #[must_use]
     pub fn as_slice(&self) -> &[ReviewPageLine] {
         &self.lines[..self.len]
+    }
+
+    /// Replaces the line at `index` (which must be within [`Self::len`]).
+    /// Added in M-T3.6 for the display renderer's last-line ellipsis rewrite.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index >= len` (callers index lines they just pushed).
+    pub fn replace(&mut self, index: usize, line: &ReviewPageLine) {
+        assert!(index < self.len, "line index within active length");
+        self.lines[index] = line.clone();
     }
 
     /// Returns the number of lines held.
@@ -219,11 +235,12 @@ impl Default for TrustedReviewPage {
 /// proposal id (`"proposal-"` + up to 119 id chars).
 pub const MAX_TRUSTED_REVIEW_REQUEST_ID_CHARS: usize = 128;
 
-/// Maximum number of pages a [`TrustedReviewRequest`] carries. Sized for the
-/// policy-change review (exactly four pages); milestone M-T3.6 revisits this
-/// when its variable-length QR review requests land (same "M-T3.6 revisits" rule
-/// as the other capacities in this module).
-pub const MAX_TRUSTED_REVIEW_PAGES: usize = 4;
+/// Maximum number of pages a [`TrustedReviewRequest`] carries. Raised from 4 in
+/// M-T3.6: the scroll-windowed display reviews split long Content/Tags sections
+/// into one flat page per window (the 16-tag serial navigation case needs 9;
+/// 12 leaves headroom). The C++ used an unbounded `std::vector`; builders
+/// report a capacity error past this bound (documented deviation).
+pub const MAX_TRUSTED_REVIEW_PAGES: usize = 12;
 
 /// A trusted-review request id rendered as bounded inline text.
 pub type TrustedReviewRequestId = FixedStr<MAX_TRUSTED_REVIEW_REQUEST_ID_CHARS>;
@@ -270,6 +287,44 @@ impl ReviewPageList {
     #[must_use]
     pub fn as_slice(&self) -> &[TrustedReviewPage] {
         &self.pages[..self.len]
+    }
+
+    /// Appends a body line to the page at `page_index` (styles untouched).
+    /// Added in M-T3.6 for the streaming QR review builders.
+    ///
+    /// # Errors
+    ///
+    /// [`TextError::TooLong`] if the page's line list is full or the line
+    /// exceeds [`MAX_REVIEW_PAGE_LINE_CHARS`] bytes.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `page_index >= len` (callers index pages they just pushed).
+    pub fn line_push(&mut self, page_index: usize, line: &str) -> Result<(), TextError> {
+        assert!(page_index < self.len, "page index within active length");
+        self.pages[page_index].lines.try_push(line)
+    }
+
+    /// Appends a body line and its style to the page at `page_index`. Added in
+    /// M-T3.6 for the streaming QR display-review builders.
+    ///
+    /// # Errors
+    ///
+    /// [`TextError::TooLong`] if the page's line or style list is full or the
+    /// line exceeds [`MAX_REVIEW_PAGE_LINE_CHARS`] bytes.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `page_index >= len` (callers index pages they just pushed).
+    pub fn line_push_styled(
+        &mut self,
+        page_index: usize,
+        line: &str,
+        style: ReviewBodyLineStyle,
+    ) -> Result<(), TextError> {
+        assert!(page_index < self.len, "page index within active length");
+        self.pages[page_index].lines.try_push(line)?;
+        self.pages[page_index].body_line_styles.try_push(style)
     }
 
     /// Returns the number of pages held.

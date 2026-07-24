@@ -1,7 +1,7 @@
 //! QR response-display frame builder and display-loop driver.
 //!
-//! Ported from the C++ reference `host_core` sources `src/qr_response_display.cpp`
-//! + `include/nsealr/qr_response_display.hpp` for behaviour parity:
+//! Ported from the C++ reference `host_core` sources `src/qr_response_display.cpp` +
+//! `include/nsealr/qr_response_display.hpp` for behaviour parity:
 //!
 //! - **Response validation** — a dedicated single-pass JSON object scanner
 //!   (deliberately *different* from the envelope parser, matching the C++): every

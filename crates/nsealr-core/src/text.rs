@@ -164,6 +164,25 @@ mod tests {
         let mut zero: FixedStr<4> = FixedStr::new();
         zero.try_push_usize(0).unwrap();
         assert_eq!(zero, "0");
+
+        // The Default instantiation the review page titles monomorphise.
+        assert_eq!(FixedStr::<32>::default(), FixedStr::<32>::new());
+
+        // Multi-digit renders through the capacities the review/policy layers
+        // instantiate (24/40/128), and the tiny capacity used by the display
+        // ellipsis path still round-trips a full push.
+        let mut kind: FixedStr<24> = FixedStr::new();
+        kind.try_push_usize(1234).unwrap();
+        assert_eq!(kind, "1234");
+        let mut gate: FixedStr<40> = FixedStr::new();
+        gate.try_push_usize(56).unwrap();
+        assert_eq!(gate, "56");
+        let mut id: FixedStr<128> = FixedStr::new();
+        id.try_push_usize(789).unwrap();
+        assert_eq!(id, "789");
+        let mut tiny: FixedStr<3> = FixedStr::from_str("ab").unwrap();
+        tiny.try_push_str("c").unwrap();
+        assert_eq!(tiny, "abc");
     }
 
     #[test]

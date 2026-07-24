@@ -13,13 +13,20 @@
 //! ([`SelectedSessionAccount::source_public_key_proof_verified`] is always
 //! `false`; the M-T3.5 signing-policy port consumes that gate).
 //!
-//! [`SignerIdentity`] and [`is_valid_nostr_public_key`] originate from the C++
-//! header-only `include/nsealr/signer_identity.hpp`; they are hosted here until
-//! the M-T3.6 review/protocol port lands their permanent home. The C++
+//! [`SignerIdentity`], [`is_valid_nostr_public_key`] and
+//! [`DEVELOPMENT_FIXTURE_PUBLIC_KEY`] originate from the C++ header-only
+//! `include/nsealr/signer_identity.hpp`. M-T3.4a hosted them here temporarily;
+//! M-T3.6 moved them to their definitive home
+//! [`crate::review::signer_identity`], and this module now **re-uses** them
+//! (re-exported below so existing `crate::session::account::…` paths keep
+//! resolving — no duplicated definition). The C++
 //! `require_valid_signer_identity` call inside `select_session_account` was
 //! unreachable (the descriptor shape check already validated the same string);
 //! this port validates once, so no separate error variant exists for it.
 
+pub use crate::review::signer_identity::{
+    is_valid_nostr_public_key, SignerIdentity, DEVELOPMENT_FIXTURE_PUBLIC_KEY,
+};
 use crate::session::import_review::session_key_source_fingerprint;
 use crate::session::keyring::{SessionKeySource, SessionKeySourceKind, StatelessSessionKeyring};
 use crate::text::FixedStr;
@@ -33,12 +40,6 @@ pub const SESSION_SOURCE_FINGERPRINT_CHARS: usize = 16;
 /// The only route type the QR-vault session account layer accepts. Mirrors the
 /// C++ `kEsp32QrVaultRouteType`.
 pub const ESP32_QR_VAULT_ROUTE_TYPE: &str = "esp32_qr_vault";
-
-/// Development fixture public key (shared test identity). Mirrors the C++
-/// `kDevelopmentFixturePublicKey` (`signer_identity.hpp`); copied from the
-/// READ-ONLY specs/vectors/nip19/nsec-test-key-1.json (`public_key`).
-pub const DEVELOPMENT_FIXTURE_PUBLIC_KEY: &str =
-    "4f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa";
 
 /// Errors reported by session account selection. Each variant corresponds to a
 /// distinct C++ `SessionAccountError` throw site.
@@ -110,14 +111,6 @@ pub struct SessionAccountDescriptor<'a> {
     pub account_index: u32,
 }
 
-/// The signer identity bound to a selected account. Mirrors the C++
-/// `SignerIdentity` (`signer_identity.hpp`, hosted here until M-T3.6).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SignerIdentity<'a> {
-    /// The 64-lowercase-hex Nostr public key.
-    pub public_key: &'a str,
-}
-
 /// A validated, selected session account. Mirrors the C++
 /// `SelectedSessionAccount` field for field; borrowed fields reference the
 /// descriptor and keyring the account was selected from.
@@ -146,14 +139,9 @@ pub struct SelectedSessionAccount<'a> {
     pub signer_identity: SignerIdentity<'a>,
 }
 
-/// Returns `true` for a 64-lowercase-hex Nostr public key. Mirrors the C++
-/// `is_valid_nostr_public_key` (`signer_identity.hpp`).
-#[must_use]
-pub fn is_valid_nostr_public_key(public_key: &str) -> bool {
-    public_key.len() == 64 && public_key.bytes().all(is_lowercase_hex)
-}
-
-/// Mirrors the C++ `is_lowercase_hex` (`signer_identity.hpp`).
+/// Mirrors the C++ `is_lowercase_hex` (`signer_identity.hpp`); retained locally
+/// for [`is_source_fingerprint`] (the identity check itself re-uses
+/// [`is_valid_nostr_public_key`] from [`crate::review::signer_identity`]).
 fn is_lowercase_hex(byte: u8) -> bool {
     byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)
 }

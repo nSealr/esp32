@@ -148,54 +148,125 @@ fn compress(state: &mut [u32; 8], block: &[u8; 64]) {
     state[7] = state[7].wrapping_add(h);
 }
 
-/// Computes the SHA-256 digest of `input`, returning the raw 32 bytes.
-pub fn sha256(input: &[u8]) -> [u8; 32] {
-    let mut state = H0;
-    let mut blocks = input.chunks_exact(64);
-    for block in blocks.by_ref() {
-        let mut full = [0u8; 64];
-        full.copy_from_slice(block);
-        compress(&mut state, &full);
-    }
-
-    // Finalize: append 0x80, pad with zeros up to `len % 64 == 56`, then the
-    // 64-bit big-endian bit length. This spills into a second block when the
-    // remainder leaves no room (remainder length >= 56).
-    let remainder = blocks.remainder();
-    let bit_length = (input.len() as u64).wrapping_mul(8);
-    let mut tail = [0u8; 128];
-    tail[..remainder.len()].copy_from_slice(remainder);
-    tail[remainder.len()] = 0x80;
-    let tail_blocks = if remainder.len() < 56 { 1 } else { 2 };
-    let filled = tail_blocks * 64;
-    tail[filled - 8..filled].copy_from_slice(&bit_length.to_be_bytes());
-    let mut first = [0u8; 64];
-    first.copy_from_slice(&tail[..64]);
-    compress(&mut state, &first);
-    if tail_blocks == 2 {
-        let mut second = [0u8; 64];
-        second.copy_from_slice(&tail[64..128]);
-        compress(&mut state, &second);
-    }
-
-    let mut digest = [0u8; 32];
-    for (word, slot) in state.iter().zip(digest.chunks_exact_mut(4)) {
-        slot.copy_from_slice(&word.to_be_bytes());
-    }
-    digest
+/// An incremental SHA-256 hasher. Added in M-T3.6 so the review layer can hash
+/// the canonical approval payload as it is generated, instead of materialising
+/// the whole (multi-KiB) JSON in RAM the way the C++ concatenated a heap
+/// `std::string` before its one-shot `sha256_hex` call — the digest over the
+/// same bytes is identical by construction ([`sha256`] itself is implemented on
+/// top of this state, so the M-T3.1 known-answer vectors pin both paths).
+#[derive(Debug, Clone)]
+pub struct Sha256 {
+    state: [u32; 8],
+    buffer: [u8; 64],
+    buffered: usize,
+    total_len: u64,
 }
 
-/// Computes the SHA-256 digest of `input` and returns it as 64 lowercase ASCII
-/// hex bytes, matching the string the C++ `sha256_hex` produced.
-pub fn sha256_hex(input: &[u8]) -> [u8; 64] {
+impl Sha256 {
+    /// Creates a fresh hasher.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            state: H0,
+            buffer: [0; 64],
+            buffered: 0,
+            total_len: 0,
+        }
+    }
+
+    /// Absorbs `input` into the running state.
+    pub fn update(&mut self, input: &[u8]) {
+        self.total_len = self.total_len.wrapping_add(input.len() as u64);
+        let mut rest = input;
+        if self.buffered > 0 {
+            let take = rest.len().min(64 - self.buffered);
+            self.buffer[self.buffered..self.buffered + take].copy_from_slice(&rest[..take]);
+            self.buffered += take;
+            rest = &rest[take..];
+            if self.buffered < 64 {
+                // The whole input fit into the partial block.
+                return;
+            }
+            let block = self.buffer;
+            compress(&mut self.state, &block);
+            self.buffered = 0;
+        }
+        let mut blocks = rest.chunks_exact(64);
+        for block in blocks.by_ref() {
+            let mut full = [0u8; 64];
+            full.copy_from_slice(block);
+            compress(&mut self.state, &full);
+        }
+        let remainder = blocks.remainder();
+        self.buffer[..remainder.len()].copy_from_slice(remainder);
+        self.buffered = remainder.len();
+    }
+
+    /// Finalizes the hash, returning the raw 32-byte digest. Appends 0x80, pads
+    /// with zeros up to `len % 64 == 56`, then the 64-bit big-endian bit
+    /// length, spilling into a second block when the buffered remainder leaves
+    /// no room (remainder length >= 56).
+    #[must_use]
+    pub fn finalize(mut self) -> [u8; 32] {
+        let bit_length = self.total_len.wrapping_mul(8);
+        let mut tail = [0u8; 128];
+        tail[..self.buffered].copy_from_slice(&self.buffer[..self.buffered]);
+        tail[self.buffered] = 0x80;
+        let tail_blocks = if self.buffered < 56 { 1 } else { 2 };
+        let filled = tail_blocks * 64;
+        tail[filled - 8..filled].copy_from_slice(&bit_length.to_be_bytes());
+        let mut first = [0u8; 64];
+        first.copy_from_slice(&tail[..64]);
+        compress(&mut self.state, &first);
+        if tail_blocks == 2 {
+            let mut second = [0u8; 64];
+            second.copy_from_slice(&tail[64..128]);
+            compress(&mut self.state, &second);
+        }
+
+        let mut digest = [0u8; 32];
+        for (word, slot) in self.state.iter().zip(digest.chunks_exact_mut(4)) {
+            slot.copy_from_slice(&word.to_be_bytes());
+        }
+        digest
+    }
+
+    /// Finalizes the hash as 64 lowercase ASCII hex bytes (the [`sha256_hex`]
+    /// encoding).
+    #[must_use]
+    pub fn finalize_hex(self) -> [u8; 64] {
+        to_hex(self.finalize())
+    }
+}
+
+impl Default for Sha256 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// Encodes a raw digest as 64 lowercase ASCII hex bytes.
+fn to_hex(digest: [u8; 32]) -> [u8; 64] {
     const HEX: &[u8; 16] = b"0123456789abcdef";
-    let digest = sha256(input);
     let mut out = [0u8; 64];
     for (byte, slot) in digest.iter().zip(out.chunks_exact_mut(2)) {
         slot[0] = HEX[usize::from(byte >> 4)];
         slot[1] = HEX[usize::from(byte & 0x0f)];
     }
     out
+}
+
+/// Computes the SHA-256 digest of `input`, returning the raw 32 bytes.
+pub fn sha256(input: &[u8]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(input);
+    hasher.finalize()
+}
+
+/// Computes the SHA-256 digest of `input` and returns it as 64 lowercase ASCII
+/// hex bytes, matching the string the C++ `sha256_hex` produced.
+pub fn sha256_hex(input: &[u8]) -> [u8; 64] {
+    to_hex(sha256(input))
 }
 
 #[cfg(test)]
@@ -266,6 +337,33 @@ mod tests {
         let abc = sha256(b"abc");
         assert_eq!(abc[0], 0xba);
         assert_eq!(abc[31], 0xad);
+    }
+
+    // The incremental hasher matches the one-shot digest for every chunking of
+    // the same input, including chunks that straddle block boundaries (M-T3.6
+    // addition; the KATs above already pin the shared compression path).
+    #[test]
+    fn incremental_updates_match_one_shot() {
+        let input: std::vec::Vec<u8> = (0..1000u32).map(|i| (i % 251) as u8).collect();
+        let expected = sha256(&input);
+        for chunk_size in [1usize, 3, 55, 56, 63, 64, 65, 128, 999] {
+            let mut hasher = Sha256::new();
+            for chunk in input.chunks(chunk_size) {
+                hasher.update(chunk);
+            }
+            assert_eq!(hasher.finalize(), expected);
+        }
+        let mut hex_hasher = Sha256::default();
+        hex_hasher.update(b"abc");
+        assert_eq!(
+            core::str::from_utf8(&hex_hasher.finalize_hex()).unwrap(),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+        );
+        let empty = Sha256::new();
+        assert_eq!(
+            core::str::from_utf8(&empty.finalize_hex()).unwrap(),
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        );
     }
 
     // Byte-for-byte cross-primitive parity with a READ-ONLY specs/vectors

@@ -23,10 +23,13 @@
 //! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing), and the
 //! session/custody core [`session`] (RAM-only keyring with volatile secret
 //! wiping, source parsing/generation, secret-hiding import/backup reviews,
-//! account selection) with its shared review data model [`review`] and the
-//! fixed-capacity text type [`text`], and the policy/approval layer [`policy`]
-//! (approval-digest binding gate, signing-readiness gates, policy-change
-//! review).
+//! account selection) with the fixed-capacity text type [`text`], the
+//! policy/approval layer [`policy`] (approval-digest binding gate,
+//! signing-readiness gates, policy-change review), the trusted-review layer
+//! [`review`] (data model, signer identity, display rendering, physical
+//! controls, review sessions, QR/serial review flows), and the device
+//! protocol [`protocol`] (serial frame in, response frame out, trusted-review
+//! preview).
 #![no_std]
 #![deny(missing_docs)]
 
@@ -46,6 +49,7 @@ pub mod bip39;
 pub mod hash;
 pub mod nip19;
 pub mod policy;
+pub mod protocol;
 pub mod qr;
 pub mod review;
 pub mod seedqr;
