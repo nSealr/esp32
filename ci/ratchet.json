@@ -3,7 +3,8 @@
   "coverage": {
     "metric": "line-percent",
     "floors": {
-      "nsealr-core": 100.0
+      "nsealr-core": 100.0,
+      "desktop-simulator": 76.7
     }
   },
   "dead_code": {

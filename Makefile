@@ -4,7 +4,7 @@ IDF_ACCEPTANCE_REPORT ?= build/acceptance/t-display-s3-acceptance-report.json
 IDF_ACCEPTANCE_MANUAL ?= not-recorded
 IDF_FIRMWARE_REVISION ?= not-recorded
 
-.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet rust-ci
+.PHONY: setup test lint audit docs ci generate-host-vectors host-core-test detect-board idf-env-check idf-build idf-flash idf-monitor idf-smoke-capabilities idf-smoke-review-scenarios idf-audit-security-fuses idf-acceptance-report cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet vector-harness rust-ci
 
 # Rust workspace gates (see rust-ci target near the end of this file).
 RISCV_TARGET := riscv32imafc-unknown-none-elf
@@ -120,11 +120,18 @@ cargo-test:
 cargo-deny:
 	cargo deny check
 
+# The desktop-simulator parity oracle: exhaustively replays every in-scope
+# specs/vectors/<category>/*.json file through nsealr-core's public API and
+# enforces the category completeness rule (Phase 03 Task 04). Every Rust app in
+# this workspace must pass this gate before claiming vector compliance.
+vector-harness:
+	cargo test -p desktop-simulator
+
 coverage-ratchet:
 	@mkdir -p build
 	cargo llvm-cov --workspace --all-features --summary-only --json --output-path $(RUST_COVERAGE_JSON)
 	python3 ci/check_coverage_ratchet.py $(RUST_COVERAGE_JSON) ci/ratchet.json
 
-rust-ci: cargo-fmt cargo-clippy cargo-test cargo-deny coverage-ratchet
+rust-ci: cargo-fmt cargo-clippy cargo-test vector-harness cargo-deny coverage-ratchet
 
 ci: setup test lint audit docs rust-ci
