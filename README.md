@@ -157,9 +157,21 @@ target; its `esp` toolchain is set up in Phase 05 Task 00, not here.
 The full Rust gate set (`cargo fmt --check`, `cargo clippy -- -D warnings
 -D dead_code`, `cargo test` on both the default `no_std` and the `std` feature
 plus a `riscv32imafc` `no_std` build, the `vector-harness` parity oracle,
-`cargo deny check`, and the `cargo-llvm-cov` coverage ratchet against
-`ci/ratchet.json`) runs as the `rust-ci` target and is wired into `make ci`.
-Run just the Rust gates with `make rust-ci`.
+`cargo deny check`, the `cargo-llvm-cov` coverage ratchet against
+`ci/ratchet.json`, and the `repro-build` byte-identity gate) runs as the
+`rust-ci` target and is wired into `make ci`. Run just the Rust gates with
+`make rust-ci`.
+
+The workspace's release artifacts are **reproducible and CI-verified**: the
+toolchain is fully pinned, the dependency closure is committed (`Cargo.lock`)
+and vendored (`vendor/`, built offline via `.cargo/config.toml`), and
+`make repro-build` proves — with an actual double build, never an assertion —
+that two clean builds produce byte-identical artifacts and that the
+`nsealr-core` device backbone reproduces byte-for-byte from an independent
+checkout at a different path. Follow the published recipe in
+[`docs/reproducible-build.md`](docs/reproducible-build.md) to reproduce the
+artifacts and confirm the recorded hashes. (The offline release-key signing
+ceremony is Phase 11, not here.)
 
 ## Quality Baseline
 

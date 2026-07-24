@@ -8,3 +8,16 @@
 [workspace]
 resolver = "2"
 members = ["crates/nsealr-core", "apps/desktop-simulator"]
+
+# Reproducible release profile (docs/reproducible-build.md, `make repro-build`).
+# `codegen-units = 1` removes codegen parallelism as a variance source, trading
+# build speed for a stronger determinism guarantee across differing host core
+# counts. Source-path leakage (workspace + vendored-dep absolute paths embedded
+# via `file!()`/panic locations) is stripped separately by a stable
+# `--remap-path-prefix` rustflag applied via RUSTFLAGS by `ci/repro_build.sh`
+# (and shown in the published recipe), because the
+# newer `trim-paths` profile option is not stabilized on the pinned stable
+# toolchain (1.95.0) — it would require nightly, which the reproducibility pin
+# forbids. Both are required by the byte-identity gate and the published recipe.
+[profile.release]
+codegen-units = 1

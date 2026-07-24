@@ -7,7 +7,7 @@
 # repo/board validators.
 
 .PHONY: test lint audit docs ci cargo-fmt cargo-clippy cargo-test cargo-deny \
-	coverage-ratchet vector-harness rust-ci
+	coverage-ratchet vector-harness repro-build rust-ci
 
 RISCV_TARGET := riscv32imafc-unknown-none-elf
 RUST_COVERAGE_JSON := build/rust-coverage.json
@@ -61,6 +61,13 @@ coverage-ratchet:
 	cargo llvm-cov --workspace --all-features --summary-only --json --output-path $(RUST_COVERAGE_JSON)
 	python3 ci/check_coverage_ratchet.py $(RUST_COVERAGE_JSON) ci/ratchet.json
 
-rust-ci: cargo-fmt cargo-clippy cargo-test vector-harness cargo-deny coverage-ratchet
+# Reproducible-build gate: two clean release builds must be byte-identical, and
+# the nsealr-core device rlib must reproduce byte-for-byte from a second checkout
+# at a different filesystem path (offline against `vendor/`, pinned toolchain,
+# `--remap-path-prefix`). See docs/reproducible-build.md and ci/repro_build.sh.
+repro-build:
+	bash ci/repro_build.sh
+
+rust-ci: cargo-fmt cargo-clippy cargo-test vector-harness cargo-deny coverage-ratchet repro-build
 
 ci: test lint audit docs rust-ci

@@ -1,0 +1,14 @@
+# Deterministic, offline build configuration for the nSealr firmware workspace.
+#
+# Source replacement: every crates.io dependency is served from the checked-in
+# `vendor/` tree (populated by `cargo vendor`, per-crate checksums pinned by
+# Cargo.lock), so a clean build needs no network and can never silently drift
+# with the upstream registry. This is a load-bearing part of the reproducible-
+# build guarantee documented in `docs/reproducible-build.md`. Regenerate the
+# tree with `cargo vendor --locked vendor` whenever `Cargo.lock` changes, and
+# keep this stanza in sync with `cargo vendor`'s printed output.
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
