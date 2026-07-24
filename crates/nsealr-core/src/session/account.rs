@@ -2,10 +2,10 @@
 //! RAM-only session source without deriving keys.
 //!
 //! Ported from the C++ reference `host_core` sources `src/session_account.cpp`
-//! and `include/nsealr/session_account.hpp`. Milestone M-T3.4a lands
-//! [`select_session_account`]; the C++ `device_protocol_context_for_session_account`
-//! needs `DeviceProtocolContext` from the M-T3.6 substrate and is deferred to
-//! milestone M-T3.4b.
+//! and `include/nsealr/session_account.hpp`. Milestone M-T3.4a landed
+//! [`select_session_account`]; milestone M-T3.4b completed the port with
+//! [`device_protocol_context_for_session_account`] on the M-T3.6
+//! [`DeviceProtocolContext`] substrate.
 //!
 //! Selection performs shape validation and identity binding **only**: it never
 //! derives the public key from the source, and the returned account explicitly
@@ -222,6 +222,28 @@ fn require_descriptor_shape(
     Ok(())
 }
 
+/// Builds the device-protocol context bound to a selected session account.
+/// Mirrors the C++ `device_protocol_context_for_session_account`, including its
+/// re-validation of the account's signer identity (a
+/// [`SelectedSessionAccount`] has public fields, so a hand-built value could
+/// carry an invalid key — same defensive check as the C++).
+///
+/// # Errors
+///
+/// [`crate::review::signer_identity::SignerIdentityError`] if the account's
+/// identity is not a 64-lowercase-hex public key.
+pub fn device_protocol_context_for_session_account<'a>(
+    account: &SelectedSessionAccount<'a>,
+) -> Result<
+    crate::protocol::DeviceProtocolContext<'a>,
+    crate::review::signer_identity::SignerIdentityError,
+> {
+    crate::review::signer_identity::require_valid_signer_identity(account.signer_identity)?;
+    Ok(crate::protocol::DeviceProtocolContext {
+        signer_identity: account.signer_identity,
+    })
+}
+
 /// Mirrors the C++ `require_source_matches_recovery`.
 fn require_source_matches_recovery(
     descriptor: &SessionAccountDescriptor<'_>,
@@ -326,13 +348,13 @@ mod tests {
         }
     }
 
-    // Portable subset of the C++
-    // `test_session_account_selection_binds_qr_review_identity_without_derivation`:
-    // that named case also asserts through `build_qr_trusted_review_request` +
-    // `device_protocol_context_for_session_account` (M-T3.6 substrate) and is
-    // counted as DEFERRED; the identity-binding assertions below are exercised
-    // here so the selection surface is still fully proven. They are a strict
-    // subset re-run — not a claim that the named case is ported.
+    // Port of the C++
+    // `test_session_account_selection_binds_qr_review_identity_without_derivation`
+    // (FULL, replacing the M-T3.4a documented subset now that the M-T3.6
+    // `DeviceProtocolContext` + `build_qr_trusted_review_request` substrate
+    // exists): selection binds the reviewed identity, and a QR trusted review
+    // built through the account's protocol context carries the selected public
+    // key — never the development fixture key.
     #[test]
     fn binds_qr_review_identity_without_derivation() {
         let keyring = nip06_keyring();
@@ -354,6 +376,87 @@ mod tests {
         assert_ne!(
             selected.signer_identity.public_key,
             DEVELOPMENT_FIXTURE_PUBLIC_KEY,
+        );
+
+        // The C++ tail: derive the protocol context from the selection, parse
+        // the shared basic QR signing request, and build its trusted review
+        // under the context identity.
+        let context = device_protocol_context_for_session_account(&selected).unwrap();
+        let mut json_buf = [0u8; crate::qr::limits::MAX_STATIC_QR_DECODED_JSON_BYTES];
+        let envelope = crate::qr::envelope::decode_qr_envelope(
+            crate::review::test_fixtures::QR_ENVELOPE_KIND_1_BASIC.as_bytes(),
+            &mut json_buf,
+        )
+        .unwrap();
+        let request = crate::qr::envelope::parse_qr_signing_request(envelope.payload_json).unwrap();
+        let review =
+            crate::review::qr::build_qr_trusted_review_request(&request, context.signer_identity)
+                .unwrap();
+
+        assert!(crate::review::test_fixtures::any_page_line_contains(
+            review.pages.as_slice(),
+            NIP06_ACCOUNT_0_PUBLIC_KEY,
+        ));
+        assert!(!crate::review::test_fixtures::any_page_line_contains(
+            review.pages.as_slice(),
+            DEVELOPMENT_FIXTURE_PUBLIC_KEY,
+        ));
+    }
+
+    // Port of the C++
+    // `test_session_account_selection_does_not_satisfy_public_key_proof_gate`:
+    // even with every other runtime gate satisfied, a selected account never
+    // satisfies the source public-key proof gate (the M-T3.5
+    // `evaluate_signing_readiness` consumes the always-false selection flag).
+    #[test]
+    fn does_not_satisfy_public_key_proof_gate() {
+        use crate::policy::signing_policy::{
+            evaluate_signing_readiness, SigningGateNames, SigningReadiness,
+        };
+
+        let keyring = nip06_keyring();
+        let selected =
+            select_session_account(&keyring, &esp32_qr_nip06_account_0_descriptor()).unwrap();
+
+        let readiness = SigningReadiness {
+            runtime_signing_feature_enabled: true,
+            parser_limits_enforced: true,
+            trusted_review_display_accepted: true,
+            physical_approval_controls_accepted: true,
+            approval_digest_binding_verified: true,
+            unicode_review_rendering_accepted: true,
+            key_provisioning_ready: true,
+            source_public_key_proof_ready: selected.source_public_key_proof_verified,
+            secure_boot_enabled: true,
+            flash_encryption_enabled: true,
+            debug_locked: true,
+            companion_signed_output_verification_ready: true,
+            development_accepted_gates: SigningGateNames::new(),
+        };
+        let status = evaluate_signing_readiness(&readiness);
+
+        assert!(!status.signing_enabled);
+        assert_eq!(status.missing_gates.len(), 1);
+        assert_eq!(
+            status.missing_gates.as_slice()[0],
+            "source_public_key_proof"
+        );
+    }
+
+    // Beyond the named C++ cases: the context builder's defensive identity
+    // re-validation on a hand-built account (the C++ `SignerIdentityError`
+    // throw site inside `device_protocol_context_for_session_account`).
+    #[test]
+    fn context_builder_rejects_hand_built_invalid_identity() {
+        let keyring = nip06_keyring();
+        let mut selected =
+            select_session_account(&keyring, &esp32_qr_nip06_account_0_descriptor()).unwrap();
+        selected.signer_identity = SignerIdentity {
+            public_key: "not-a-pubkey",
+        };
+        assert_eq!(
+            device_protocol_context_for_session_account(&selected),
+            Err(crate::review::signer_identity::SignerIdentityError),
         );
     }
 

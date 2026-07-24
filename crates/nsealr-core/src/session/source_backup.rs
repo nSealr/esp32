@@ -2,12 +2,11 @@
 //!
 //! Ported from the C++ reference `host_core` sources
 //! `src/session_source_backup.cpp` + `include/nsealr/session_source_backup.hpp`.
-//! Milestone M-T3.4a lands the **data path**: the secret-hiding backup review
-//! builder and the secret-revealing backup payload. The interactive flows the
-//! C++ layered on top (`run_session_source_backup_flow`,
-//! `run_session_source_backup_io_flow`, `SessionSourceBackupIo`) drive a
-//! `ReviewControlSession` and `render_review_page` from the M-T3.6 substrate
-//! and are deferred to milestone M-T3.4b.
+//! Milestone M-T3.4a landed the **data path**: the secret-hiding backup review
+//! builder and the secret-revealing backup payload. Milestone M-T3.4b adds the
+//! interactive flows the C++ layered on top (`run_session_source_backup_flow`,
+//! `run_session_source_backup_io_flow`, `SessionSourceBackupIo`) now that the
+//! M-T3.6 review substrate (`ReviewControlSession`, `render_review_page`) exists.
 //!
 //! The C++ `backup_format_for` also carried an "unsupported source type" throw
 //! that was unreachable (the kind enum is exhaustive); the Rust `match` makes
@@ -15,6 +14,10 @@
 
 use crate::bip39::{self, Bip39Error};
 use crate::nip19::{self, NsecError};
+use crate::review::controls::{ReviewButton, ReviewControlSession, ReviewControlsError};
+use crate::review::display::{
+    render_review_page, ReviewDisplayError, ReviewDisplayFrame, ReviewDisplayLimits, ReviewPage,
+};
 use crate::review::types::{
     ReviewBodyLineStyles, ReviewPageAction, ReviewPageLine, ReviewPageLines, TrustedReviewPage,
 };
@@ -102,11 +105,20 @@ pub fn session_source_backup_payload(
             let mnemonic_str = bip39::mnemonic_from_indexes(indexes, &mut mnemonic_buf)
                 .map_err(SessionSourceBackupError::Bip39)?;
             // 24 words x <= 8 bytes + 23 separators = 215 <= 216: never truncates.
-            let mnemonic = FixedStr::from_str(mnemonic_str).expect("within documented capacity");
+            let mut mnemonic =
+                FixedStr::from_str(mnemonic_str).expect("within documented capacity");
+            // The scratch buffer has served its purpose (the secret now lives in
+            // `mnemonic`); volatile-wipe it here — before any later early-return
+            // path — so the `InvalidBackupWordCount` and the (checksum-guarded,
+            // unreachable) `entropy_from_indexes` error paths cannot leak it.
+            // Closes an M-T3.4a hygiene gap recorded in the LEDGER.
+            wipe_bytes(&mut mnemonic_buf);
 
             // Standard SeedQR digits (C++ `standard_seedqr_from_indexes`).
             if indexes.len() != 12 && indexes.len() != 24 {
-                wipe_bytes(&mut mnemonic_buf);
+                // The rendered mnemonic copy is a secret that will not become part
+                // of the payload; wipe it before it drops (M-T3.4a hygiene gap).
+                mnemonic.wipe();
                 return Err(SessionSourceBackupError::InvalidBackupWordCount);
             }
             let mut digits = FixedStr::<MAX_BACKUP_SEEDQR_DIGIT_CHARS>::new();
@@ -114,16 +126,18 @@ pub fn session_source_backup_payload(
                 push_four_digits(&mut digits, index);
             }
 
-            // CompactSeedQR entropy as lowercase hex (C++ `hex_from_bytes`).
+            // CompactSeedQR entropy as lowercase hex (C++ `hex_from_bytes`). The
+            // checksum was already validated by `mnemonic_from_indexes` above and
+            // the 32-byte buffer holds the 16/24-word entropy, so this cannot
+            // fail here; the `?` keeps parity with the C++ throw regardless.
             let mut entropy_buf = [0u8; 32];
             let entropy = bip39::entropy_from_indexes(indexes, &mut entropy_buf)
                 .map_err(SessionSourceBackupError::Bip39)?;
             let mut compact_hex = FixedStr::<MAX_BACKUP_COMPACT_HEX_CHARS>::new();
             push_hex(&mut compact_hex, entropy);
 
-            // The temporary buffers carried secret material; volatile-wipe them
+            // The entropy scratch buffer carried secret material; volatile-wipe it
             // (hygiene beyond the C++, which left its locals as-is).
-            wipe_bytes(&mut mnemonic_buf);
             wipe_bytes(&mut entropy_buf);
 
             Ok(SessionSourceBackupPayload {
@@ -330,6 +344,279 @@ fn push_material(buf: &mut [u8], offset: usize, bytes: &[u8]) -> usize {
     end
 }
 
+/// Default maximum button presses a backup flow accepts before it fails closed.
+/// Mirrors the C++ default argument (`max_button_steps = 32`).
+pub const SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS: usize = 32;
+
+/// Maximum recorded transcript steps — the allocation-free stand-in for the C++
+/// `std::vector<SessionSourceBackupTranscriptStep>`, bounded by the default step
+/// budget.
+pub const MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS: usize =
+    SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS;
+
+/// Errors reported by the backup flows. Each variant wraps a distinct C++ throw
+/// site (the backup flows threw `SessionSourceBackupError`, and let the
+/// review-controls / display / payload exceptions propagate); this port carries
+/// them as typed variants, matching the session-layer error idiom.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionSourceBackupFlowError {
+    /// `max_button_steps` was zero. C++: "session source backup flow max button
+    /// steps must be positive".
+    ZeroMaxButtonSteps,
+    /// The button budget was exhausted before a terminal decision. C++: "session
+    /// source backup review exceeded max button steps".
+    ExceededMaxButtonSteps,
+    /// The button stream ended without a terminal decision. C++: "session source
+    /// backup review did not reach approval or rejection".
+    NoTerminalDecision,
+    /// A review-controls error (approval before the last page / a button after a
+    /// terminal decision). The C++ let the inner exception propagate.
+    Controls(ReviewControlsError),
+    /// The revealed backup payload could not be built. The C++ let the inner
+    /// `SessionSourceBackupError` propagate.
+    Payload(SessionSourceBackupError),
+    /// A review frame could not be rendered (IO flow only). The C++ let the
+    /// inner display exception propagate.
+    Display(ReviewDisplayError),
+    /// More transcript steps than the fixed capacity holds. No C++ analogue (the
+    /// C++ used an unbounded `std::vector`); unreachable while
+    /// `max_button_steps <= MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS`.
+    Capacity,
+}
+
+/// One recorded backup-review step. Mirrors the C++
+/// `SessionSourceBackupTranscriptStep`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SessionSourceBackupTranscriptStep {
+    /// The page index the button acted on (C++ `page_index`).
+    pub page_index: usize,
+    /// The button pressed (C++ `button`).
+    pub button: ReviewButton,
+    /// The terminal decision, if this step produced one (C++ `decision`).
+    pub decision: Option<bool>,
+    /// Whether the secret was revealed at this step (C++ `revealed`).
+    pub revealed: bool,
+}
+
+/// A fixed-capacity backup transcript — the allocation-free stand-in for the
+/// C++ `std::vector<SessionSourceBackupTranscriptStep>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionSourceBackupTranscript {
+    steps: [Option<SessionSourceBackupTranscriptStep>; MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS],
+    len: usize,
+}
+
+impl SessionSourceBackupTranscript {
+    /// Creates an empty transcript.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            steps: [const { None }; MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS],
+            len: 0,
+        }
+    }
+
+    /// Appends one step.
+    fn try_push(
+        &mut self,
+        step: SessionSourceBackupTranscriptStep,
+    ) -> Result<(), SessionSourceBackupFlowError> {
+        if self.len >= MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS {
+            return Err(SessionSourceBackupFlowError::Capacity);
+        }
+        self.steps[self.len] = Some(step);
+        self.len += 1;
+        Ok(())
+    }
+
+    /// Returns the recorded step at `index`.
+    #[must_use]
+    pub fn step(&self, index: usize) -> &SessionSourceBackupTranscriptStep {
+        self.steps[index].as_ref().expect("index within len")
+    }
+
+    /// Returns the number of recorded steps (C++ `size()`).
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Returns `true` if no step was recorded.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+}
+
+impl Default for SessionSourceBackupTranscript {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// The result of a backup flow. Mirrors the C++ `SessionSourceBackupFlowResult`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionSourceBackupFlowResult {
+    /// The secret-hiding backup review that was displayed (C++ `review`).
+    pub review: SessionSourceBackupReview,
+    /// Whether the reveal was approved (C++ `approved`).
+    pub approved: bool,
+    /// Whether the secret was revealed (C++ `revealed`).
+    pub revealed: bool,
+    /// The revealed backup payload, present only after approval (C++
+    /// `backup_payload`).
+    pub backup_payload: Option<SessionSourceBackupPayload>,
+    /// The recorded review steps (C++ `transcript`).
+    pub transcript: SessionSourceBackupTranscript,
+}
+
+/// The interactive backup IO driver. Mirrors the C++ `SessionSourceBackupIo`
+/// virtual interface.
+pub trait SessionSourceBackupIo {
+    /// Shows one rendered danger-zone review frame.
+    fn show_backup_review_frame(&mut self, frame: &ReviewDisplayFrame);
+    /// Reads the next physical button press.
+    fn read_backup_review_button(&mut self) -> ReviewButton;
+    /// Emits the revealed backup payload (only after a displayed approval).
+    fn emit_backup_payload(&mut self, payload: &SessionSourceBackupPayload);
+}
+
+/// Drives the danger-zone backup review to a terminal decision, revealing the
+/// secret payload only after the reveal is approved. Mirrors the C++
+/// `run_session_source_backup_flow`.
+///
+/// # Errors
+///
+/// See [`SessionSourceBackupFlowError`].
+pub fn run_session_source_backup_flow(
+    source: &SessionKeySource,
+    buttons: &[ReviewButton],
+    max_button_steps: usize,
+) -> Result<SessionSourceBackupFlowResult, SessionSourceBackupFlowError> {
+    if max_button_steps == 0 {
+        return Err(SessionSourceBackupFlowError::ZeroMaxButtonSteps);
+    }
+
+    let review = build_session_source_backup_review(source);
+    let mut controls = ReviewControlSession::new(review.pages.len())
+        .map_err(SessionSourceBackupFlowError::Controls)?;
+    let mut transcript = SessionSourceBackupTranscript::new();
+
+    // The C++ kept an explicit step counter; the enumerate index is the same
+    // pre-increment count, so the budget check is identical.
+    for (step_count, &button) in buttons.iter().enumerate() {
+        if step_count >= max_button_steps {
+            return Err(SessionSourceBackupFlowError::ExceededMaxButtonSteps);
+        }
+
+        let page_index = controls.current_page_index();
+        let decision = controls
+            .handle_button(button)
+            .map_err(SessionSourceBackupFlowError::Controls)?;
+        let revealed = decision == Some(true);
+        transcript.try_push(SessionSourceBackupTranscriptStep {
+            page_index,
+            button,
+            decision,
+            revealed,
+        })?;
+
+        if let Some(approved) = decision {
+            let backup_payload = if revealed {
+                Some(
+                    session_source_backup_payload(source)
+                        .map_err(SessionSourceBackupFlowError::Payload)?,
+                )
+            } else {
+                None
+            };
+            return Ok(SessionSourceBackupFlowResult {
+                review,
+                approved,
+                revealed,
+                backup_payload,
+                transcript,
+            });
+        }
+    }
+
+    Err(SessionSourceBackupFlowError::NoTerminalDecision)
+}
+
+/// Drives the danger-zone backup review through a display/button IO driver,
+/// rendering each page and emitting the payload to the driver only after a
+/// displayed approval. Mirrors the C++ `run_session_source_backup_io_flow`.
+///
+/// # Errors
+///
+/// See [`SessionSourceBackupFlowError`].
+pub fn run_session_source_backup_io_flow(
+    source: &SessionKeySource,
+    io: &mut dyn SessionSourceBackupIo,
+    limits: ReviewDisplayLimits,
+    max_button_steps: usize,
+) -> Result<SessionSourceBackupFlowResult, SessionSourceBackupFlowError> {
+    if max_button_steps == 0 {
+        return Err(SessionSourceBackupFlowError::ZeroMaxButtonSteps);
+    }
+
+    let review = build_session_source_backup_review(source);
+    let mut controls = ReviewControlSession::new(review.pages.len())
+        .map_err(SessionSourceBackupFlowError::Controls)?;
+    let mut transcript = SessionSourceBackupTranscript::new();
+
+    for _ in 0..max_button_steps {
+        let page_index = controls.current_page_index();
+        let page = &review.pages[page_index];
+        let frame = render_review_page(
+            &ReviewPage {
+                title: page.title.as_str(),
+                lines: page.lines.as_slice(),
+                action: page.action,
+                page_indicator: page.page_indicator.as_str(),
+                body_line_styles: page.body_line_styles.as_slice(),
+            },
+            page_index,
+            review.pages.len(),
+            limits,
+        )
+        .map_err(SessionSourceBackupFlowError::Display)?;
+        io.show_backup_review_frame(&frame);
+
+        let button = io.read_backup_review_button();
+        let decision = controls
+            .handle_button(button)
+            .map_err(SessionSourceBackupFlowError::Controls)?;
+        let revealed = decision == Some(true);
+        transcript.try_push(SessionSourceBackupTranscriptStep {
+            page_index,
+            button,
+            decision,
+            revealed,
+        })?;
+
+        if let Some(approved) = decision {
+            let backup_payload = if revealed {
+                let payload = session_source_backup_payload(source)
+                    .map_err(SessionSourceBackupFlowError::Payload)?;
+                io.emit_backup_payload(&payload);
+                Some(payload)
+            } else {
+                None
+            };
+            return Ok(SessionSourceBackupFlowResult {
+                review,
+                approved,
+                revealed,
+                backup_payload,
+                transcript,
+            });
+        }
+    }
+
+    Err(SessionSourceBackupFlowError::ExceededMaxButtonSteps)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -512,5 +799,272 @@ mod tests {
             session_source_backup_payload(keyring.source_at(0).unwrap()),
             Err(SessionSourceBackupError::Bip39(Bip39Error::InvalidChecksum)),
         );
+    }
+
+    use crate::review::test_fixtures::frame_lines_contain;
+    use std::format;
+    use std::string::String;
+    use std::vec::Vec;
+
+    /// A keyring holding a single nsec source (the backup-flow fixture).
+    fn nsec_keyring() -> StatelessSessionKeyring {
+        let mut keyring = StatelessSessionKeyring::new();
+        keyring
+            .add_nsec(
+                "nsec test vector",
+                &nip19::decode_nsec(NSEC_TEST_KEY_1).unwrap(),
+            )
+            .unwrap();
+        keyring
+    }
+
+    /// The C++ `RecordingSessionSourceBackupIo` test double: it records every
+    /// shown frame, every emitted payload, and an ordered event log, and reads
+    /// buttons from a fixed queue.
+    struct RecordingSessionSourceBackupIo {
+        buttons: Vec<ReviewButton>,
+        next_button: usize,
+        frames: Vec<ReviewDisplayFrame>,
+        payloads: Vec<SessionSourceBackupPayload>,
+        events: Vec<String>,
+    }
+
+    impl RecordingSessionSourceBackupIo {
+        fn new(buttons: &[ReviewButton]) -> Self {
+            Self {
+                buttons: buttons.to_vec(),
+                next_button: 0,
+                frames: Vec::new(),
+                payloads: Vec::new(),
+                events: Vec::new(),
+            }
+        }
+    }
+
+    impl SessionSourceBackupIo for RecordingSessionSourceBackupIo {
+        fn show_backup_review_frame(&mut self, frame: &ReviewDisplayFrame) {
+            self.events.push(format!("frame:{}", frame.title.as_str()));
+            self.frames.push(frame.clone());
+        }
+
+        fn read_backup_review_button(&mut self) -> ReviewButton {
+            let button = self.buttons[self.next_button];
+            self.next_button += 1;
+            self.events.push(String::from("button"));
+            button
+        }
+
+        fn emit_backup_payload(&mut self, payload: &SessionSourceBackupPayload) {
+            self.events.push(String::from("payload"));
+            self.payloads.push(payload.clone());
+        }
+    }
+
+    // Port of the C++ `test_session_source_backup_flow_reveals_only_after_local_approval`.
+    #[test]
+    fn flow_reveals_only_after_local_approval() {
+        let keyring = nsec_keyring();
+        let source = keyring.source_at(0).unwrap();
+
+        let approved = run_session_source_backup_flow(
+            source,
+            &[ReviewButton::Next, ReviewButton::Approve],
+            SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+
+        assert!(approved.approved);
+        assert!(approved.revealed);
+        assert_eq!(
+            approved.backup_payload.as_ref().unwrap().nsec,
+            NSEC_TEST_KEY_1
+        );
+        assert_eq!(approved.transcript.len(), 2);
+        assert_eq!(approved.transcript.step(0).page_index, 0);
+        assert_eq!(approved.transcript.step(0).button, ReviewButton::Next);
+        assert_eq!(approved.transcript.step(0).decision, None);
+        assert!(!approved.transcript.step(0).revealed);
+        assert_eq!(approved.transcript.step(1).page_index, 1);
+        assert_eq!(approved.transcript.step(1).button, ReviewButton::Approve);
+        assert_eq!(approved.transcript.step(1).decision, Some(true));
+        assert!(approved.transcript.step(1).revealed);
+
+        let rejected = run_session_source_backup_flow(
+            source,
+            &[ReviewButton::Reject],
+            SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+        assert!(!rejected.approved);
+        assert!(!rejected.revealed);
+        assert!(rejected.backup_payload.is_none());
+
+        assert_eq!(
+            run_session_source_backup_flow(
+                source,
+                &[ReviewButton::Approve],
+                SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceBackupFlowError::Controls(
+                ReviewControlsError::ApprovalRequiresFullTraversal,
+            )),
+        );
+    }
+
+    // Port of the C++ `test_session_source_backup_io_reveals_only_after_displayed_approval`.
+    #[test]
+    fn io_reveals_only_after_displayed_approval() {
+        let keyring = nsec_keyring();
+        let source = keyring.source_at(0).unwrap();
+        let mut io =
+            RecordingSessionSourceBackupIo::new(&[ReviewButton::Next, ReviewButton::Approve]);
+
+        let result = run_session_source_backup_io_flow(
+            source,
+            &mut io,
+            ReviewDisplayLimits::default(),
+            SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+
+        assert!(result.approved);
+        assert!(result.revealed);
+        assert_eq!(
+            result.backup_payload.as_ref().unwrap().nsec,
+            NSEC_TEST_KEY_1
+        );
+        assert_eq!(io.payloads.len(), 1);
+        assert_eq!(io.payloads[0].nsec, NSEC_TEST_KEY_1);
+        assert_eq!(io.frames.len(), 2);
+        assert_eq!(io.frames[0].title, "Backup source");
+        assert_eq!(io.frames[0].page_indicator, "Page 1/2");
+        assert!(frame_lines_contain(&io.frames[0], "Danger: secret export"));
+        assert!(!frame_lines_contain(&io.frames[0], NSEC_TEST_KEY_1));
+        assert!(!frame_lines_contain(
+            &io.frames[0],
+            NSEC_TEST_KEY_1_SECRET_HEX
+        ));
+        assert_eq!(io.frames[1].title, "Show secret?");
+        assert_eq!(io.frames[1].page_indicator, "Page 2/2");
+        assert_eq!(
+            io.events,
+            [
+                "frame:Backup source",
+                "button",
+                "frame:Show secret?",
+                "button",
+                "payload",
+            ],
+        );
+    }
+
+    // Port of the C++ `test_session_source_backup_io_rejection_or_timeout_does_not_emit_payload`.
+    #[test]
+    fn io_rejection_or_timeout_does_not_emit_payload() {
+        let keyring = nsec_keyring();
+        let source = keyring.source_at(0).unwrap();
+
+        let mut rejected_io = RecordingSessionSourceBackupIo::new(&[ReviewButton::Reject]);
+        let rejected = run_session_source_backup_io_flow(
+            source,
+            &mut rejected_io,
+            ReviewDisplayLimits::default(),
+            SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+        assert!(!rejected.approved);
+        assert!(!rejected.revealed);
+        assert!(rejected.backup_payload.is_none());
+        assert!(rejected_io.payloads.is_empty());
+        assert_eq!(rejected_io.frames.len(), 1);
+
+        let mut timeout_io =
+            RecordingSessionSourceBackupIo::new(&[ReviewButton::Next, ReviewButton::Back]);
+        assert_eq!(
+            run_session_source_backup_io_flow(
+                source,
+                &mut timeout_io,
+                ReviewDisplayLimits::default(),
+                1,
+            ),
+            Err(SessionSourceBackupFlowError::ExceededMaxButtonSteps),
+        );
+        assert!(timeout_io.payloads.is_empty());
+        assert_eq!(timeout_io.frames.len(), 1);
+
+        let mut early_io = RecordingSessionSourceBackupIo::new(&[ReviewButton::Approve]);
+        assert_eq!(
+            run_session_source_backup_io_flow(
+                source,
+                &mut early_io,
+                ReviewDisplayLimits::default(),
+                SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceBackupFlowError::Controls(
+                ReviewControlsError::ApprovalRequiresFullTraversal,
+            )),
+        );
+        assert!(early_io.payloads.is_empty());
+        assert_eq!(early_io.frames.len(), 1);
+    }
+
+    // Beyond the named C++ cases: the zero-step guard (both flows), the
+    // exceeded-budget guard (non-IO flow; the IO flow's is covered by the
+    // timeout case above), and the non-terminal button stream.
+    #[test]
+    fn flow_guards_max_steps_and_non_terminal_streams() {
+        let keyring = nsec_keyring();
+        let source = keyring.source_at(0).unwrap();
+
+        assert_eq!(
+            run_session_source_backup_flow(source, &[], 0),
+            Err(SessionSourceBackupFlowError::ZeroMaxButtonSteps),
+        );
+        let mut io = RecordingSessionSourceBackupIo::new(&[]);
+        assert_eq!(
+            run_session_source_backup_io_flow(source, &mut io, ReviewDisplayLimits::default(), 0),
+            Err(SessionSourceBackupFlowError::ZeroMaxButtonSteps),
+        );
+        assert_eq!(
+            run_session_source_backup_flow(source, &[ReviewButton::Next, ReviewButton::Reject], 1),
+            Err(SessionSourceBackupFlowError::ExceededMaxButtonSteps),
+        );
+        assert_eq!(
+            run_session_source_backup_flow(
+                source,
+                &[ReviewButton::Next],
+                SESSION_SOURCE_BACKUP_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceBackupFlowError::NoTerminalDecision),
+        );
+    }
+
+    // Beyond the named C++ cases: the bounded transcript container plumbing
+    // (the C++ used an unbounded std::vector), including the capacity guard.
+    #[test]
+    fn transcript_bounds_and_rejects_overflow() {
+        let step = SessionSourceBackupTranscriptStep {
+            page_index: 0,
+            button: ReviewButton::Next,
+            decision: None,
+            revealed: false,
+        };
+        let mut transcript = SessionSourceBackupTranscript::new();
+        assert!(transcript.is_empty());
+        assert_eq!(
+            SessionSourceBackupTranscript::default(),
+            SessionSourceBackupTranscript::new(),
+        );
+        for _ in 0..MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS {
+            transcript.try_push(step).unwrap();
+        }
+        assert!(!transcript.is_empty());
+        assert_eq!(transcript.len(), MAX_SESSION_SOURCE_BACKUP_TRANSCRIPT_STEPS);
+        assert_eq!(transcript.step(0).button, ReviewButton::Next);
+        assert_eq!(
+            transcript.try_push(step),
+            Err(SessionSourceBackupFlowError::Capacity),
+        );
+        assert_eq!(transcript.clone(), transcript);
     }
 }

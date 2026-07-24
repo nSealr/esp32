@@ -1,4 +1,5 @@
-//! RAM-only session source parsing from decoded QR text / CompactSeedQR bytes.
+//! RAM-only session source parsing from decoded QR text / CompactSeedQR bytes,
+//! plus the review-gated QR import flows layered on top.
 //!
 //! Ported from the C++ reference `host_core` sources `src/session_source_qr.cpp`
 //! and `include/nsealr/session_source_qr.hpp` for behaviour parity. Decoded text
@@ -7,14 +8,22 @@
 //! [`StatelessSessionKeyring`](crate::session::keyring::StatelessSessionKeyring)
 //! so it passes exactly the boundary validation an imported source does.
 //!
-//! The QR-driven *import flows* the C++ layered on top
-//! (`session_source_qr_import_flow.cpp`) need the M-T3.6 review-controls
-//! substrate and are deferred to milestone M-T3.4b.
+//! The QR-driven *import flows* ([`run_session_source_qr_text_import_flow`],
+//! [`run_compact_seedqr_session_import_flow`]) are ported from
+//! `src/session_source_qr_import_flow.cpp` +
+//! `include/nsealr/session_source_qr_import_flow.hpp` (milestone M-T3.4b, on
+//! the M-T3.6 review-controls substrate): parse the scanned material, then run
+//! the shared [`run_session_import_flow`] so the keyring loads only after a
+//! full-traversal approval.
 
 use crate::bip39::{self, Bip39Error};
 use crate::nip19::{self, NsecError};
+use crate::review::controls::ReviewButton;
 use crate::seedqr::{self, SeedQrError};
-use crate::session::keyring::{SessionKeySource, SessionKeyringError};
+use crate::session::import_flow::{
+    run_session_import_flow, SessionImportFlowError, SessionImportFlowResult,
+};
+use crate::session::keyring::{SessionKeySource, SessionKeyringError, StatelessSessionKeyring};
 
 /// Errors reported by session source QR parsing. Each variant corresponds to a
 /// distinct C++ `SessionSourceQrError` throw site (the C++ rethrew the wrapped
@@ -138,6 +147,60 @@ pub fn parse_compact_seedqr_session_source(
     source_from_bip39_indexes(label, indexes.as_slice())
 }
 
+/// Errors reported by the QR-driven import flows. The C++ let the parse
+/// (`SessionSourceQrError`) and flow (`SessionImportFlowError` + propagated
+/// review-controls/keyring) exceptions escape separately; this port carries
+/// each cause as a typed variant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionSourceQrImportFlowError {
+    /// The scanned material failed session-source parsing.
+    Parse(SessionSourceQrError),
+    /// The review-gated import flow failed.
+    Flow(SessionImportFlowError),
+}
+
+/// Parses decoded QR text and drives the review-gated import flow, loading the
+/// source into `keyring` only after approval. Mirrors the C++
+/// `run_session_source_qr_text_import_flow`.
+///
+/// # Errors
+///
+/// See [`SessionSourceQrImportFlowError`]; on any error the keyring is
+/// untouched.
+pub fn run_session_source_qr_text_import_flow(
+    keyring: &mut StatelessSessionKeyring,
+    label: &str,
+    decoded_text: &str,
+    buttons: &[ReviewButton],
+    max_button_steps: usize,
+) -> Result<SessionImportFlowResult, SessionSourceQrImportFlowError> {
+    let source = parse_session_source_qr_text(label, decoded_text)
+        .map_err(SessionSourceQrImportFlowError::Parse)?;
+    run_session_import_flow(keyring, &source, buttons, max_button_steps)
+        .map_err(SessionSourceQrImportFlowError::Flow)
+}
+
+/// Parses CompactSeedQR entropy bytes and drives the review-gated import flow,
+/// loading the source into `keyring` only after approval. Mirrors the C++
+/// `run_compact_seedqr_session_import_flow`.
+///
+/// # Errors
+///
+/// See [`SessionSourceQrImportFlowError`]; on any error the keyring is
+/// untouched.
+pub fn run_compact_seedqr_session_import_flow(
+    keyring: &mut StatelessSessionKeyring,
+    label: &str,
+    entropy: &[u8],
+    buttons: &[ReviewButton],
+    max_button_steps: usize,
+) -> Result<SessionImportFlowResult, SessionSourceQrImportFlowError> {
+    let source = parse_compact_seedqr_session_source(label, entropy)
+        .map_err(SessionSourceQrImportFlowError::Parse)?;
+    run_session_import_flow(keyring, &source, buttons, max_button_steps)
+        .map_err(SessionSourceQrImportFlowError::Flow)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -258,5 +321,141 @@ mod tests {
             parse_compact_seedqr_session_source("bad CompactSeedQR", &[0x00, 0x01]),
             Err(SessionSourceQrError::SeedQr(SeedQrError::InvalidByteLength)),
         );
+    }
+
+    use crate::session::import_flow::SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS;
+
+    // Port of the C++ `test_session_source_qr_import_flow_loads_only_after_review_approval`.
+    // The expected review_id is copied from the READ-ONLY
+    // specs/vectors/session-import-reviews/nsec-test-key-1.json (`review_id`).
+    #[test]
+    fn import_flow_loads_only_after_review_approval() {
+        let mut keyring = StatelessSessionKeyring::new();
+        let result = run_session_source_qr_text_import_flow(
+            &mut keyring,
+            "nsec QR",
+            NSEC_TEST_KEY_1,
+            &[ReviewButton::Next, ReviewButton::Approve],
+            SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+
+        assert!(result.approved);
+        assert!(result.loaded);
+        assert_eq!(result.review.review_id, "session-import-dbd1f8666039f02a");
+        assert_eq!(result.transcript.len(), 2);
+        assert!(!result.transcript.step(0).loaded);
+        assert!(result.transcript.step(1).loaded);
+        assert_eq!(keyring.len(), 1);
+        assert_eq!(
+            keyring.source_at(0).unwrap().kind,
+            SessionKeySourceKind::NsecSecretKey,
+        );
+        assert_eq!(
+            keyring.source_at(0).unwrap().nsec_secret_key,
+            crate::nip19::decode_nsec(NSEC_TEST_KEY_1).unwrap(),
+        );
+    }
+
+    // Port of the C++ `test_session_source_qr_import_flow_rejects_without_keyring_load`.
+    #[test]
+    fn import_flow_rejects_without_keyring_load() {
+        let mut keyring = StatelessSessionKeyring::new();
+        let rejected = run_session_source_qr_text_import_flow(
+            &mut keyring,
+            "SeedQR vector 1",
+            SEEDQR_VECTOR_1_DIGITS,
+            &[ReviewButton::Reject],
+            SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+
+        assert!(!rejected.approved);
+        assert!(!rejected.loaded);
+        assert!(keyring.is_empty());
+
+        assert_eq!(
+            run_session_source_qr_text_import_flow(
+                &mut keyring,
+                "bad Standard SeedQR",
+                "000",
+                &[ReviewButton::Next, ReviewButton::Approve],
+                SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceQrImportFlowError::Parse(
+                SessionSourceQrError::SeedQr(SeedQrError::NotFourPerWord),
+            )),
+        );
+        assert!(keyring.is_empty());
+    }
+
+    // Port of the C++ `test_compact_seedqr_import_flow_loads_after_review_approval`.
+    #[test]
+    fn compact_seedqr_import_flow_loads_after_review_approval() {
+        let mut keyring = StatelessSessionKeyring::new();
+        let result = run_compact_seedqr_session_import_flow(
+            &mut keyring,
+            "CompactSeedQR",
+            &SEEDQR_VECTOR_1_COMPACT,
+            &[ReviewButton::Next, ReviewButton::Approve],
+            SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+
+        assert!(result.approved);
+        assert!(result.loaded);
+        assert_eq!(keyring.len(), 1);
+        assert_eq!(
+            keyring.source_at(0).unwrap().kind,
+            SessionKeySourceKind::Bip39WordIndexes,
+        );
+        assert_eq!(
+            keyring.source_at(0).unwrap().bip39_word_indexes.as_slice(),
+            &SEEDQR_VECTOR_1_INDEXES,
+        );
+    }
+
+    // Beyond the named C++ cases: the compact entry point's parse-error wrapping
+    // and the flow-error wrapping of both entry points.
+    #[test]
+    fn import_flow_error_wrapping_branches() {
+        let mut keyring = StatelessSessionKeyring::new();
+        assert_eq!(
+            run_compact_seedqr_session_import_flow(
+                &mut keyring,
+                "bad CompactSeedQR",
+                &[0x00, 0x01],
+                &[ReviewButton::Next, ReviewButton::Approve],
+                SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceQrImportFlowError::Parse(
+                SessionSourceQrError::SeedQr(SeedQrError::InvalidByteLength),
+            )),
+        );
+        assert_eq!(
+            run_session_source_qr_text_import_flow(
+                &mut keyring,
+                "nsec QR",
+                NSEC_TEST_KEY_1,
+                &[ReviewButton::Next],
+                SESSION_IMPORT_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(SessionSourceQrImportFlowError::Flow(
+                crate::session::import_flow::SessionImportFlowError::NoTerminalDecision,
+            )),
+        );
+        assert_eq!(
+            run_compact_seedqr_session_import_flow(
+                &mut keyring,
+                "CompactSeedQR",
+                &SEEDQR_VECTOR_1_COMPACT,
+                &[ReviewButton::Reject],
+                0,
+            ),
+            Err(SessionSourceQrImportFlowError::Flow(
+                crate::session::import_flow::SessionImportFlowError::ZeroMaxButtonSteps,
+            )),
+        );
+        assert!(keyring.is_empty());
     }
 }

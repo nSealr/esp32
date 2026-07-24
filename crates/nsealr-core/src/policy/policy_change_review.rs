@@ -9,10 +9,11 @@
 //! `{"pages":…,"proposal":…}` material — byte-for-byte the C++ canonical form,
 //! proven against the shared `specs/vectors/policy-changes` fixtures.
 //!
-//! **Deferred to M-T3.4b (after M-T3.6):** the C++ `run_policy_change_review_flow`
-//! and its `PolicyChangeReviewTranscriptStep`/`PolicyChangeReviewFlowResult`
-//! surface drive a `TrustedReviewSession` with `ReviewButton` presses — review
-//! *logic* that arrives with milestone M-T3.6 and is not pulled forward here.
+//! Milestone M-T3.4b completed the port with [`run_policy_change_review_flow`]
+//! and its transcript/result surface, driving a
+//! [`TrustedReviewSession`](crate::review::trusted::TrustedReviewSession) with
+//! [`ReviewButton`](crate::review::controls::ReviewButton) presses on the
+//! M-T3.6 substrate.
 //!
 //! The C++ used `std::string`/`std::vector`; this allocation-free port stores
 //! bounded inline text ([`FixedStr`]) and fixed-capacity lists. The capacities
@@ -701,6 +702,188 @@ pub fn build_policy_change_trusted_review_request(
     })
 }
 
+/// Default maximum button presses a policy-change review flow accepts before it
+/// fails closed. Mirrors the C++ default argument (`max_button_steps = 32`).
+pub const POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS: usize = 32;
+
+/// Maximum recorded transcript steps — the allocation-free stand-in for the C++
+/// `std::vector<PolicyChangeReviewTranscriptStep>`, bounded by the default step
+/// budget.
+pub const MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS: usize =
+    POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS;
+
+/// Errors reported by the policy-change review flow. Each variant wraps a
+/// distinct C++ throw site (the flow threw `PolicyChangeReviewError` for its
+/// own guards and let the trusted-review exceptions propagate).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PolicyChangeReviewFlowError {
+    /// `max_button_steps` was zero. C++: "policy change review flow max button
+    /// steps must be positive".
+    ZeroMaxButtonSteps,
+    /// The button budget was exhausted before a terminal decision. C++:
+    /// "policy change review exceeded max button steps".
+    ExceededMaxButtonSteps,
+    /// The button stream ended without a terminal decision. C++: "policy change
+    /// review did not reach approval or rejection".
+    NoTerminalDecision,
+    /// The proposal failed validation in [`build_policy_change_review`].
+    Validation(PolicyChangeReviewError),
+    /// A trusted-review session error (construction or button handling, for
+    /// example approval before the last page). The C++ let the inner exception
+    /// propagate.
+    TrustedReview(crate::review::trusted::TrustedReviewError),
+    /// More transcript steps than the fixed capacity holds. No C++ analogue
+    /// (the C++ used an unbounded `std::vector`); unreachable while
+    /// `max_button_steps <= MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS`.
+    Capacity,
+}
+
+/// One recorded policy-change review step. Mirrors the C++
+/// `PolicyChangeReviewTranscriptStep`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PolicyChangeReviewTranscriptStep {
+    /// The page index the button acted on (C++ `page_index`).
+    pub page_index: usize,
+    /// The button pressed (C++ `button`).
+    pub button: crate::review::controls::ReviewButton,
+    /// The terminal decision, if this step produced one (C++ `decision`).
+    pub decision: Option<bool>,
+    /// Whether the session's approval gate holds an approval for the policy
+    /// change after this step (C++ `approved_for_policy_change`, recorded from
+    /// `session.can_sign()`).
+    pub approved_for_policy_change: bool,
+}
+
+/// A fixed-capacity policy-change review transcript — the allocation-free
+/// stand-in for the C++ `std::vector<PolicyChangeReviewTranscriptStep>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PolicyChangeReviewTranscript {
+    steps: [Option<PolicyChangeReviewTranscriptStep>; MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS],
+    len: usize,
+}
+
+impl PolicyChangeReviewTranscript {
+    /// Creates an empty transcript.
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            steps: [const { None }; MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS],
+            len: 0,
+        }
+    }
+
+    /// Appends one step.
+    fn try_push(
+        &mut self,
+        step: PolicyChangeReviewTranscriptStep,
+    ) -> Result<(), PolicyChangeReviewFlowError> {
+        if self.len >= MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS {
+            return Err(PolicyChangeReviewFlowError::Capacity);
+        }
+        self.steps[self.len] = Some(step);
+        self.len += 1;
+        Ok(())
+    }
+
+    /// Returns the recorded step at `index`.
+    #[must_use]
+    pub fn step(&self, index: usize) -> &PolicyChangeReviewTranscriptStep {
+        self.steps[index].as_ref().expect("index within len")
+    }
+
+    /// Returns the number of recorded steps (C++ `size()`).
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Returns `true` if no step was recorded.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+}
+
+impl Default for PolicyChangeReviewTranscript {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// The result of a policy-change review flow. Mirrors the C++
+/// `PolicyChangeReviewFlowResult`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PolicyChangeReviewFlowResult {
+    /// The validated review that was displayed (C++ `review`).
+    pub review: PolicyChangeReview,
+    /// Whether the policy change was approved on-device (C++ `approved`).
+    pub approved: bool,
+    /// The recorded review steps (C++ `transcript`).
+    pub transcript: PolicyChangeReviewTranscript,
+}
+
+/// Drives the policy-change review through a [`TrustedReviewSession`] to a
+/// terminal on-device decision. Mirrors the C++ `run_policy_change_review_flow`
+/// (the session renders with the default display limits, as the C++ member
+/// default did).
+///
+/// # Errors
+///
+/// See [`PolicyChangeReviewFlowError`].
+///
+/// [`TrustedReviewSession`]: crate::review::trusted::TrustedReviewSession
+pub fn run_policy_change_review_flow(
+    proposal: &PolicyChangeProposal,
+    buttons: &[crate::review::controls::ReviewButton],
+    max_button_steps: usize,
+) -> Result<PolicyChangeReviewFlowResult, PolicyChangeReviewFlowError> {
+    if max_button_steps == 0 {
+        return Err(PolicyChangeReviewFlowError::ZeroMaxButtonSteps);
+    }
+
+    let review =
+        build_policy_change_review(proposal).map_err(PolicyChangeReviewFlowError::Validation)?;
+    let mut session = crate::review::trusted::TrustedReviewSession::new(
+        TrustedReviewRequest {
+            request_id: review.proposal_id.clone(),
+            approval_digest: review.approval_digest.clone(),
+            pages: review.pages.clone(),
+        },
+        crate::review::display::ReviewDisplayLimits::default(),
+    )
+    .map_err(PolicyChangeReviewFlowError::TrustedReview)?;
+    let mut transcript = PolicyChangeReviewTranscript::new();
+
+    // The C++ kept an explicit step counter; the enumerate index is the same
+    // pre-increment count, so the budget check is identical.
+    for (step_count, &button) in buttons.iter().enumerate() {
+        if step_count >= max_button_steps {
+            return Err(PolicyChangeReviewFlowError::ExceededMaxButtonSteps);
+        }
+
+        let page_index = session.current_page_index();
+        let decision = session
+            .handle_button(button)
+            .map_err(PolicyChangeReviewFlowError::TrustedReview)?;
+        transcript.try_push(PolicyChangeReviewTranscriptStep {
+            page_index,
+            button,
+            decision,
+            approved_for_policy_change: session.can_sign(),
+        })?;
+
+        if let Some(approved) = decision {
+            return Ok(PolicyChangeReviewFlowResult {
+                review,
+                approved,
+                transcript,
+            });
+        }
+    }
+
+    Err(PolicyChangeReviewFlowError::NoTerminalDecision)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1230,6 +1413,131 @@ mod tests {
         unique.sort();
         unique.dedup();
         assert_eq!(unique.len(), digests.len());
+    }
+
+    use crate::review::controls::{ReviewButton, ReviewControlsError};
+    use crate::review::trusted::TrustedReviewError;
+
+    // Port of the C++ `test_policy_change_review_flow_requires_device_approval`.
+    // The expected approval digest is copied from the READ-ONLY
+    // specs/vectors/policy-changes/esp32-usb-enable-kind-1-automation.json
+    // (`review.approval_digest`).
+    #[test]
+    fn flow_requires_device_approval() {
+        let fixture = esp32_usb_fixture();
+
+        let approved = run_policy_change_review_flow(
+            &fixture.proposal,
+            &[
+                ReviewButton::Next,
+                ReviewButton::Next,
+                ReviewButton::Next,
+                ReviewButton::Approve,
+            ],
+            POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+        assert!(approved.approved);
+        assert_eq!(approved.review.approval_digest, fixture.approval_digest);
+        assert_eq!(approved.transcript.len(), 4);
+        assert_eq!(approved.transcript.step(0).page_index, 0);
+        assert_eq!(approved.transcript.step(0).decision, None);
+        assert!(!approved.transcript.step(0).approved_for_policy_change);
+        assert_eq!(approved.transcript.step(3).page_index, 3);
+        assert_eq!(approved.transcript.step(3).decision, Some(true));
+        assert!(approved.transcript.step(3).approved_for_policy_change);
+
+        let rejected = run_policy_change_review_flow(
+            &fixture.proposal,
+            &[ReviewButton::Reject],
+            POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS,
+        )
+        .unwrap();
+        assert!(!rejected.approved);
+        assert_eq!(rejected.transcript.len(), 1);
+        assert_eq!(rejected.transcript.step(0).decision, Some(false));
+        assert!(!rejected.transcript.step(0).approved_for_policy_change);
+
+        // Early approval: the C++ threw "approval requires viewing every
+        // review page" out of the flat controls.
+        assert_eq!(
+            run_policy_change_review_flow(
+                &fixture.proposal,
+                &[ReviewButton::Approve],
+                POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(PolicyChangeReviewFlowError::TrustedReview(
+                TrustedReviewError::Controls(ReviewControlsError::ApprovalRequiresFullTraversal),
+            )),
+        );
+        // Non-terminal stream: the C++ threw "did not reach approval or
+        // rejection".
+        assert_eq!(
+            run_policy_change_review_flow(
+                &fixture.proposal,
+                &[ReviewButton::Next],
+                POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(PolicyChangeReviewFlowError::NoTerminalDecision),
+        );
+    }
+
+    // Beyond the named C++ case: the remaining flow guard branches (zero step
+    // budget, exhausted step budget, validation propagation) and the bounded
+    // transcript container plumbing (the C++ used an unbounded std::vector).
+    #[test]
+    fn flow_guards_and_transcript_bounds() {
+        let fixture = esp32_usb_fixture();
+
+        assert_eq!(
+            run_policy_change_review_flow(&fixture.proposal, &[], 0),
+            Err(PolicyChangeReviewFlowError::ZeroMaxButtonSteps),
+        );
+        assert_eq!(
+            run_policy_change_review_flow(
+                &fixture.proposal,
+                &[ReviewButton::Next, ReviewButton::Reject],
+                1,
+            ),
+            Err(PolicyChangeReviewFlowError::ExceededMaxButtonSteps),
+        );
+
+        let mut invalid = fixture.proposal;
+        invalid.created_at = 0;
+        assert_eq!(
+            run_policy_change_review_flow(
+                &invalid,
+                &[ReviewButton::Reject],
+                POLICY_CHANGE_REVIEW_DEFAULT_MAX_BUTTON_STEPS,
+            ),
+            Err(PolicyChangeReviewFlowError::Validation(
+                PolicyChangeReviewError::InvalidCreatedAt,
+            )),
+        );
+
+        let step = PolicyChangeReviewTranscriptStep {
+            page_index: 0,
+            button: ReviewButton::Next,
+            decision: None,
+            approved_for_policy_change: false,
+        };
+        let mut transcript = PolicyChangeReviewTranscript::new();
+        assert!(transcript.is_empty());
+        assert_eq!(
+            PolicyChangeReviewTranscript::default(),
+            PolicyChangeReviewTranscript::new(),
+        );
+        for _ in 0..MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS {
+            transcript.try_push(step).unwrap();
+        }
+        assert!(!transcript.is_empty());
+        assert_eq!(transcript.len(), MAX_POLICY_CHANGE_REVIEW_TRANSCRIPT_STEPS);
+        assert_eq!(transcript.step(0).button, ReviewButton::Next);
+        assert_eq!(
+            transcript.try_push(step),
+            Err(PolicyChangeReviewFlowError::Capacity),
+        );
+        assert_eq!(transcript.clone(), transcript);
     }
 
     // Container plumbing for the fixed-capacity grant-id list (no single named
