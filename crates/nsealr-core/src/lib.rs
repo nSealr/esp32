@@ -16,9 +16,11 @@
 //!
 //! Phase 03 ports the C++ `host_core` logic into this crate one milestone at a
 //! time. Ported so far: the low-level primitives [`hash`] (SHA-256) and
-//! [`base64url`] (URL-safe unpadded Base64), and the encoding layer [`bip39`]
+//! [`base64url`] (URL-safe unpadded Base64), the encoding layer [`bip39`]
 //! (English mnemonic parsing), [`nip19`] (`nsec` Bech32), [`seedqr`]
-//! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers).
+//! (Standard/Compact SeedQR), and [`unicode`] (UTF-8 + JSON `\uXXXX` helpers), and
+//! the transport layer [`qr`] (QR envelope / animated envelope / response-display
+//! framing + shared limits) and [`serial`] (`nsealr1f:` serial framing).
 #![no_std]
 #![deny(missing_docs)]
 
@@ -27,11 +29,19 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+// Unit tests always run on a host where libtest already links std; making the
+// facade importable under cfg(test) lets fixture-replay tests build dynamic
+// inputs (Vec/String) without touching the shipped `no_std` surface.
+#[cfg(all(test, not(feature = "std")))]
+extern crate std;
+
 pub mod base64url;
 pub mod bip39;
 pub mod hash;
 pub mod nip19;
+pub mod qr;
 pub mod seedqr;
+pub mod serial;
 pub mod unicode;
 
 #[cfg(test)]
